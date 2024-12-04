@@ -1,17 +1,17 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
+import "@/app/globals.css"
+import Navbar from "@/components/Navbar"
 import { AuthProvider } from '@/components/AuthProvider'
-import SignInButton from '@/components/SignInButton'
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Resource Allocation App",
+  title: "Resource Allocation Dashboard",
   description: "Manage consultant assignments and project statuses",
 }
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
@@ -20,12 +20,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="flex justify-end p-4">
-            <SignInButton />
+          <div className="flex h-screen">
+            <Navbar />
+            <main className="flex-1 overflow-auto p-4">
+              {children}
+            </main>
           </div>
-          {children}
         </AuthProvider>
       </body>
     </html>
   )
-}
+} 
