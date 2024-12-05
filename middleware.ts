@@ -7,12 +7,8 @@ export default withAuth({
 })
 
 export const config = {
-  matcher: [
-    "/projects/:path*",
-    "/workforce/:path*",
+  matcher: [  
     "/dashboard/:path*",
-    "/timeline/:path*",
-
     // Add other protected routes
   ]
 } 

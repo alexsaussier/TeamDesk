@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const newUser = new User({
       name,
       email,
-      hashedPassword: password, // This will be hashed by the pre-save middleware
+      hashedPassword: password, // This will be hashed by the pre-save middleware (in the mongoose model definition)
       organizationId: savedOrganization._id,
       role: 'admin',
       createdAt: new Date(),

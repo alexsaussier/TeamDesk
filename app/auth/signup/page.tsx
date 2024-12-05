@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
 
 export default function SignUpPage() {
+  const { status } = useSession()
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
@@ -14,6 +17,10 @@ export default function SignUpPage() {
     organizationName: '',
   })
   const [error, setError] = useState('')
+
+  if (status === 'authenticated') {
+    redirect('/dashboard')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

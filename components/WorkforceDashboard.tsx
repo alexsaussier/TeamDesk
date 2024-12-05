@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { Consultant } from '@/types'
-import ConsultantList from './ConsultantList'
+import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react' // Assuming you're using next-auth
 
 
 
-export default function ConsultantDashboard() {
+export default function WorkforceDashboard() {
   const { data: session } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -19,7 +19,7 @@ export default function ConsultantDashboard() {
 
     const fetchConsultants = async () => {
       try {
-        const response = await fetch(`/api/consultants`)
+        const response = await fetch(`/api/workforce`)
         if (!response.ok) throw new Error('Failed to fetch consultants')
         const data = await response.json()
         setConsultants(data)
@@ -33,7 +33,7 @@ export default function ConsultantDashboard() {
 
   const handleAddConsultant = async (newConsultant: Omit<Consultant, 'id'>) => {
     try {
-      const response = await fetch('/api/consultants', {
+      const response = await fetch('/api/workforce', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,6 +52,12 @@ export default function ConsultantDashboard() {
       console.error('Error adding consultant:', error)
       // Handle error (e.g., show an error message to the user)
     }
+  }
+
+  const handleConsultantDeleted = (consultantId: string) => {
+    setConsultants(prevConsultants => 
+      prevConsultants.filter(consultant => consultant._id !== consultantId)
+    )
   }
 
   return (
@@ -83,7 +89,10 @@ export default function ConsultantDashboard() {
           />
         </svg>
       </div>
-      <ConsultantList consultants={consultants} />
+      <WorkforceList 
+        consultants={consultants} 
+        onConsultantDeleted={handleConsultantDeleted}
+      />
       <AddConsultantModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

@@ -1,7 +1,8 @@
 
   
   export interface Consultant {
-    id: string;
+    _id: string
+    id?: string
     organizationId: string;
     name: string;
     skills: string[];
