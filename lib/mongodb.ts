@@ -7,7 +7,7 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI
 const options = {
-  dbName: 'resourcing-app-demo'
+  dbName: 'Resourcing-app-demo'
 }
 
 // For the MongoDB native driver client
@@ -38,7 +38,7 @@ export const connectDB = async () => {
     if (mongoose.connection.readyState === 1) {
       return mongoose.connection
     }
-    return await mongoose.connect(uri, { dbName: 'resourcing-app-demo' })
+    return await mongoose.connect(uri, { dbName: 'Resourcing-app-demo' })
   } catch (error) {
     console.error('MongoDB connection error:', error)
     throw error

@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const newUser = new User({
       name,
       email,
-      hashedPassword: password, // Will be hashed by the schema middleware
+      hashedPassword: password, // This will be hashed by the pre-save middleware
       organizationId: savedOrganization._id,
       role: 'admin',
       createdAt: new Date(),
