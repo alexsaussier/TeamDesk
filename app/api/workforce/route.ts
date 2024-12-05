@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       createdBy: userId
     })
 
-    console.log('New Consultant:', JSON.stringify(newConsultant, null, 2))
+    console.log('New Worker:', JSON.stringify(newConsultant, null, 2))
 
     const savedConsultant = await newConsultant.save()
     return NextResponse.json(savedConsultant, { status: 201 })

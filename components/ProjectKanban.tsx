@@ -25,13 +25,6 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
     
     const { draggableId, destination } = result
     const newStatus = destination.droppableId as ProjectStatus
-
-    // Update the status in the mockProjects array
-    const projectIndex = mockProjects.findIndex(project => project.id === draggableId)
-    if (projectIndex !== -1) {
-      mockProjects[projectIndex].status = newStatus
-    }
-
     onUpdateStatus(draggableId, newStatus)
   }
 
@@ -47,7 +40,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="space-y-4"
+                    className="space-y-4 min-h-[200px] bg-secondary/10 rounded-lg"
                   >
                     {projects
                       .filter(project => project.status === column)
@@ -64,7 +57,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                               {...provided.dragHandleProps}
                             >
                               <Card 
-                                className="cursor-pointer hover:shadow-md transition-shadow"
+                                className="cursor-pointer hover:shadow-md transition-shadow bg-background"
                                 onClick={() => setSelectedProject(project)}
                               >
                                 <CardHeader>
