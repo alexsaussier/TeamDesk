@@ -17,17 +17,35 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
   const [name, setName] = useState('')
   const [skills, setSkills] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newConsultant: Omit<Consultant, 'id'> = {
+    const formData = {
       name,
       skills: skills.split(',').map(skill => skill.trim()),
-      currentAssignment: null,
-      futureAssignments: [],
     }
-    onAdd(newConsultant)
-    setName('')
-    setSkills('')
+
+    try {
+      const response = await fetch('/api/workforce', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to add consultant')
+      }
+
+      const result = await response.json()
+      console.log('Consultant added:', result)
+
+      onAdd(result)
+      setName('')
+      setSkills('')
+    } catch (error) {
+      console.error('Error adding consultant:', error)
+    }
   }
 
   return (

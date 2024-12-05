@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Consultant } from '@/types'
+import { useState, useEffect } from 'react'
+import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trash2 } from 'lucide-react'
@@ -8,43 +8,70 @@ import DeleteWorkerModal from './DeleteWorkerModal'
 
 interface ConsultantListProps {
   consultants: Consultant[]
+  projects: Project[]
   onConsultantDeleted: (id: string) => void
 }
 
-function calculateUtilization(consultant: Consultant): number {
-  const today = new Date()
-  const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
-  
-  let assignedDays = 0
-  let totalDays = 30
-
-  if (consultant.assignments) {
-    const endDate = new Date(consultant.assignments[0].endDate)
-    if (endDate > today) {
-      assignedDays += Math.min(30, (endDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
-    }
-  }
-
-  consultant.assignments?.slice(1).forEach(assignment => {
-    const startDate = new Date(assignment.startDate)
-    const endDate = new Date(assignment.endDate)
-    if (startDate < thirtyDaysFromNow && endDate > today) {
-      const assignmentStart = startDate > today ? startDate : today
-      const assignmentEnd = endDate < thirtyDaysFromNow ? endDate : thirtyDaysFromNow
-      assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
-    }
-  })
-
-  return Math.round((assignedDays / totalDays) * 100)
+// Add type for populated consultant data
+interface PopulatedConsultant extends Omit<Consultant, 'assignments'> {
+  assignments: Project[]
 }
 
-export default function ConsultantList({ consultants, onConsultantDeleted }: ConsultantListProps) {
+export default function ConsultantList({ consultants, projects, onConsultantDeleted }: ConsultantListProps) {
+  const [populatedConsultants, setPopulatedConsultants] = useState<PopulatedConsultant[]>([])
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
 
-  const handleDeleteClick = (consultant: Consultant) => {
-    setSelectedConsultant(consultant)
+  // Populate consultants with project data
+  useEffect(() => {
+    const populated = consultants.map(consultant => {
+      const populatedAssignments = consultant.assignments
+        .map(id => projects.find(p => p.id === id))
+        .filter((p): p is Project => p !== undefined)
+      
+      return {
+        ...consultant,
+        assignments: populatedAssignments
+      }
+    })
+    setPopulatedConsultants(populated)
+  }, [consultants, projects])
+
+  const handleDeleteClick = (consultant: PopulatedConsultant) => {
+    // Convert assignments back to IDs
+    const consultantWithIds: Consultant = {
+      ...consultant,
+      assignments: consultant.assignments.map(assignment => assignment.id)
+    }
+    setSelectedConsultant(consultantWithIds)
     setDeleteModalOpen(true)
+  }
+
+  const calculateUtilization = (consultant: PopulatedConsultant): number => {
+    const today = new Date()
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    
+    let assignedDays = 0
+    let totalDays = 30
+
+    if (consultant.assignments[0]) {
+      const endDate = new Date(consultant.assignments[0].endDate)
+      if (endDate > today) {
+        assignedDays += Math.min(30, (endDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
+      }
+    }
+
+    consultant.assignments.slice(1).forEach(assignment => {
+      const startDate = new Date(assignment.startDate)
+      const endDate = new Date(assignment.endDate)
+      if (startDate < thirtyDaysFromNow && endDate > today) {
+        const assignmentStart = startDate > today ? startDate : today
+        const assignmentEnd = endDate < thirtyDaysFromNow ? endDate : thirtyDaysFromNow
+        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
+      }
+    })
+
+    return Math.round((assignedDays / totalDays) * 100)
   }
 
   const handleDeleteConfirm = async () => {
@@ -71,9 +98,9 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {consultants.map(consultant => {
+        {populatedConsultants.map(consultant => {
           const utilization = calculateUtilization(consultant)
-          const isCurrentlyAssigned = !!consultant.assignments
+          const isCurrentlyAssigned = consultant.assignments.length > 0
 
           return (
             <Card key={consultant._id} className={`${isCurrentlyAssigned ? 'bg-gray-100' : ''} relative`}>
@@ -113,7 +140,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                       ))}
                     </div>
                   </div>
-                  {consultant.assignments && (
+                  {consultant.assignments[0] && (
                     <div>
                       <h4 className="font-semibold">Current Project:</h4>
                       <p>{consultant.assignments[0].name}</p>
@@ -122,7 +149,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                       </p>
                     </div>
                   )}
-                  {consultant.assignments && consultant.assignments.length > 1 && (
+                  {consultant.assignments.length > 1 && (
                     <div>
                       <h4 className="font-semibold">Future Assignments:</h4>
                       <ul className="list-disc list-inside">

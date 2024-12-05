@@ -22,12 +22,15 @@ export default function ProjectDashboard() {
         const projectsResponse = await fetch('/api/projects')
         if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
         const projectsData = await projectsResponse.json()
-        setProjects(projectsData)
+        console.log('Fetched projects:', projectsData)
 
         // Fetch consultants
         const consultantsResponse = await fetch('/api/workforce')
         if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
         const consultantsData = await consultantsResponse.json()
+        console.log('Fetched consultants:', consultantsData)
+
+        setProjects(projectsData)
         setConsultants(consultantsData)
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -37,23 +40,39 @@ export default function ProjectDashboard() {
     fetchData()
   }, [session])
 
-  const assignConsultant = (consultantId: string, projectId: string) => {
-    const project = projects.find(p => p.id === projectId)
-    if (!project) return
+  const assignConsultant = async (consultantId: string, projectId: string) => {
+    try {
+      console.log('Making API request with:', { consultantId, projectId });
+      
+      const response = await fetch(`/api/projects/${projectId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ consultantId }),
+      })
 
-    setProjects(prevProjects =>
-      prevProjects.map(p =>
-        p.id === projectId
-          ? { 
-              ...p, 
-              assignedConsultants: [
-                ...p.assignedConsultants, 
-                consultants.find(c => c.id === consultantId) as Consultant
-              ] 
-            }
-          : p
-      )
-    )
+      if (!response.ok) {
+        const error = await response.json()
+        console.log('API error response:', error);
+        throw new Error(error.error)
+      }
+
+      // Refresh data
+      const [projectsResponse, consultantsResponse] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/workforce')
+      ])
+
+      const projectsData = await projectsResponse.json()
+      const consultantsData = await consultantsResponse.json()
+
+      setProjects(projectsData)
+      setConsultants(consultantsData)
+    } catch (error) {
+      console.error('Error assigning consultant:', error)
+      // You might want to add error handling UI here
+    }
   }
 
   const updateProjectStatus = async (projectId: string, newStatus: ProjectStatus) => {

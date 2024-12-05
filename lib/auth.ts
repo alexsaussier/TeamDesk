@@ -54,14 +54,12 @@ export const authOptions = {
         } else {
           token.id = token.sub || token.id || ''
         }
-        console.log('JWT Token:', token)
         return token
       },
       async session({ session, token }: { session: Session; token: JWT }) {
         if (session.user) {
           session.user.organizationId = token.organizationId
           session.user.id = token.id || token.sub || ''
-          console.log('Session:', session)
         }
         return session
       }

@@ -4,7 +4,7 @@ export interface Consultant {
   organizationId: string;
   name: string;
   skills: string[];
-  assignments: Project[] | null;
+  assignments: string[];
   picture: string;
   createdAt: string;
   updatedAt: string;
@@ -21,7 +21,7 @@ export interface Project {
   requiredSkills: string[];
   startDate: string;
   endDate: string;
-  assignedConsultants: Consultant[];
+  assignedConsultants: string[];
   status: ProjectStatus;
   createdAt: string;
   updatedAt: string;

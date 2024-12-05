@@ -33,10 +33,9 @@ export async function POST(request: Request) {
       name,
       skills,
       picture: picture || 'https://asaussier-projects.s3.eu-north-1.amazonaws.com/resourcing-app/workforce/default-avatar.jpg',
-      currentAssignment: null,
-      futureAssignments: [],
-      createdBy: userId
-    })
+      assignments: [],
+      createdBy: userId,
+      })
 
     console.log('New Worker:', JSON.stringify(newConsultant, null, 2))
 
@@ -58,8 +57,16 @@ export async function GET(request: Request) {
     }
 
     const organizationId = session.user.organizationId
-    const consultants = await Consultant.find({ organizationId })
-    return NextResponse.json(consultants)
+    const consultants = await Consultant.find({ organizationId }).lean()
+
+    const transformedConsultants = consultants.map(consultant => ({
+      ...consultant,
+      id: consultant._id.toString(),
+      _id: consultant._id.toString(),
+    }))
+
+    console.log('Sending consultants:', transformedConsultants)
+    return NextResponse.json(transformedConsultants)
   } catch (error) {
     console.error('Error in GET /api/workforce:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
