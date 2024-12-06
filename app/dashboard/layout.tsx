@@ -17,17 +17,13 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          <div className="flex h-screen">
-            <Navbar />
-            <main className="flex-1 overflow-auto p-4">
-              {children}
-            </main>
-          </div>
-        </AuthProvider>
-      </body>
-    </html>
+    <div className={`${inter.className} flex h-screen`}>
+      <AuthProvider>
+        <Navbar />
+        <main className="flex-1 overflow-auto p-4">
+          {children}
+        </main>
+      </AuthProvider>
+    </div>
   )
 } 

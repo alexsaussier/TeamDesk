@@ -20,9 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="flex justify-end p-4">
-            <SignInButton />
-          </div>
+          
           {children}
         </AuthProvider>
       </body>

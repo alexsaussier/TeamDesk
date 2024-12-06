@@ -9,7 +9,13 @@ interface ProjectDocument {
   _id: mongoose.Types.ObjectId;
   organizationId: mongoose.Types.ObjectId;
   updatedBy: mongoose.Types.ObjectId;
-  // Add other fields as needed
+  name: string;
+  client: string;
+  requiredSkills: string[];
+  startDate: Date;
+  endDate: Date;
+  status: string;
+  assignedConsultants: mongoose.Types.ObjectId[];
 }
 
 export async function POST(request: Request) {
@@ -64,7 +70,10 @@ export async function GET(request: Request) {
 
     const organizationId = session.user.organizationId
     const projects = await Project.find({ organizationId })
-      .populate('assignedConsultants')
+      .populate({
+        path: 'assignedConsultants',
+        select: 'name skills picture'
+      })
       .lean<ProjectDocument[]>()
 
     const transformedProjects = projects.map(project => ({
@@ -72,6 +81,11 @@ export async function GET(request: Request) {
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
+      assignedConsultants: project.assignedConsultants.map((consultant: any) => ({
+        ...consultant,
+        id: consultant._id.toString(),
+        _id: consultant._id.toString()
+      }))
     }))
 
     return NextResponse.json(transformedProjects)

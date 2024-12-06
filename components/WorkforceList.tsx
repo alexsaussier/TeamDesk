@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Consultant, Project } from '@/types'
+import { Consultant } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trash2 } from 'lucide-react'
@@ -8,62 +8,57 @@ import DeleteWorkerModal from './DeleteWorkerModal'
 
 interface ConsultantListProps {
   consultants: Consultant[]
-  projects: Project[]
   onConsultantDeleted: (id: string) => void
 }
 
-// Add type for populated consultant data
-interface PopulatedConsultant extends Omit<Consultant, 'assignments'> {
-  assignments: Project[]
-}
-
-export default function ConsultantList({ consultants, projects, onConsultantDeleted }: ConsultantListProps) {
-  const [populatedConsultants, setPopulatedConsultants] = useState<PopulatedConsultant[]>([])
+export default function ConsultantList({ consultants, onConsultantDeleted }: ConsultantListProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
+  const [projectDetails, setProjectDetails] = useState<Record<string, any>>({})
 
-  // Populate consultants with project data
+  // Fetch project details for all assignments
   useEffect(() => {
-    const populated = consultants.map(consultant => {
-      const populatedAssignments = consultant.assignments
-        .map(id => projects.find(p => p.id === id))
-        .filter((p): p is Project => p !== undefined)
-      
-      return {
-        ...consultant,
-        assignments: populatedAssignments
+    const fetchProjectDetails = async () => {
+      try {
+        const response = await fetch('/api/projects')
+        if (!response.ok) throw new Error('Failed to fetch projects')
+        const projects = await response.json()
+        
+        // Create a map of project details by ID
+        const projectMap = projects.reduce((acc: Record<string, any>, project: any) => {
+          acc[project._id] = project
+          return acc
+        }, {})
+        
+        setProjectDetails(projectMap)
+      } catch (error) {
+        console.error('Error fetching project details:', error)
       }
-    })
-    setPopulatedConsultants(populated)
-  }, [consultants, projects])
-
-  const handleDeleteClick = (consultant: PopulatedConsultant) => {
-    // Convert assignments back to IDs
-    const consultantWithIds: Consultant = {
-      ...consultant,
-      assignments: consultant.assignments.map(assignment => assignment.id)
     }
-    setSelectedConsultant(consultantWithIds)
+
+    fetchProjectDetails()
+  }, [])
+
+  const handleDeleteClick = (consultant: Consultant) => {
+    setSelectedConsultant(consultant)
     setDeleteModalOpen(true)
   }
 
-  const calculateUtilization = (consultant: PopulatedConsultant): number => {
+  const calculateUtilization = (consultant: Consultant): number => {
+    if (!projectDetails || !consultant.assignments?.length) return 0
+
     const today = new Date()
     const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
     
     let assignedDays = 0
     let totalDays = 30
 
-    if (consultant.assignments[0]) {
-      const endDate = new Date(consultant.assignments[0].endDate)
-      if (endDate > today) {
-        assignedDays += Math.min(30, (endDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
-      }
-    }
+    consultant.assignments.forEach(assignmentId => {
+      const project = projectDetails[assignmentId]
+      if (!project) return
 
-    consultant.assignments.slice(1).forEach(assignment => {
-      const startDate = new Date(assignment.startDate)
-      const endDate = new Date(assignment.endDate)
+      const startDate = new Date(project.startDate)
+      const endDate = new Date(project.endDate)
       if (startDate < thirtyDaysFromNow && endDate > today) {
         const assignmentStart = startDate > today ? startDate : today
         const assignmentEnd = endDate < thirtyDaysFromNow ? endDate : thirtyDaysFromNow
@@ -74,36 +69,44 @@ export default function ConsultantList({ consultants, projects, onConsultantDele
     return Math.round((assignedDays / totalDays) * 100)
   }
 
-  const handleDeleteConfirm = async () => {
-    if (!selectedConsultant) return
-
-    try {
-      const consultantId = selectedConsultant._id
-      const response = await fetch(`/api/workforce/${consultantId}`, {
-        method: 'DELETE',
+  const getCurrentAssignment = (consultant: Consultant) => {
+    if (!projectDetails || !consultant.assignments?.length) return null
+    
+    const today = new Date()
+    return consultant.assignments
+      .map(assignmentId => projectDetails[assignmentId])
+      .find(project => {
+        if (!project) return false
+        const startDate = new Date(project.startDate)
+        const endDate = new Date(project.endDate)
+        return startDate <= today && endDate >= today
       })
+  }
 
-      if (!response.ok) {
-        throw new Error('Failed to delete consultant')
-      }
-
-      onConsultantDeleted(consultantId)
-      setDeleteModalOpen(false)
-      setSelectedConsultant(null)
-    } catch (error) {
-      console.error('Error deleting consultant:', error)
-    }
+  const getFutureAssignments = (consultant: Consultant) => {
+    if (!projectDetails || !consultant.assignments?.length) return []
+    
+    const today = new Date()
+    return consultant.assignments
+      .map(assignmentId => projectDetails[assignmentId])
+      .filter(project => {
+        if (!project) return false
+        const startDate = new Date(project.startDate)
+        return startDate > today
+      })
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
   }
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {populatedConsultants.map(consultant => {
+        {consultants.map(consultant => {
           const utilization = calculateUtilization(consultant)
-          const isCurrentlyAssigned = consultant.assignments.length > 0
+          const currentAssignment = getCurrentAssignment(consultant)
+          const futureAssignments = getFutureAssignments(consultant)
 
           return (
-            <Card key={consultant._id} className={`${isCurrentlyAssigned ? 'bg-gray-100' : ''} relative`}>
+            <Card key={consultant._id} className={`${currentAssignment ? 'bg-gray-100' : ''} relative`}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -140,22 +143,22 @@ export default function ConsultantList({ consultants, projects, onConsultantDele
                       ))}
                     </div>
                   </div>
-                  {consultant.assignments[0] && (
+                  {currentAssignment && (
                     <div>
                       <h4 className="font-semibold">Current Project:</h4>
-                      <p>{consultant.assignments[0].name}</p>
+                      <p>{currentAssignment.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        Ends on: {new Date(consultant.assignments[0].endDate).toLocaleDateString()}
+                        Ends on: {new Date(currentAssignment.endDate).toLocaleDateString()}
                       </p>
                     </div>
                   )}
-                  {consultant.assignments.length > 1 && (
+                  {futureAssignments.length > 0 && (
                     <div>
                       <h4 className="font-semibold">Future Assignments:</h4>
                       <ul className="list-disc list-inside">
-                        {consultant.assignments.slice(1).map(assignment => (
-                          <li key={assignment.id} className="text-sm">
-                            {assignment.name} (Starts: {new Date(assignment.startDate).toLocaleDateString()})
+                        {futureAssignments.map(project => (
+                          <li key={project._id} className="text-sm">
+                            {project.name} (Starts: {new Date(project.startDate).toLocaleDateString()})
                           </li>
                         ))}
                       </ul>
