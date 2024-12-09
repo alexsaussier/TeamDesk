@@ -6,12 +6,13 @@ import ProjectKanban from './ProjectKanban'
 import AddProjectModal from './AddProjectModal'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
+import { useProjectModal } from '@/hooks/useProjectModal'
 
 export default function ProjectDashboard() {
   const { data: session } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { isOpen, openModal, closeModal } = useProjectModal()
 
   useEffect(() => {
     if (!session) return
@@ -116,7 +117,7 @@ export default function ProjectDashboard() {
 
       const addedProject: Project = await response.json()
       setProjects([...projects, addedProject])
-      setIsModalOpen(false)
+      closeModal()
     } catch (error) {
       console.error('Error adding project:', error)
     }
@@ -126,7 +127,7 @@ export default function ProjectDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Projects</h2>
-        <Button onClick={() => setIsModalOpen(true)}>Add Project</Button>
+        <Button onClick={openModal}>Add Project</Button>
       </div>
       <ProjectKanban 
         projects={projects} 
@@ -135,8 +136,8 @@ export default function ProjectDashboard() {
         onUpdateStatus={updateProjectStatus}
       />
       <AddProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isOpen}
+        onClose={closeModal}
         onAdd={handleAddProject}
       />
     </div>

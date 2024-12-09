@@ -3,9 +3,24 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { ProjectDetailsModal } from '@/components/ProjectDetailsModal'
+import { useState } from 'react'
+import { cn } from "@/lib/utils"
 
 interface TimelineProps {
   projects: Project[]
+  consultants: any[]
+  columns: any[]
+}
+
+// Add type for populated project
+interface PopulatedProject extends Omit<Project, 'assignedConsultants'> {
+  assignedConsultants: {
+    _id: string
+    id: string
+    name: string
+    picture: string
+  }[]
 }
 
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
@@ -20,6 +35,7 @@ const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   return months
 }
 
+{/* Get the first month and last month of all the projects aggregated - so we can siplay the right timeline */}
 const getProjectMonths = (projects: Project[]): string[] => {
   const startDates = projects.map(project => new Date(project.startDate))
   const endDates = projects.map(project => new Date(project.endDate))
@@ -33,60 +49,140 @@ const isProjectActiveInMonth = (project: Project, month: string): boolean => {
   const monthDate = new Date(`${monthStr} 1, ${yearStr}`)
   const projectStart = new Date(project.startDate)
   const projectEnd = new Date(project.endDate)
-  return monthDate >= projectStart && monthDate <= projectEnd
+  
+  // Compare just the year and month
+  const monthStartYear = monthDate.getFullYear()
+  const monthStartMonth = monthDate.getMonth()
+  const projectStartYear = projectStart.getFullYear()
+  const projectStartMonth = projectStart.getMonth()
+  const projectEndYear = projectEnd.getFullYear()
+  const projectEndMonth = projectEnd.getMonth()
+
+  // Check if the month falls between project start and end months
+  return (
+    (monthStartYear > projectStartYear || 
+     (monthStartYear === projectStartYear && monthStartMonth >= projectStartMonth)) &&
+    (monthStartYear < projectEndYear || 
+     (monthStartYear === projectEndYear && monthStartMonth <= projectEndMonth))
+  )
 }
 
-export default function Timeline({ projects }: TimelineProps) {
-  const months = getProjectMonths(projects)
+{/* For displaying a continuous line across months */}
+const getProjectCellStyle = (project: Project, month: string, months: string[]): string => {
+  if (!isProjectActiveInMonth(project, month)) return ''
+  
+  const isFirst = month === months.find(m => isProjectActiveInMonth(project, m))
+  const isLast = month === [...months].reverse().find(m => isProjectActiveInMonth(project, m))
+  
+  if (isFirst && isLast) return 'rounded-md'
+  if (isFirst) return 'rounded-l-md'
+  if (isLast) return 'rounded-r-md'
+  return ''
+}
+
+export default function Timeline({ projects, consultants, columns }: TimelineProps) {
+  const populatedProjects = projects as PopulatedProject[]
+  const months = getProjectMonths(populatedProjects)
+  const [selectedProject, setSelectedProject] = useState<PopulatedProject | null>(null)
+
+  const handleAssign = async (consultantId: string, projectId: string) => {
+    // Implement your assignment logic here
+    const response = await fetch(`/api/projects/${projectId}/assign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ consultantId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to assign consultant');
+    }
+  }
+
+  const handleStatusUpdate = async (projectId: string, newStatus: ProjectStatus) => {
+    // Implement your status update logic here
+    const response = await fetch(`/api/projects/${projectId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update status');
+    }
+  }
 
   return (
-    <Card>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Project</TableHead>
-              {months.map((month) => (
-                <TableHead key={month} className="text-center">{month}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.id}>
-                <TableCell className="font-medium">
-                  {project.name}
-                  <br />
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline">{project.status}</Badge>
-                    <div className="flex -space-x-2">
-                      {project.assignedConsultants?.map((consultant, index) => (
-                        <Avatar 
-                          key={consultant.id} 
-                          className="border-2 border-background w-6 h-6"
-                        >
-                          <AvatarImage 
-                            src={consultant.picture} 
-                            alt={consultant.name}
-                          />
-                        </Avatar>
-                      ))}
-                    </div>
-                  </div>
-                </TableCell>
+    <>
+      <Card>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Project</TableHead>
                 {months.map((month) => (
-                  <TableCell key={`${project.id}-${month}`} className="text-center">
-                    {isProjectActiveInMonth(project, month) && (
-                      <div className="w-full h-4 bg-blue-500 rounded-full"></div>
-                    )}
-                  </TableCell>
+                  <TableHead key={month} className="text-center">{month}</TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {populatedProjects.map((project) => (
+                <TableRow 
+                  key={project.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedProject(project)}
+                >
+                  <TableCell className="font-medium">
+                    {project.name}
+                    <br />
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline">{project.status}</Badge>
+                      <div className="flex -space-x-2">
+                        {project.assignedConsultants?.map((consultant) => (
+                          <Avatar 
+                            key={consultant._id} 
+                            className="border-2 border-background w-6 h-6"
+                          >
+                            <AvatarImage 
+                              src={consultant.picture} 
+                              alt={consultant.name}
+                            />
+                          </Avatar>
+                        ))}
+                      </div>
+                    </div>
+                  </TableCell>
+                  {months.map((month) => (
+                    <TableCell 
+                      key={`${project.id}-${month}`} 
+                      className="text-center p-0"
+                    >
+                      {isProjectActiveInMonth(project, month) && (
+                        <div className={cn(
+                          "w-full h-4 bg-blue-500",
+                          getProjectCellStyle(project, month, months)
+                        )}></div>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <ProjectDetailsModal
+        project={selectedProject}
+        consultants={consultants}
+        isOpen={selectedProject !== null}
+        onClose={() => setSelectedProject(null)}
+        onAssign={handleAssign}
+        onUpdateStatus={handleStatusUpdate}
+        columns={columns}
+      />
+    </>
   )
 }
 

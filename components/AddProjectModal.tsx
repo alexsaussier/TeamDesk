@@ -8,17 +8,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSession } from 'next-auth/react'
+import { useProjectModal } from '@/hooks/useProjectModal'
 
 interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
   onAdd: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => void
+  onEdit?: (project: Project) => void
 }
 
 const projectStatuses: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
 
-export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectModalProps) {
+export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectModalProps) {
   const { data: session } = useSession()
+  const { selectedProject } = useProjectModal()
   const [formData, setFormData] = useState({
     name: '',
     client: '',
@@ -30,17 +33,21 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const newProject = {
-      name: formData.name,
-      client: formData.client,
-      requiredSkills: formData.requiredSkills.split(',').map(skill => skill.trim()),
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      assignedConsultants: [],
-      status: formData.status,
-      organizationId: session?.user?.organizationId || '', //there should always be an organizationId to avoid collisions between organizations
+    if (selectedProject) {
+      onEdit?.(selectedProject)
+    } else {
+      const newProject = {
+        name: formData.name,
+        client: formData.client,
+        requiredSkills: formData.requiredSkills.split(',').map(skill => skill.trim()),
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        assignedConsultants: [],
+        status: formData.status,
+        organizationId: session?.user?.organizationId || '', //there should always be an organizationId to avoid collisions between organizations
+      }
+      onAdd(newProject)
     }
-    onAdd(newProject)
     // Reset form
     setFormData({
       name: '',
