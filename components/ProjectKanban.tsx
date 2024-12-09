@@ -9,6 +9,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { mockProjects } from '@/lib/mockData'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import { ProjectDetailsModal } from '@/components/ProjectDetailsModal'
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 interface ProjectKanbanProps {
   projects: Project[]
@@ -64,14 +65,52 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                               >
                                 <CardHeader>
                                   <CardTitle className="text-lg">{project.name}</CardTitle>
+                                  <div className="text-sm text-muted-foreground">
+                                    {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+                                  </div>
                                 </CardHeader>
                                 <CardContent>
-                                  <div className="flex flex-wrap gap-1">
-                                    {project.requiredSkills.slice(0, 3).map(skill => (
-                                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                                    ))}
-                                    {project.requiredSkills.length > 3 && (
-                                      <Badge variant="secondary">+{project.requiredSkills.length - 3}</Badge>
+                                  <div className="space-y-3">
+                                    <div className="flex flex-wrap gap-1">
+                                      {project.requiredSkills.slice(0, 3).map(skill => (
+                                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                                      ))}
+                                      {project.requiredSkills.length > 3 && (
+                                        <Badge variant="secondary">+{project.requiredSkills.length - 3}</Badge>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Note: this is overly complicated because i initially thought that project.assignedConsultants was an array of OnjectID strings, 
+                                    but it's actually an array of consultant objects. I suspect it's being populated in the route when fetching the projects */}
+                                    {project.assignedConsultants && project.assignedConsultants.length > 0 && (
+                                      <div className="flex -space-x-2">
+                                        {project.assignedConsultants.map((consultantId) => {
+                                          console.log("consultantId type:", typeof consultantId, "value:", consultantId);
+                                          
+                                          const searchId = typeof consultantId === 'object' ? consultantId._id || consultantId.id : consultantId;
+                                          const consultant = consultants.find(c => c._id === searchId || c.id === searchId);
+                                          
+                                          if (!consultant) {
+                                            console.warn(`No consultant found for ID: ${searchId} on project ${project.name}`);
+                                            return null;
+                                          }
+                                          
+                                          return (
+                                            <Avatar key={searchId} className="border-2 border-background w-8 h-8">
+                                              <AvatarImage
+                                                src={consultant.picture}
+                                                alt={consultant.name}
+                                              />
+                                            </Avatar>
+                                            
+                                          );
+                                        })}
+                                        {project.assignedConsultants.length > 4 && (
+                                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm border-2 border-background">
+                                            +{project.assignedConsultants.length - 4}
+                                          </div>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
                                 </CardContent>

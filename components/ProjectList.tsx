@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useMemo } from 'react'
 
 interface ProjectListProps {
   projects: Project[]
@@ -11,6 +12,12 @@ interface ProjectListProps {
 }
 
 export default function ProjectList({ projects, consultants, onAssign }: ProjectListProps) {
+  // Create consultant map once
+  const consultantMap = useMemo(() => 
+    Object.fromEntries(consultants.map(c => [c._id || c.id, c])),
+    [consultants]
+  )
+
   return (
     <Card>
       <CardHeader>
@@ -29,6 +36,16 @@ export default function ProjectList({ projects, consultants, onAssign }: Project
               <p className="text-sm text-muted-foreground mt-1">
                 Duration: {new Date(project.startDate).toLocaleDateString()} to {new Date(project.endDate).toLocaleDateString()}
               </p>
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold">Assigned Consultants:</h4>
+                <ul className="list-disc list-inside">
+                  {project.assignedConsultants.map(id => (
+                    <li key={id} className="text-sm">
+                      {consultantMap[id]?.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <div className="mt-2 flex items-center gap-2">
                 <Select onValueChange={(value) => onAssign(value, project.id)}>
                   <SelectTrigger className="w-[180px]">
@@ -36,25 +53,14 @@ export default function ProjectList({ projects, consultants, onAssign }: Project
                   </SelectTrigger>
                   <SelectContent>
                     {consultants
-                      .filter(c => !project.assignedConsultants.includes(c.id))
+                      .filter(c => !project.assignedConsultants.includes(c._id || c.id))
                       .map(consultant => (
-                        <SelectItem key={consultant.id} value={consultant.id}>
+                        <SelectItem key={consultant._id || consultant.id} value={consultant._id || consultant.id}>
                           {consultant.name}
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm">Assign</Button>
-              </div>
-              <div className="mt-2">
-                <h4 className="text-sm font-semibold">Assigned Consultants:</h4>
-                <ul className="list-disc list-inside">
-                  {project.assignedConsultants.map(id => (
-                    <li key={id} className="text-sm">
-                      {consultants.find(c => c.id === id)?.name}
-                    </li>
-                  ))}
-                </ul>
               </div>
             </li>
           ))}
