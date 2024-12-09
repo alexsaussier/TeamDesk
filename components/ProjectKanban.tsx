@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { mockProjects } from '@/lib/mockData'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
@@ -19,35 +19,8 @@ interface ProjectKanbanProps {
 
 const columns: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
 
-// Add type for populated project data
-interface PopulatedProject extends Omit<Project, 'assignedConsultants'> {
-  assignedConsultants: Consultant[]
-}
-
 export default function ProjectKanban({ projects, consultants, onAssign, onUpdateStatus }: ProjectKanbanProps) {
-  const [populatedProjects, setPopulatedProjects] = useState<PopulatedProject[]>([])
-  const [selectedProject, setSelectedProject] = useState<PopulatedProject | null>(null)
-
-  // Populate projects with consultant data
-  useEffect(() => {
-    const populated = projects.map(project => ({
-      ...project,
-      assignedConsultants: project.assignedConsultants
-        .map(id => consultants.find(c => c.id === id || c._id === id))
-        .filter((c): c is Consultant => c !== undefined)
-    }))
-    setPopulatedProjects(populated)
-  }, [projects, consultants])
-
-  // Update selected project when populatedProjects changes
-  useEffect(() => {
-    if (selectedProject) {
-      const updatedProject = populatedProjects.find(p => p.id === selectedProject.id)
-      if (updatedProject) {
-        setSelectedProject(updatedProject)
-      }
-    }
-  }, [populatedProjects])
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return
@@ -71,7 +44,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                     ref={provided.innerRef}
                     className="space-y-4 min-h-[200px] bg-secondary/10 rounded-lg"
                   >
-                    {populatedProjects
+                    {projects
                       .filter(project => project.status === column)
                       .map((project, index) => (
                         <Draggable
