@@ -70,7 +70,7 @@ export default function WorkforceDashboard() {
       <AddConsultantModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddConsultant}
+        onAdd={handleAddConsultant}
       />
     </div>
   )
