@@ -35,12 +35,23 @@ const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   return months
 }
 
-{/* Get the first month and last month of all the projects aggregated - so we can siplay the right timeline */}
+{/* Get the first month and last month of all the projects aggregated - so we can diplay the right timeline */}
 const getProjectMonths = (projects: Project[]): string[] => {
-  const startDates = projects.map(project => new Date(project.startDate))
+  // Use today's date as the minimum date
+  const today = new Date()
+  today.setDate(1) // Set to first day of current month
+  
   const endDates = projects.map(project => new Date(project.endDate))
-  const minDate = new Date(Math.min(...startDates.map(date => date.getTime())))
+  const minDate = today
   const maxDate = new Date(Math.max(...endDates.map(date => date.getTime())))
+  
+  // If maxDate is before today, return 12 months from today
+  if (maxDate < today) {
+    const futureDate = new Date(today)
+    futureDate.setMonth(today.getMonth() + 11) // Add 11 months to include today's month
+    return getMonthsBetweenDates(today, futureDate)
+  }
+  
   return getMonthsBetweenDates(minDate, maxDate)
 }
 
@@ -81,7 +92,10 @@ const getProjectCellStyle = (project: Project, month: string, months: string[]):
 }
 
 export default function Timeline({ projects, consultants, columns }: TimelineProps) {
-  const populatedProjects = projects as PopulatedProject[]
+  //Sort projects by start date
+  const populatedProjects = [...projects].sort((a, b) => 
+    new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  ) 
   const months = getProjectMonths(populatedProjects)
   const [selectedProject, setSelectedProject] = useState<PopulatedProject | null>(null)
 

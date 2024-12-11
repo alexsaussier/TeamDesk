@@ -1,95 +1,54 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Consultant, Project } from '@/types'
 import UtilizationPlot from './UtilizationPlot'
 import StatsGrid from './StatsGrid'
-
-const mockConsultants: Consultant[] = [
-  {
-    id: '1',
-    name: 'Alice Johnson',
-    skills: ['Strategy', 'Finance'],
-    currentAssignment: {
-      projectId: '1',
-      projectName: 'Strategic Review',
-      startDate: '2023-06-15',
-      endDate: '2023-07-31',
-    },
-    futureAssignments: [
-      {
-        projectId: '3',
-        projectName: 'Financial Analysis',
-        startDate: '2023-08-15',
-        endDate: '2023-09-30',
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Bob Smith',
-    skills: ['Technology', 'Operations'],
-    currentAssignment: null,
-    futureAssignments: [
-      {
-        projectId: '2',
-        projectName: 'Tech Transformation',
-        startDate: '2023-07-15',
-        endDate: '2023-09-15',
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Charlie Brown',
-    skills: ['Marketing', 'Digital'],
-    currentAssignment: null,
-    futureAssignments: [],
-  },
-]
-
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Strategic Review',
-    requiredSkills: ['Strategy', 'Finance'],
-    startDate: '2023-06-15',
-    endDate: '2023-07-31',
-    assignedConsultants: ['1'],
-    status: 'Started',
-  },
-  {
-    id: '2',
-    name: 'Tech Transformation',
-    requiredSkills: ['Technology', 'Operations'],
-    startDate: '2023-07-15',
-    endDate: '2023-09-15',
-    assignedConsultants: ['2'],
-    status: 'Sold',
-  },
-  {
-    id: '3',
-    name: 'Financial Analysis',
-    requiredSkills: ['Finance', 'Strategy'],
-    startDate: '2023-08-15',
-    endDate: '2023-09-30',
-    assignedConsultants: ['1'],
-    status: 'Discussions',
-  },
-  {
-    id: '4',
-    name: 'Digital Marketing Campaign',
-    requiredSkills: ['Marketing', 'Digital'],
-    startDate: '2023-10-01',
-    endDate: '2023-11-30',
-    assignedConsultants: ['3'],
-    status: 'Discussions',
-  },
-]
+import { Spinner } from '@/components/ui/spinner'
 
 export default function HomeDashboard() {
-  const [consultants] = useState<Consultant[]>(mockConsultants)
-  const [projects] = useState<Project[]>(mockProjects)
+  const { data: session } = useSession()
+  const [consultants, setConsultants] = useState<Consultant[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!session) return
+
+    const fetchData = async () => {
+      try {
+        // Fetch projects and consultants in parallel
+        const [projectsResponse, consultantsResponse] = await Promise.all([
+          fetch('/api/projects'),
+          fetch('/api/workforce')
+        ])
+
+        if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
+        if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
+
+        const projectsData = await projectsResponse.json()
+        const consultantsData = await consultantsResponse.json()
+
+        setProjects(projectsData)
+        setConsultants(consultantsData)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [session])
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <Spinner className="h-8 w-8" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

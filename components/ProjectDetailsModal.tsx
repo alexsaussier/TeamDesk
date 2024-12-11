@@ -1,12 +1,13 @@
-import { Project, Consultant, ProjectStatus, PopulatedProject } from '@/types'
+import { Project, Consultant, ProjectStatus, } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
+import { Spinner } from '@/components/ui/spinner'
 
 interface ProjectDetailsModalProps {
-  project: (Project | PopulatedProject) | null
+  project: (Project ) | null
   consultants: Consultant[]
   isOpen: boolean
   onClose: () => void
@@ -24,7 +25,9 @@ export function ProjectDetailsModal({
   onUpdateStatus,
   columns
 }: ProjectDetailsModalProps) {
-  const [localProject, setLocalProject] = useState<Project | PopulatedProject | null>(null)
+  const [localProject, setLocalProject] = useState<Project | null>(null)
+  const [isAssigning, setIsAssigning] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     setLocalProject(project)
@@ -41,11 +44,44 @@ export function ProjectDetailsModal({
       )
 
   const handleAssign = async (consultantId: string) => {
-    onAssign(consultantId, localProject.id)
+    try {
+      setIsAssigning(true)
+      await onAssign(consultantId, localProject.id)
+      
+      const selectedConsultant = consultants.find(c => c._id === consultantId || c.id === consultantId)
+      
+      if (selectedConsultant && localProject) {
+        setLocalProject(prev => {
+          if (!prev) return null
+          
+          return {
+            ...prev,
+            assignedConsultants: Array.isArray(prev.assignedConsultants) && 
+              typeof prev.assignedConsultants[0] !== 'string'
+              ? [...prev.assignedConsultants, selectedConsultant]
+              : [...prev.assignedConsultants, consultantId]
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Error assigning consultant:', error)
+      // You might want to show an error toast here
+    } finally {
+      setIsAssigning(false)
+    }
   }
 
-  const handleStatusChange = (newStatus: ProjectStatus) => {
-    onUpdateStatus(localProject.id, newStatus)
+  const handleStatusChange = async (newStatus: ProjectStatus) => {
+    try {
+      setIsUpdatingStatus(true)
+      await onUpdateStatus(localProject.id, newStatus)
+      setLocalProject(prev => prev ? { ...prev, status: newStatus } : null)
+    } catch (error) {
+      console.error('Error updating status:', error)
+      // You might want to show an error toast here
+    } finally {
+      setIsUpdatingStatus(false)
+    }
   }
 
   return (
@@ -111,8 +147,11 @@ export function ProjectDetailsModal({
           {/* Actions Section */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
             <div className="flex flex-col gap-2">
-              <h4 className="text-sm font-medium text-muted-foreground">Assign Team Members</h4>
-              <Select onValueChange={handleAssign}>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Assign Team Members
+                {isAssigning && <Spinner className="ml-2 inline-block h-4 w-4" />}
+              </h4>
+              <Select onValueChange={handleAssign} disabled={isAssigning}>
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Add team member" />
                 </SelectTrigger>
@@ -139,8 +178,15 @@ export function ProjectDetailsModal({
             </div>
 
             <div className="flex flex-col gap-2">
-              <h4 className="text-sm font-medium text-muted-foreground">Update Status</h4>
-              <Select value={localProject.status} onValueChange={handleStatusChange}>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Update Status
+                {isUpdatingStatus && <Spinner className="ml-2 inline-block h-4 w-4" />}
+              </h4>
+              <Select 
+                value={localProject.status} 
+                onValueChange={handleStatusChange}
+                disabled={isUpdatingStatus}
+              >
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>

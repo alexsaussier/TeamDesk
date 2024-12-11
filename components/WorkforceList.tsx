@@ -44,14 +44,15 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     setDeleteModalOpen(true)
   }
 
+  // Trailing 12 months
   const calculateUtilization = (consultant: Consultant): number => {
     if (!projectDetails || !consultant.assignments?.length) return 0
 
     const today = new Date()
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const twelveMonthsAgo = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000)
     
     let assignedDays = 0
-    let totalDays = 30
+    const totalDays = 365
 
     consultant.assignments.forEach(assignmentId => {
       const project = projectDetails[assignmentId]
@@ -59,9 +60,37 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
 
       const startDate = new Date(project.startDate)
       const endDate = new Date(project.endDate)
-      if (startDate < thirtyDaysFromNow && endDate > today) {
+      if (startDate < today && endDate > twelveMonthsAgo) {
+        const assignmentStart = startDate > twelveMonthsAgo ? startDate : twelveMonthsAgo
+        const assignmentEnd = endDate < today ? endDate : today
+        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
+      }
+    })
+
+    return Math.round((assignedDays / totalDays) * 100)
+  }
+
+  // Next three months
+  const calculateForecastedUtilization = (consultant: Consultant): number => {
+    if (!projectDetails || !consultant.assignments?.length) return 0
+
+    const today = new Date()
+    const threeMonthsFromNow = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000)
+    
+    let assignedDays = 0
+    const totalDays = 90
+
+    consultant.assignments.forEach(assignmentId => {
+      const project = projectDetails[assignmentId]
+      if (!project) return
+
+      const startDate = new Date(project.startDate)
+      const endDate = new Date(project.endDate)
+      
+      // Only consider assignments that overlap with next 3 months
+      if (startDate < threeMonthsFromNow && endDate > today) {
         const assignmentStart = startDate > today ? startDate : today
-        const assignmentEnd = endDate < thirtyDaysFromNow ? endDate : thirtyDaysFromNow
+        const assignmentEnd = endDate < threeMonthsFromNow ? endDate : threeMonthsFromNow
         assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
       }
     })
@@ -124,12 +153,18 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                     className="w-10 h-10 rounded-full"
                   />
                 </CardTitle>
-                <div className="flex">
+                <div className="flex gap-2">
                   <Badge 
-                    variant={utilization > 75 ? 'destructive' : utilization > 50 ? 'default' : 'secondary'}
+                    variant={utilization >= 100 ? 'secondary' : utilization > 50 ? 'secondary' : 'destructive'}
                     className="inline-flex"
                   >
-                    {utilization}% Utilized
+                    Last 12M: {utilization}%
+                  </Badge>
+                  <Badge 
+                    variant={calculateForecastedUtilization(consultant) >= 100 ? 'secondary' : calculateForecastedUtilization(consultant) > 50 ? 'secondary' : 'destructive'}
+                    className="inline-flex"
+                  >
+                    Next 3M: {calculateForecastedUtilization(consultant)}%
                   </Badge>
                 </div>
               </CardHeader>

@@ -9,7 +9,7 @@ interface StatsGridProps {
 
 export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   const totalConsultants = consultants.length
-  const staffedConsultants = consultants.filter(c => c.currentAssignment !== null).length
+  const staffedConsultants = consultants.filter(c => c.assignments !== null).length
   const staffedPercentage = (staffedConsultants / totalConsultants) * 100
 
   const liveProjects = projects.filter(p => p.status === 'Started').length
@@ -46,7 +46,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Projects Next Month</CardTitle>
+          <CardTitle className="text-sm font-medium">Expected Live Projects Next Month</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{projectsNextMonth}</div>
