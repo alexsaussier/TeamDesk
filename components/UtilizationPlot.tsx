@@ -28,37 +28,46 @@ const calculateUtilization = (
   const today = new Date()
   const isCurrentMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
 
+  console.log("Calculating utilization at date: ", date)
+
+  //NEED TO CHANGE THIS METHOD - ITERATE BY PROJECT AND INCREMENT FTEE NEED, INSTEAD OF ITERATING CONSULTANTS
   consultants.forEach(consultant => {
     if (consultant.assignments) {
+      console.log("consultant: ", consultant)
       consultant.assignments.forEach(assignmentId => {
         const project = projects.find(p => p.id.toString() === assignmentId.toString())
+        console.log("looking for project with id: ", assignmentId, " ", project?.name)
+        console.log("project start date: ", project?.startDate)
+        console.log("project end date: ", project?.endDate)
+        console.log("date: ", date)
         
-        //if the worker is assigned to a project and the project is active
         if (project && 
             new Date(project.startDate) <= date && 
             new Date(project.endDate) >= date) {
           // For current month's official utilization, only count 'started' projects
-          console.log("project status: ", project.status)
-          console.log("isCurrentMonth: ", isCurrentMonth)
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
             assignedConsultants++
-            console.log("assignedConsultants: ", assignedConsultants)
-            return
+            console.log("incremented assignedConsultants")
           }
           // For future official utilization, count 'started' projects
-          if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
+          else if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
             assignedConsultants++
-            return
+            console.log("incremented assignedConsultants")
           }
           // For expected utilization, count all three states
-          if (includeExpected && ['Started', 'Sold', 'Discussion'].includes(project.status)) {
+          else if (includeExpected && ['Started', 'Sold', 'Discussion'].includes(project.status)) {
             assignedConsultants++
-            return
+            console.log("incremented assignedConsultants for expected utilization")
           }
         }
       })
     }
   })
+
+  console.log("assignedConsultants at this date: ", assignedConsultants)
+  console.log("totalConsultants: ", totalConsultants)
+  console.log("utilization: ", (assignedConsultants / totalConsultants) * 100)
+  console.log("--------------NEXT DATE------------------")
 
   return (assignedConsultants / totalConsultants) * 100
 }
@@ -67,14 +76,22 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
   const today = new Date()
   const data: UtilizationData[] = []
 
-  // Generate data for the current month and next 6 months
-  for (let i = 0; i <= 6; i++) {
-    const currentDate = new Date(today.getFullYear(), today.getMonth() + i, 1) // First day of each month
+  // Start with today
+  data.push({
+    date: today.toISOString().split('T')[0],
+    officialUtilization: calculateUtilization(consultants, projects, today, false),
+    expectedUtilization: calculateUtilization(consultants, projects, today, true)
+  })
+
+  // Then add first day of next 6 months
+  for (let i = 1; i <= 6; i++) {
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + i, 2)
+   
     
     data.push({
-      date: currentDate.toISOString().split('T')[0],
-      officialUtilization: calculateUtilization(consultants, projects, currentDate, false),
-      expectedUtilization: calculateUtilization(consultants, projects, currentDate, true)
+      date: firstOfMonth.toISOString().split('T')[0],
+      officialUtilization: calculateUtilization(consultants, projects, firstOfMonth, false),
+      expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true)
     })
   }
 
@@ -84,7 +101,6 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
 export default function UtilizationPlot({ consultants, projects }: UtilizationPlotProps) {
   const utilizationData = useMemo(() => generateUtilizationData(consultants, projects), [consultants, projects])
 
-  console.log('Utilization data:', utilizationData)
 
   return (
     <Card>
@@ -96,11 +112,11 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
           config={{
             officialUtilization: {
               label: "Official Utilization",
-              color: "var(--color-utilization)",
+              color: "#2563eb",
             },
             expectedUtilization: {
               label: "Expected Utilization",
-              color: "var(--color-utilization)",
+              color: "#93c5fd",
             },
           }}
           className="h-[400px]"
@@ -126,7 +142,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
               <Line 
                 type="monotone" 
                 dataKey="officialUtilization" 
-                stroke="var(--color-utilization)" 
+                stroke="#2563eb"
                 name="Official Utilization" 
                 strokeWidth={2}
                 dot={false}
@@ -134,7 +150,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
               <Line 
                 type="monotone" 
                 dataKey="expectedUtilization" 
-                stroke="var(--color-utilization)" 
+                stroke="#93c5fd"
                 strokeDasharray="5 5"
                 strokeOpacity={0.5}
                 name="Expected Utilization" 
