@@ -5,10 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 
-export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
     await connectDB()
 
@@ -17,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id: consultantId } = await context.params
+    const consultantId = request.url.split('/').pop()
     
     if (!consultantId || !mongoose.Types.ObjectId.isValid(consultantId)) {
       return NextResponse.json(
