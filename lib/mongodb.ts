@@ -6,9 +6,7 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI
-const options = {
-  dbName: 'Resourcing-app-demo'
-}
+
 
 // For the MongoDB native driver client
 let client
@@ -17,7 +15,7 @@ let clientPromise: Promise<MongoClient>
 if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
   // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  let globalWithMongo = global as typeof globalThis & {
+  const globalWithMongo = global as typeof globalThis & {
     _mongoClientPromise?: Promise<MongoClient>
   }
 

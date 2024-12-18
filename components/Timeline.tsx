@@ -1,4 +1,4 @@
-import { Project } from '@/types'
+import { Project, Consultant, ProjectStatus } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils"
 
 interface TimelineProps {
   projects: Project[]
-  consultants: any[]
-  columns: any[]
+  consultants: Consultant[]
+  columns: ProjectStatus[]
 }
 
 // Add type for populated project
@@ -25,7 +25,7 @@ interface PopulatedProject extends Omit<Project, 'assignedConsultants'> {
 
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   const months: string[] = []
-  let currentDate = new Date(startDate)
+  const currentDate = new Date(startDate)
 
   while (currentDate <= endDate) {
     months.push(currentDate.toLocaleString('default', { month: 'short', year: 'numeric' }))

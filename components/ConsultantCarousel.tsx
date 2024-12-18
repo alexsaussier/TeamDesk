@@ -16,7 +16,7 @@ function calculateUtilization(consultant: Consultant): number {
   const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
   
   let assignedDays = 0
-  let totalDays = 30
+  const totalDays = 30
 
   if (consultant.currentAssignment) {
     const endDate = new Date(consultant.currentAssignment.endDate)

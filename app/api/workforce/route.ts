@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id || (session.user as any)._id
+    const userId = session.user.id
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID not found in session' },
@@ -54,7 +54,9 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+
+// GET endpoint to fetch all consultants for the authenticated user's organization
+export async function GET() {
   try {
     await connectDB()
 

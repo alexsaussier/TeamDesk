@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Consultant } from '@/types'
+import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteWorkerModal from './DeleteWorkerModal'
-import { Spinner } from '@/components/ui/spinner'
+import Image from 'next/image'
 
 interface ConsultantListProps {
   consultants: Consultant[]
@@ -15,7 +15,7 @@ interface ConsultantListProps {
 export default function ConsultantList({ consultants, onConsultantDeleted }: ConsultantListProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
-  const [projectDetails, setProjectDetails] = useState<Record<string, any>>({})
+  const [projectDetails, setProjectDetails] = useState<Record<string, Project>>({})
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Fetch project details for all assignments
@@ -27,7 +27,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
         const projects = await response.json()
         
         // Create a map of project details by ID
-        const projectMap = projects.reduce((acc: Record<string, any>, project: any) => {
+        const projectMap = projects.reduce((acc: Record<string, Project>, project: Project) => {
           acc[project._id] = project
           return acc
         }, {})
@@ -154,10 +154,12 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>{consultant.name}</span>
-                  <img 
+                  <Image 
                     src={consultant.picture} 
                     alt={`${consultant.name}'s picture`} 
-                    className="w-10 h-10 rounded-full"
+                    width={40}
+                    height={40}
+                    className="rounded-full"
                   />
                 </CardTitle>
                 <div className="flex gap-2">
@@ -199,7 +201,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                       <h4 className="font-semibold">Future Assignments:</h4>
                       <ul className="list-disc list-inside">
                         {futureAssignments.map(project => (
-                          <li key={project._id} className="text-sm">
+                          <li key={project.id} className="text-sm">
                             {project.name} (Starts: {new Date(project.startDate).toLocaleDateString()})
                           </li>
                         ))}

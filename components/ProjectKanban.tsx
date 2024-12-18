@@ -1,13 +1,8 @@
 import { Project, Consultant, ProjectStatus } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useState } from "react"
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
-import { mockProjects } from '@/lib/mockData'
-import { isConsultantAvailable } from '@/utils/consultantAvailability'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { ProjectDetailsModal } from '@/components/ProjectDetailsModal'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
@@ -23,7 +18,7 @@ const columns: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
 export default function ProjectKanban({ projects, consultants, onAssign, onUpdateStatus }: ProjectKanbanProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return
     
     const { draggableId, destination } = result

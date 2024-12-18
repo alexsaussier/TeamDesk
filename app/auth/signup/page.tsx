@@ -50,8 +50,8 @@ export default function SignUpPage() {
       } else {
         router.push('/dashboard')
       }
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
     }
   }
 

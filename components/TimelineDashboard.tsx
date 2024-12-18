@@ -63,50 +63,6 @@ export default function TimelineDashboard() {
     }
   }
 
-  const handleAssign = async (consultantId: string, projectId: string) => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/assign`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ consultantId }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to assign consultant')
-      }
-      
-      // Refresh data after assignment
-      const projectsResponse = await fetch('/api/projects')
-      const projectsData = await projectsResponse.json()
-      setProjects(projectsData)
-    } catch (error) {
-      console.error('Error assigning consultant:', error)
-    }
-  }
-
-  const handleStatusUpdate = async (projectId: string, newStatus: ProjectStatus) => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to update status')
-      }
-
-      // Refresh projects after status update
-      const projectsResponse = await fetch('/api/projects')
-      const projectsData = await projectsResponse.json()
-      setProjects(projectsData)
-    } catch (error) {
-      console.error('Error updating status:', error)
-    }
-  }
-
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Timeline</h2>
