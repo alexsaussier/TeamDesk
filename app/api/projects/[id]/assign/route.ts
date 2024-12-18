@@ -7,9 +7,15 @@ import { authOptions } from '@/lib/auth'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import mongoose from 'mongoose'
 
+type Props = {
+  params: {
+    id: string
+  }
+}
+
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: Props
 ): Promise<NextResponse> {
   try {
     await connectDB()
@@ -20,7 +26,7 @@ export async function POST(
     }
 
     const { consultantId } = await request.json()
-    const projectId = context.params.id
+    const projectId = params.id
 
     // Convert string IDs to ObjectId if needed
     const projectObjectId = new mongoose.Types.ObjectId(projectId)
