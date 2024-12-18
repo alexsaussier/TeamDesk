@@ -5,10 +5,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 
-export async function PATCH(
-  request: Request,
-  context: { params: { id: string } }
-) {
+// Updates a project's status and tracks who made the change
+export async function PATCH(request: Request) {
   try {
     await connectDB()
 
@@ -17,8 +15,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const params = await context.params
-    const projectId = params.id
+    // Get projectId from URL
+    const projectId = request.url.split('/').pop()
 
     if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
       return NextResponse.json(
