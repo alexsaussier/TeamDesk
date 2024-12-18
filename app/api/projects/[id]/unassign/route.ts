@@ -5,10 +5,7 @@ import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request) {
   try {
     await connectDB()
 
@@ -18,7 +15,7 @@ export async function POST(
     }
 
     const { consultantId } = await request.json()
-    const projectId = await params.id
+    const projectId = request.url.split('/').pop()
 
     // Update both documents
     await Promise.all([
