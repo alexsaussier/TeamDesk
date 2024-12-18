@@ -1,4 +1,4 @@
-import { MongoDBAdapter, MongoDBAdapterOptions } from "@auth/mongodb-adapter"
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import { Adapter } from "next-auth/adapters"
 import clientPromise from './mongodb'
 import CredentialsProvider from 'next-auth/providers/credentials'
