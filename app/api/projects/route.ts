@@ -5,19 +5,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 
-interface ProjectDocument {
-  _id: mongoose.Types.ObjectId;
-  organizationId: mongoose.Types.ObjectId;
-  updatedBy: mongoose.Types.ObjectId;
-  name: string;
-  client: string;
-  requiredSkills: string[];
-  startDate: Date;
-  endDate: Date;
-  status: string;
-  assignedConsultants: string[] | mongoose.Types.ObjectId[];
-}
-
 
 export async function POST(request: Request) {
   try {
