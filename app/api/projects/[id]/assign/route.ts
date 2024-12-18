@@ -10,7 +10,7 @@ import mongoose from 'mongoose'
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   try {
     await connectDB()
 
