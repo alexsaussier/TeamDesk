@@ -29,8 +29,20 @@ export default function WorkforceDashboard() {
     fetchConsultants()
   }, [session])
 
-  const handleConsultantDeleted = (id: string) => {
-    setConsultants(prev => prev.filter(c => c._id !== id))
+  const handleConsultantDeleted = async (id: string) => {
+    try {
+      const response = await fetch(`/api/workforce/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete consultant')
+      }
+
+      setConsultants(prev => prev.filter(c => c._id !== id))
+    } catch (error) {
+      console.error('Error deleting consultant:', error)
+    }
   }
 
   const handleAddConsultant = async (newConsultant: Omit<Consultant, 'id'>) => {

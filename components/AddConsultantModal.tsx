@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 
 interface AddConsultantModalProps {
   isOpen: boolean
@@ -16,15 +17,19 @@ interface AddConsultantModalProps {
 export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsultantModalProps) {
   const [name, setName] = useState('')
   const [skills, setSkills] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return // Prevent double submission
+    
     const formData = {
       name,
       skills: skills.split(',').map(skill => skill.trim()),
     }
 
     try {
+      setIsSubmitting(true)
       const response = await fetch('/api/workforce', {
         method: 'POST',
         headers: {
@@ -38,13 +43,14 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
       }
 
       const result = await response.json()
-      console.log('Consultant added:', result)
-
       onAdd(result)
       setName('')
       setSkills('')
+      onClose()
     } catch (error) {
       console.error('Error adding consultant:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -74,7 +80,16 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
             />
           </div>
           <DialogFooter>
-            <Button type="submit">Add Consultant</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Adding...
+                </>
+              ) : (
+                'Add Consultant'
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

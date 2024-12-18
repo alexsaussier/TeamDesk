@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteWorkerModal from './DeleteWorkerModal'
+import { Spinner } from '@/components/ui/spinner'
 
 interface ConsultantListProps {
   consultants: Consultant[]
@@ -15,6 +16,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
   const [projectDetails, setProjectDetails] = useState<Record<string, any>>({})
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Fetch project details for all assignments
   useEffect(() => {
@@ -126,6 +128,19 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
   }
 
+  const handleDeleteConfirm = async () => {
+    if (selectedConsultant) {
+      try {
+        setIsDeleting(true)
+        await onConsultantDeleted(selectedConsultant._id)
+      } finally {
+        setIsDeleting(false)
+        setDeleteModalOpen(false)
+        setSelectedConsultant(null)
+      }
+    }
+  }
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -136,14 +151,6 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
 
           return (
             <Card key={consultant._id} className={`${currentAssignment ? 'bg-gray-100' : ''} relative`}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 text-gray-400 hover:text-red-600"
-                onClick={() => handleDeleteClick(consultant)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>{consultant.name}</span>
@@ -168,7 +175,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-12">
                 <div className="space-y-2">
                   <div>
                     <h4 className="font-semibold">Skills:</h4>
@@ -201,6 +208,14 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   )}
                 </div>
               </CardContent>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute bottom-2 right-2 text-gray-400 hover:text-red-600"
+                onClick={() => handleDeleteClick(consultant)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </Card>
           )
         })}
@@ -215,6 +230,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           }}
           onConfirm={handleDeleteConfirm}
           consultantName={selectedConsultant.name}
+          isDeleting={isDeleting}
         />
       )}
     </>

@@ -9,7 +9,16 @@ interface StatsGridProps {
 
 export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   const totalConsultants = consultants.length
-  const staffedConsultants = consultants.filter(c => c.assignments !== null).length
+  const today = new Date()
+  const staffedConsultants = consultants.filter(c => 
+    c.assignments?.some(assignmentId => {
+      const project = projects.find(p => p._id === assignmentId)
+      if (!project) return false
+      const startDate = new Date(project.startDate)
+      const endDate = project.endDate ? new Date(project.endDate) : null
+      return startDate <= today && (!endDate || endDate >= today)
+    })
+  ).length
   const staffedPercentage = (staffedConsultants / totalConsultants) * 100
 
   const liveProjects = projects.filter(p => p.status === 'Started').length

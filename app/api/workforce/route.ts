@@ -13,10 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Session:', JSON.stringify(session, null, 2))
-
     const userId = session.user.id || (session.user as any)._id
-    console.log('User ID:', userId)
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID not found in session' },
@@ -28,6 +25,18 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { name, skills, picture } = body
 
+    // Try to find an existing consultant with the same name in the organization
+    const existingConsultant = await Consultant.findOne({
+      organizationId,
+      name
+    })
+
+    // If consultant already exists, return it instead of creating a new one
+    if (existingConsultant) {
+      return NextResponse.json(existingConsultant, { status: 200 })
+    }
+
+    // If no existing consultant, create a new one
     const newConsultant = new Consultant({
       organizationId,
       name,
@@ -35,9 +44,7 @@ export async function POST(request: Request) {
       picture: picture || 'https://asaussier-projects.s3.eu-north-1.amazonaws.com/resourcing-app/workforce/default-avatar.jpg',
       assignments: [],
       createdBy: userId,
-      })
-
-    console.log('New Worker:', JSON.stringify(newConsultant, null, 2))
+    })
 
     const savedConsultant = await newConsultant.save()
     return NextResponse.json(savedConsultant, { status: 201 })
