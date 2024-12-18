@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
@@ -8,9 +8,9 @@ import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import mongoose from 'mongoose'
 
 export async function POST(
-  req: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse> {
+) {
   try {
     await connectDB()
 
@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { consultantId } = await req.json()
+    const { consultantId } = await request.json()
     const projectId = params.id
 
     // Convert string IDs to ObjectId if needed
