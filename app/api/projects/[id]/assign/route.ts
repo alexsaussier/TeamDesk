@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     await connectDB()
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const { consultantId } = await request.json()
-    const projectId = params.id
+    const projectId = context.params.id
 
     // Convert string IDs to ObjectId if needed
     const projectObjectId = new mongoose.Types.ObjectId(projectId)
