@@ -7,10 +7,7 @@ import { authOptions } from '@/lib/auth'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import mongoose from 'mongoose'
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB()
 
@@ -19,8 +16,9 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get projectId from URL
+    const projectId = request.url.split('/').pop()
     const { consultantId } = await request.json()
-    const projectId = context.params.id
 
     // Convert string IDs to ObjectId if needed
     const projectObjectId = new mongoose.Types.ObjectId(projectId)
