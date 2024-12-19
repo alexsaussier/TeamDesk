@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import mongoose from 'mongoose'
 
 
 export async function POST(request: Request) {
@@ -56,15 +57,14 @@ export async function GET() {
     }
 
     const organizationId = session.user.organizationId
-    const projects = await Project.find({ organizationId }).lean()
+    const projects = await Project.find({ organizationId })
 
-    // Transform MongoDB documents into plain JavaScript objects
     const transformedProjects = projects.map(project => ({
-      ...project,
+      ...project.toObject(),
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
-      assignedConsultants: project.assignedConsultants.map(id => id.toString())
+      assignedConsultants: project.assignedConsultants.map((id: mongoose.Types.ObjectId) => id.toString())
     }))
 
     return NextResponse.json(transformedProjects)
