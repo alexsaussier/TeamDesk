@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import AddProjectModal from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
+import { PlusCircle } from 'lucide-react'
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
@@ -71,7 +72,7 @@ export default function TimelineDashboard() {
         columns={['Discussions', 'Sold', 'Started', 'Completed']}
       />
       <div className="flex justify-start">
-        <Button onClick={() => openModal()}>Add Project</Button>
+        <Button onClick={() => openModal()}> <PlusCircle /> Add Project</Button>
       </div>
       <AddProjectModal
         isOpen={isOpen}

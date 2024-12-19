@@ -7,7 +7,7 @@ import AddProjectModal from './AddProjectModal'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
-
+import { PlusCircle } from 'lucide-react'
 export default function ProjectDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
@@ -130,7 +130,7 @@ export default function ProjectDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Projects</h2>
-        <Button onClick={() => openModal()}>Add Project</Button>
+        <Button onClick={() => openModal()}> <PlusCircle /> Add Project</Button>
       </div>
       <ProjectKanban 
         projects={projects} 

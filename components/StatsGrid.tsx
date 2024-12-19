@@ -1,7 +1,8 @@
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getNextSoldProject } from '@/types/index'
-import { Users, Briefcase, Calendar, ArrowRight } from "lucide-react"
+import { Users, Briefcase, ArrowRight } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 interface StatsGridProps {
   consultants: Consultant[]
@@ -33,9 +34,14 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
 
   const nextProject = getNextSoldProject(projects)
 
+  const router = useRouter()
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300">
+      <Card 
+        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        onClick={() => router.push('/dashboard/workforce')}
+      >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
           <Users className="h-4 w-4 text-muted-foreground mr-2" />
           <CardTitle className="text-sm font-medium">Team Size</CardTitle>
@@ -47,7 +53,11 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
           </p>
         </CardContent>
       </Card>
-      <Card className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300">
+
+      <Card 
+        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        onClick={() => router.push('/dashboard/projects')}
+      >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
           <Briefcase className="h-4 w-4 text-muted-foreground mr-2" />
           <CardTitle className="text-sm font-medium">Live Projects</CardTitle>
@@ -58,7 +68,10 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
         </CardContent>
       </Card>
       
-      <Card className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300">
+      <Card 
+        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        onClick={() => router.push('/dashboard/timeline')}
+      >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
           <ArrowRight className="h-4 w-4 text-muted-foreground mr-2" />
           <CardTitle className="text-sm font-medium">Next Project Starting</CardTitle>

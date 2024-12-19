@@ -1,7 +1,10 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
 import { Home, LayoutDashboard, Kanban, Users, Calendar } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 // Reusable icon mapping with types
 
@@ -47,6 +50,8 @@ const navSections: NavSection[] = [
 ]
 
 export default function Navbar() {
+  const pathname = usePathname()
+
   return (
     <nav className="bg-gray-100 w-64 h-screen p-4">
       <div className="flex flex-col h-full">
@@ -55,7 +60,13 @@ export default function Navbar() {
         </Link>
         <div className="space-y-4">
           <div>
-            <Button variant="ghost" className="w-full justify-start hover:bg-gray-200" asChild>
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start ${
+                pathname === "/dashboard" ? "bg-gray-200" : "hover:bg-gray-200"
+              }`} 
+              asChild
+            >
               <Link href="/dashboard" className="flex items-center">
                 <Home className="mr-2 h-4 w-4" />
                 Home
@@ -74,7 +85,9 @@ export default function Navbar() {
                   <Button
                     key={item.href}
                     variant="ghost"
-                    className="w-full justify-start hover:bg-gray-200"
+                    className={`w-full justify-start ${
+                      pathname === item.href ? "bg-gray-200" : "hover:bg-gray-200"
+                    }`}
                     asChild
                   >
                     <Link href={item.href} className="flex items-center">

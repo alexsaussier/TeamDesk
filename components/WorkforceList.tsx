@@ -161,16 +161,20 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                 </CardTitle>
                 <div className="flex gap-2">
                   <Badge 
-                    variant={utilization >= 100 ? 'secondary' : utilization > 50 ? 'secondary' : 'destructive'}
+                    variant="secondary"
                     className="inline-flex"
                   >
-                    Last 12M: {utilization}%
+                    Last 12M: <span className={`ml-1 ${utilization >= 100 ? 'text-green-600' : utilization > 50 ? 'text-lime-800' : 'text-red-600'}`}>
+                      {utilization}%
+                    </span>
                   </Badge>
                   <Badge 
-                    variant={calculateForecastedUtilization(consultant) >= 100 ? 'secondary' : calculateForecastedUtilization(consultant) > 50 ? 'secondary' : 'destructive'}
+                    variant="secondary"
                     className="inline-flex"
                   >
-                    Next 3M: {calculateForecastedUtilization(consultant)}%
+                    Next 3M: <span className={`ml-1 ${calculateForecastedUtilization(consultant) >= 100 ? 'text-green-600' : calculateForecastedUtilization(consultant) > 50 ? 'text-lime-800' : 'text-red-600'}`}>
+                      {calculateForecastedUtilization(consultant)}%
+                    </span>
                   </Badge>
                 </div>
               </CardHeader>
