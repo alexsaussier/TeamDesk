@@ -147,7 +147,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           const futureAssignments = getFutureAssignments(consultant)
 
           return (
-            <Card key={consultant._id} className={`${currentAssignment ? 'bg-gray-100' : ''} relative`}>
+            <Card key={consultant._id} className="bg-gray-100">
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>{consultant.name}</span>
@@ -178,37 +178,56 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="pb-12">
-                <div className="space-y-2">
+              <CardContent className="pb-6">
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold">Skills:</h4>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Skills:</h4>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {consultant.skills.map(skill => (
                         <Badge key={skill} variant="outline">{skill}</Badge>
                       ))}
                     </div>
                   </div>
-                  {currentAssignment && (
+                  <div className="rounded-lg bg-white p-3 space-y-3">
                     <div>
-                      <h4 className="font-semibold">Current Project:</h4>
-                      <p>{currentAssignment.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Ends on: {new Date(currentAssignment.endDate).toLocaleDateString()}
-                      </p>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Current Project</h4>
+                      {currentAssignment ? (
+                        <div className="space-y-1 ml-3">
+                          <p className="font-medium text-gray-900">{currentAssignment.name}</p>
+                          <p className="text-sm text-gray-500 flex items-center gap-2">
+                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                            Ends {new Date(currentAssignment.endDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mx-20">
+                          <div className="h-0.5 bg-red-200 bg-gradient-to-r from-transparent via-red-300 to-transparent" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {futureAssignments.length > 0 && (
                     <div>
-                      <h4 className="font-semibold">Future Assignments:</h4>
-                      <ul className="list-disc list-inside">
-                        {futureAssignments.map(project => (
-                          <li key={project.id} className="text-sm">
-                            {project.name} (Starts: {new Date(project.startDate).toLocaleDateString()})
-                          </li>
-                        ))}
-                      </ul>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Future Assignments</h4>
+                      {futureAssignments.length > 0 ? (
+                        <div className="space-y-2 ml-3">
+                          {futureAssignments.map(project => (
+                            <div key={project.id} className="flex items-center gap-2">
+                              <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                              <div>
+                                <p className="font-medium text-gray-900">{project.name}</p>
+                                <p className="text-sm text-gray-500">
+                                  Starts {new Date(project.startDate).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mx-20">
+                          <div className="h-0.5 bg-red-200 bg-gradient-to-r from-transparent via-red-300 to-transparent" />
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
               <Button
