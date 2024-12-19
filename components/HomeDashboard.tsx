@@ -8,13 +8,7 @@ import StatsGrid from './StatsGrid'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function HomeDashboard() {
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      console.log('Redirecting to login...')
-      // This will automatically redirect to the login page
-    },
-  })
+  const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
