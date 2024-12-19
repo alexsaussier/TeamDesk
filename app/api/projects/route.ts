@@ -3,7 +3,6 @@ import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import mongoose from 'mongoose'
 
 
 export async function POST(request: Request) {
@@ -65,7 +64,7 @@ export async function GET() {
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
-      assignedConsultants: project.assignedConsultants.map((consultant: any) => ({
+      assignedConsultants: project.assignedConsultants.map((consultant: { _id: string; name: string; skills: string[]; picture: string }) => ({
         id: consultant._id.toString(),
         _id: consultant._id.toString(),
         name: consultant.name,
