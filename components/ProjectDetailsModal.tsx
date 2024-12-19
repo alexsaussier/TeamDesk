@@ -36,36 +36,26 @@ export function ProjectDetailsModal({
   if (!localProject) return null
 
   // Check if assignedConsultants is an array of Consultants (PopulatedProject) or strings (Project)
-  const assignedConsultants = Array.isArray(localProject.assignedConsultants) && 
-    typeof localProject.assignedConsultants[0] !== 'string'
-    ? (localProject.assignedConsultants as Consultant[])
-    : consultants.filter(consultant => 
-        (localProject.assignedConsultants as string[]).includes(consultant._id || consultant.id)
-      )
+  const assignedConsultants = consultants.filter(consultant => 
+    localProject.assignedConsultants.includes(consultant._id || consultant.id)
+  )
 
   const handleAssign = async (consultantId: string) => {
     try {
       setIsAssigning(true)
       await onAssign(consultantId, localProject.id)
       
-      const selectedConsultant = consultants.find(c => c._id === consultantId || c.id === consultantId)
-      
-      if (selectedConsultant && localProject) {
+      if (localProject) {
         setLocalProject(prev => {
           if (!prev) return null
-          
           return {
             ...prev,
-            assignedConsultants: Array.isArray(prev.assignedConsultants) && 
-              typeof prev.assignedConsultants[0] !== 'string'
-              ? [...prev.assignedConsultants, selectedConsultant]
-              : [...prev.assignedConsultants, consultantId]
+            assignedConsultants: [...prev.assignedConsultants, consultantId]
           }
         })
       }
     } catch (error) {
       console.error('Error assigning consultant:', error)
-      // You might want to show an error toast here
     } finally {
       setIsAssigning(false)
     }

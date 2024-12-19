@@ -79,25 +79,18 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                                     but it's actually an array of consultant objects. I suspect it's being populated in the route when fetching the projects */}
                                     {project.assignedConsultants && project.assignedConsultants.length > 0 && (
                                       <div className="flex -space-x-2">
-                                        {project.assignedConsultants.map((consultantId) => {
-                                          console.log("consultantId type:", typeof consultantId, "value:", consultantId);
-                                          
-                                          const searchId = typeof consultantId === 'object' ? consultantId._id || consultantId.id : consultantId;
-                                          const consultant = consultants.find(c => c._id === searchId || c.id === searchId);
+                                        {project.assignedConsultants.map((consultantId: string) => {
+                                          const consultant = consultants.find(c => c._id === consultantId || c.id === consultantId);
                                           
                                           if (!consultant) {
-                                            console.warn(`No consultant found for ID: ${searchId} on project ${project.name}`);
+                                            console.warn(`No consultant found for ID: ${consultantId} on project ${project.name}`);
                                             return null;
                                           }
                                           
                                           return (
-                                            <Avatar key={searchId} className="border-2 border-background w-8 h-8">
-                                              <AvatarImage
-                                                src={consultant.picture}
-                                                alt={consultant.name}
-                                              />
+                                            <Avatar key={consultantId} className="border-2 border-background w-8 h-8">
+                                              <AvatarImage src={consultant.picture} alt={consultant.name} />
                                             </Avatar>
-                                            
                                           );
                                         })}
                                         {project.assignedConsultants.length > 4 && (
