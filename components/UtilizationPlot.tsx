@@ -37,9 +37,7 @@ const calculateUtilization = (
       consultant.assignments.forEach(assignmentId => {
         const project = projects.find(p => p.id.toString() === assignmentId.toString())
         console.log("looking for project with id: ", assignmentId, " ", project?.name)
-        console.log("project start date: ", project?.startDate)
-        console.log("project end date: ", project?.endDate)
-        console.log("date: ", date)
+        
         
         if (project && 
             new Date(project.startDate) <= date && 

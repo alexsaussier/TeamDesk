@@ -27,6 +27,8 @@ export default function HomeDashboard() {
         if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
         if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
 
+        console.log('Fetched projects and consultants')
+
         const projectsData = await projectsResponse.json()
         const consultantsData = await consultantsResponse.json()
 
@@ -46,6 +48,7 @@ export default function HomeDashboard() {
     return (
       <div className="flex justify-center items-center h-[50vh]">
         <Spinner className="h-8 w-8" />
+        <p>We are fetching your data...</p>
       </div>
     )
   }
