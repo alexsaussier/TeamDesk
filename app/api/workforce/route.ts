@@ -4,9 +4,18 @@ import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+let isConnected = false
+
+async function ensureConnection() {
+  if (!isConnected) {
+    await connectDB()
+    isConnected = true
+  }
+}
+
 export async function POST(request: Request) {
   try {
-    await connectDB()
+    await ensureConnection()
 
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -54,11 +63,9 @@ export async function POST(request: Request) {
   }
 }
 
-
-// GET endpoint to fetch all consultants for the authenticated user's organization
 export async function GET() {
   try {
-    await connectDB()
+    await ensureConnection()
 
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -74,7 +81,6 @@ export async function GET() {
       _id: consultant._id.toString(),
     }))
 
-    console.log('Sending consultants:', transformedConsultants)
     return NextResponse.json(transformedConsultants)
   } catch (error) {
     console.error('Error in GET /api/workforce:', error)

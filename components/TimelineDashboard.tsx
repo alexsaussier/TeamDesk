@@ -8,6 +8,7 @@ import AddProjectModal from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { PlusCircle } from 'lucide-react'
+import { GradientButton } from '@/components/GradientButton'
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
@@ -65,14 +66,24 @@ export default function TimelineDashboard() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Timeline</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Project Timeline</h2>
+        <GradientButton 
+          onClick={() => openModal()} 
+          label="Add Project" 
+        />
+      </div>      
+        
       <Timeline 
         projects={projects} 
         consultants={consultants}
         columns={['Discussions', 'Sold', 'Started', 'Completed']}
       />
       <div className="flex justify-start">
-        <Button onClick={() => openModal()}> <PlusCircle /> Add Project</Button>
+        <GradientButton 
+          onClick={() => openModal()} 
+          label="Add Project" 
+        />
       </div>
       <AddProjectModal
         isOpen={isOpen}

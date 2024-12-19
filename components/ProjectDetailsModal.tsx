@@ -40,6 +40,13 @@ export function ProjectDetailsModal({
 
   const handleAssign = async (consultantId: string) => {
     try {
+      console.log('Assigning consultant:', {
+        consultantId,
+        projectId: localProject.id,
+        // Log the full objects to inspect
+        consultant: consultants.find(c => c._id === consultantId || c.id === consultantId),
+        project: localProject
+      })
       setIsAssigning(true)
       await onAssign(consultantId, localProject.id)
       

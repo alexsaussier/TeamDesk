@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { PlusCircle } from 'lucide-react'
+import { GradientButton } from '@/components/GradientButton'
+
 export default function ProjectDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
@@ -129,8 +131,11 @@ export default function ProjectDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Projects</h2>
-        <Button onClick={() => openModal()}> <PlusCircle /> Add Project</Button>
+        <h2 className="text-2xl font-bold">Project Kanban</h2>
+        <GradientButton 
+          onClick={() => openModal()} 
+          label="Add Project" 
+        />
       </div>
       <ProjectKanban 
         projects={projects} 

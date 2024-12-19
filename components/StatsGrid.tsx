@@ -33,7 +33,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card 
-        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/workforce')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -49,7 +49,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
 
       <Card 
-        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/projects')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -63,7 +63,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
       
       <Card 
-        className="flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/timeline')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">

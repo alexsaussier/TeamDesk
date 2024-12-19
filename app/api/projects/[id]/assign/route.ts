@@ -16,11 +16,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get projectId from URL
-    const projectId = request.url.split('/').pop()
+    // Get projectId from URL using proper URL parsing
+    const url = new URL(request.url)
+    const projectId = url.pathname.split('/projects/')[1].split('/assign')[0]
     const { consultantId } = await request.json()
 
-    // Convert string IDs to ObjectId if needed
+    console.log('Received IDs:', { projectId, consultantId })
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(projectId) || !mongoose.Types.ObjectId.isValid(consultantId)) {
+      return NextResponse.json(
+        { error: 'Invalid ID format' },
+        { status: 400 }
+      )
+    }
+
+    // Convert string IDs to ObjectId
     const projectObjectId = new mongoose.Types.ObjectId(projectId)
     const consultantObjectId = new mongoose.Types.ObjectId(consultantId)
 

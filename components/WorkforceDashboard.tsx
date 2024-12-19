@@ -7,7 +7,8 @@ import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
 import { Button } from '@/components/ui/button'
 import SearchBar from './SearchBar'
-import { PlusCircle } from 'lucide-react'
+import { GradientButton } from "@/components/GradientButton"
+
 export default function WorkforceDashboard() {
   const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -84,7 +85,10 @@ export default function WorkforceDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Workforce</h1>
-        <Button onClick={() => setIsModalOpen(true)}> <PlusCircle /> Add Consultant</Button>
+        <GradientButton 
+          onClick={() => setIsModalOpen(true)}
+          label="Add Consultant"
+        />
       </div>
 
       <SearchBar 

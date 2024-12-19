@@ -5,6 +5,7 @@ import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import { Info } from 'lucide-react'
 
 interface UtilizationPlotProps {
   consultants: Consultant[]
@@ -46,15 +47,20 @@ const calculateUtilization = (
           // For current month's official utilization, only count 'started' projects
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
             assignedConsultants++
+            console.log("assigned consultant name: ", consultant.name)
           }
           // For future official utilization, count 'started' projects
           else if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
             assignedConsultants++
+            console.log("assigned consultant name: ", consultant.name)
+
           }
           // For expected utilization, count all three states
           else if (includeExpected && ['Discussions','Started', 'Sold'].includes(project.status)) {
             assignedConsultants++
             console.log("incremented expected utilization with project:", project.name)
+            console.log("assigned consultant name: ", consultant.name)
+
           }
         }
       })
@@ -99,69 +105,105 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
 }
 
 export default function UtilizationPlot({ consultants, projects }: UtilizationPlotProps) {
-  const utilizationData = useMemo(() => generateUtilizationData(consultants, projects), [consultants, projects])
-
+  const utilizationData = useMemo(() => generateUtilizationData(consultants, projects), [
+    JSON.stringify(consultants),
+    JSON.stringify(projects)
+  ])
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Team Utilization Forecast</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer
-          config={{
-            officialUtilization: {
-              label: "Official Utilization",
-              color: "#2563eb",
-            },
-            expectedUtilization: {
-              label: "Expected Utilization",
-              color: "#93c5fd",
-            },
-          }}
-          className="h-[400px]"
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart 
-              data={utilizationData} 
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={(value) => {
-                  const date = new Date(value)
-                  return date.toLocaleString('default', { month: 'short' })
-                }}
-              />
-              <YAxis 
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line 
-                type="monotone" 
-                dataKey="officialUtilization" 
-                stroke="#2563eb"
-                name="Official Utilization" 
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="expectedUtilization" 
-                stroke="#93c5fd"
-                strokeDasharray="5 5"
-                strokeOpacity={0.5}
-                name="Expected Utilization" 
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <Card className="lg:col-span-3 border-blue-100">
+        <CardHeader>
+          <CardTitle>Team Utilization Forecast</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={{
+              officialUtilization: {
+                label: "Official Utilization",
+                color: "#2563eb",
+              },
+              expectedUtilization: {
+                label: "Expected Utilization",
+                color: "#93c5fd",
+              },
+            }}
+            className="h-[400px]"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart 
+                data={utilizationData} 
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(value) => {
+                    const date = new Date(value)
+                    return date.toLocaleString('default', { month: 'short' })
+                  }}
+                />
+                <YAxis 
+                  domain={[0, 100]}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="officialUtilization" 
+                  stroke="#2563eb"
+                  name="Official Utilization" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="expectedUtilization" 
+                  stroke="#93c5fd"
+                  strokeDasharray="5 5"
+                  strokeOpacity={0.5}
+                  name="Expected Utilization" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-4">
+        <Card className="bg-blue-50/50 border-blue-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-md flex items-center gap-2 text-blue-700">
+              <div className="w-3 h-3 rounded-lg bg-blue-600" />
+              Official Utilization
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-blue-900">
+              Percentage of team members assigned to confirmed projects 
+              (status: &quot;Started&quot;). 
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-blue-50/50 border-blue-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-md flex items-center gap-2 text-blue-600">
+              <div className="w-3 h-3 rounded-full bg-blue-400" />
+              Expected Utilization
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-blue-800">
+              Includes both confirmed projects and potential upcoming work 
+              (status: &quot;Discussions&quot;, &quot;Sold&quot;, or &quot;Started&quot;). 
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
 
