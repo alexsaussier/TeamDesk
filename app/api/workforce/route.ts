@@ -66,10 +66,10 @@ export async function GET() {
     }
 
     const organizationId = session.user.organizationId
-    const consultants = await Consultant.find({ organizationId }).lean()
+    const consultants = await Consultant.find({ organizationId })
 
     const transformedConsultants = consultants.map(consultant => ({
-      ...consultant,
+      ...consultant.toObject(),
       id: consultant._id.toString(),
       _id: consultant._id.toString(),
     }))
