@@ -19,6 +19,7 @@ export default function HomeDashboard() {
     const fetchData = async () => {
       try {
         // Fetch projects and consultants in parallel
+        console.log('Fetching projects and consultants...')
         const [projectsResponse, consultantsResponse] = await Promise.all([
           fetch('/api/projects'),
           fetch('/api/workforce')
