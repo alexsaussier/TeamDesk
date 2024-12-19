@@ -33,10 +33,8 @@ const calculateUtilization = (
   //NEED TO CHANGE THIS METHOD - ITERATE BY PROJECT AND INCREMENT FTEE NEED, INSTEAD OF ITERATING CONSULTANTS
   consultants.forEach(consultant => {
     if (consultant.assignments) {
-      console.log("consultant: ", consultant)
       consultant.assignments.forEach(assignmentId => {
         const project = projects.find(p => p.id.toString() === assignmentId.toString())
-        console.log("looking for project with id: ", assignmentId, " ", project?.name)
         
         
         if (project && 
@@ -45,25 +43,20 @@ const calculateUtilization = (
           // For current month's official utilization, only count 'started' projects
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
             assignedConsultants++
-            console.log("incremented assignedConsultants")
           }
           // For future official utilization, count 'started' projects
           else if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
             assignedConsultants++
-            console.log("incremented assignedConsultants")
           }
           // For expected utilization, count all three states
           else if (includeExpected && ['Started', 'Sold', 'Discussion'].includes(project.status)) {
             assignedConsultants++
-            console.log("incremented assignedConsultants for expected utilization")
           }
         }
       })
     }
   })
 
-  console.log("assignedConsultants at this date: ", assignedConsultants)
-  console.log("totalConsultants: ", totalConsultants)
   console.log("utilization: ", (assignedConsultants / totalConsultants) * 100)
   console.log("--------------NEXT DATE------------------")
 

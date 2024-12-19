@@ -50,6 +50,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     await connectDB()
+    console.log('Connected to MongoDB - fetching projects')
 
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -64,6 +65,8 @@ export async function GET() {
         select: 'name skills picture'
       })
 
+    console.log('Fetched projects and the assigned consultants:', projects)
+
     const transformedProjects = projects.map(project => ({
       ...project.toObject(),
       id: project._id.toString(),
@@ -77,6 +80,8 @@ export async function GET() {
         picture: consultant.picture
       }))
     }))
+
+    console.log('Sending response back to the client. Transformed projects:', transformedProjects)
 
     return NextResponse.json(transformedProjects)
   } catch (error) {
