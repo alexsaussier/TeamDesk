@@ -8,7 +8,13 @@ import StatsGrid from './StatsGrid'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function HomeDashboard() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      console.log('Redirecting to login...')
+      // This will automatically redirect to the login page
+    },
+  })
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -17,12 +23,16 @@ export default function HomeDashboard() {
     console.log('Session status:', status)
     console.log('Session data:', session)
     
-    if (status !== 'authenticated') return
+    if (status === 'loading') return
+    if (status !== 'authenticated') {
+      console.error('Not authenticated after loading')
+      return
+    }
 
     const fetchData = async () => {
       try {
+        setIsLoading(true)
         // Fetch projects and consultants in parallel
-        console.log('Fetching projects and consultants...')
         const [projectsResponse, consultantsResponse] = await Promise.all([
           fetch('/api/projects'),
           fetch('/api/workforce')
@@ -30,8 +40,6 @@ export default function HomeDashboard() {
 
         if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
         if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
-
-        console.log('Fetched projects and consultants')
 
         const projectsData = await projectsResponse.json()
         const consultantsData = await consultantsResponse.json()
@@ -48,11 +56,19 @@ export default function HomeDashboard() {
     fetchData()
   }, [session, status])
 
-  if (isLoading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
         <Spinner className="h-8 w-8" />
-        <p>We are fetching your data...</p>
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
+  if (status !== 'authenticated') {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <p>Please log in to access this page</p>
       </div>
     )
   }
