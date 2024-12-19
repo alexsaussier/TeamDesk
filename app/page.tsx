@@ -60,7 +60,7 @@ export default function LandingPage() {
       <footer className="bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-gray-500 text-sm">
-            © 2023 ResourcePro. All rights reserved.
+            © 2024 TeamDesk. All rights reserved.
           </p>
         </div>
       </footer>

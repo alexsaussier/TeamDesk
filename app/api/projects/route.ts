@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import mongoose from 'mongoose'
+import { Consultant } from '@/models/Consultant'
 
 
 export async function POST(request: Request) {
@@ -57,7 +59,11 @@ export async function GET() {
 
     const organizationId = session.user.organizationId
     const projects = await Project.find({ organizationId })
-      .populate('assignedConsultants', 'name skills picture')
+      .populate({
+        path: 'assignedConsultants',
+        model: Consultant,
+        select: 'name skills picture'
+      })
 
     const transformedProjects = projects.map(project => ({
       ...project.toObject(),
@@ -79,4 +85,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
-
