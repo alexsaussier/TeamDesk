@@ -28,7 +28,12 @@ export default function SignInPage() {
         redirect: false,
       })
 
-      if (result?.ok) {
+      console.log('Sign in result:', result)
+
+      if (result?.error) {
+        console.error('Sign in error:', result.error)
+        // Handle error here
+      } else if (result?.ok) {
         router.push('/dashboard')
       }
     } catch (error) {
