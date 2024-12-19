@@ -75,24 +75,13 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
                                       )}
                                     </div>
                                     
-                                    {/* Note: this is overly complicated because i initially thought that project.assignedConsultants was an array of OnjectID strings, 
-                                    but it's actually an array of consultant objects. I suspect it's being populated in the route when fetching the projects */}
                                     {project.assignedConsultants && project.assignedConsultants.length > 0 && (
                                       <div className="flex -space-x-2">
-                                        {project.assignedConsultants.map((consultantId: string) => {
-                                          const consultant = consultants.find(c => c._id === consultantId || c.id === consultantId);
-                                          
-                                          if (!consultant) {
-                                            console.warn(`No consultant found for ID: ${consultantId} on project ${project.name}`);
-                                            return null;
-                                          }
-                                          
-                                          return (
-                                            <Avatar key={consultantId} className="border-2 border-background w-8 h-8">
-                                              <AvatarImage src={consultant.picture} alt={consultant.name} />
-                                            </Avatar>
-                                          );
-                                        })}
+                                        {project.assignedConsultants.map((consultant) => (
+                                          <Avatar key={consultant.id} className="border-2 border-background w-8 h-8">
+                                            <AvatarImage src={consultant.picture} alt={consultant.name} />
+                                          </Avatar>
+                                        ))}
                                         {project.assignedConsultants.length > 4 && (
                                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm border-2 border-background">
                                             +{project.assignedConsultants.length - 4}

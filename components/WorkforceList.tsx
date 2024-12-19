@@ -28,7 +28,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
         
         // Create a map of project details by ID
         const projectMap = projects.reduce((acc: Record<string, Project>, project: Project) => {
-          acc[project._id] = project
+          acc[project.id] = project
           return acc
         }, {})
         
@@ -104,14 +104,12 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     if (!projectDetails || !consultant.assignments?.length) return null
     
     const today = new Date()
-    return consultant.assignments
-      .map(assignmentId => projectDetails[assignmentId])
-      .find(project => {
-        if (!project) return false
-        const startDate = new Date(project.startDate)
-        const endDate = new Date(project.endDate)
-        return startDate <= today && endDate >= today
-      })
+    const project = projectDetails[consultant.assignments[0]]
+    if (!project) return null
+    
+    const startDate = new Date(project.startDate)
+    const endDate = new Date(project.endDate)
+    return startDate <= today && endDate >= today ? project : null
   }
 
   const getFutureAssignments = (consultant: Consultant) => {
@@ -122,8 +120,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
       .map(assignmentId => projectDetails[assignmentId])
       .filter(project => {
         if (!project) return false
-        const startDate = new Date(project.startDate)
-        return startDate > today
+        return new Date(project.startDate) > today
       })
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
   }

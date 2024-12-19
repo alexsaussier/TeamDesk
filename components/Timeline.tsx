@@ -1,4 +1,4 @@
-import { Project, Consultant, ProjectStatus } from '@/types'
+import { Consultant, Project, ProjectStatus } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -13,16 +13,6 @@ interface TimelineProps {
   columns: ProjectStatus[]
 }
 
-// Add type for populated project
-interface PopulatedProject extends Omit<Project, 'assignedConsultants'> {
-  assignedConsultants: {
-    _id: string
-    id: string
-    name: string
-    picture: string
-  }[]
-}
-
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   const months: string[] = []
   const currentDate = new Date(startDate)
@@ -35,9 +25,7 @@ const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   return months
 }
 
-{/* Get the first month and last month of all the projects aggregated - so we can diplay the right timeline */}
 const getProjectMonths = (projects: Project[]): string[] => {
-  // Use today's date as the minimum date
   const today = new Date()
   today.setDate(1) // Set to first day of current month
   
@@ -45,10 +33,9 @@ const getProjectMonths = (projects: Project[]): string[] => {
   const minDate = today
   const maxDate = new Date(Math.max(...endDates.map(date => date.getTime())))
   
-  // If maxDate is before today, return 12 months from today
   if (maxDate < today) {
     const futureDate = new Date(today)
-    futureDate.setMonth(today.getMonth() + 11) // Add 11 months to include today's month
+    futureDate.setMonth(today.getMonth() + 11)
     return getMonthsBetweenDates(today, futureDate)
   }
   
@@ -61,7 +48,6 @@ const isProjectActiveInMonth = (project: Project, month: string): boolean => {
   const projectStart = new Date(project.startDate)
   const projectEnd = new Date(project.endDate)
   
-  // Compare just the year and month
   const monthStartYear = monthDate.getFullYear()
   const monthStartMonth = monthDate.getMonth()
   const projectStartYear = projectStart.getFullYear()
@@ -69,7 +55,6 @@ const isProjectActiveInMonth = (project: Project, month: string): boolean => {
   const projectEndYear = projectEnd.getFullYear()
   const projectEndMonth = projectEnd.getMonth()
 
-  // Check if the month falls between project start and end months
   return (
     (monthStartYear > projectStartYear || 
      (monthStartYear === projectStartYear && monthStartMonth >= projectStartMonth)) &&
@@ -78,7 +63,6 @@ const isProjectActiveInMonth = (project: Project, month: string): boolean => {
   )
 }
 
-{/* For displaying a continuous line across months */}
 const getProjectCellStyle = (project: Project, month: string, months: string[]): string => {
   if (!isProjectActiveInMonth(project, month)) return ''
   
@@ -92,15 +76,13 @@ const getProjectCellStyle = (project: Project, month: string, months: string[]):
 }
 
 export default function Timeline({ projects, consultants, columns }: TimelineProps) {
-  //Sort projects by start date
-  const populatedProjects = [...projects].sort((a, b) => 
+  const sortedProjects = [...projects].sort((a, b) => 
     new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-  ) 
-  const months = getProjectMonths(populatedProjects)
-  const [selectedProject, setSelectedProject] = useState<PopulatedProject | null>(null)
+  )
+  const months = getProjectMonths(sortedProjects)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleAssign = async (consultantId: string, projectId: string) => {
-    // Implement your assignment logic here
     const response = await fetch(`/api/projects/${projectId}/assign`, {
       method: 'POST',
       headers: {
@@ -114,7 +96,6 @@ export default function Timeline({ projects, consultants, columns }: TimelinePro
   }
 
   const handleStatusUpdate = async (projectId: string, newStatus: ProjectStatus) => {
-    // Implement your status update logic here
     const response = await fetch(`/api/projects/${projectId}/status`, {
       method: 'PUT',
       headers: {
@@ -141,7 +122,7 @@ export default function Timeline({ projects, consultants, columns }: TimelinePro
               </TableRow>
             </TableHeader>
             <TableBody>
-              {populatedProjects.map((project) => (
+              {sortedProjects.map((project) => (
                 <TableRow 
                   key={project.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -153,9 +134,9 @@ export default function Timeline({ projects, consultants, columns }: TimelinePro
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline">{project.status}</Badge>
                       <div className="flex -space-x-2">
-                        {project.assignedConsultants?.map((consultant) => (
+                        {project.assignedConsultants.map((consultant) => (
                           <Avatar 
-                            key={consultant._id} 
+                            key={consultant.id} 
                             className="border-2 border-background w-6 h-6"
                           >
                             <AvatarImage 

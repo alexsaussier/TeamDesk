@@ -2,7 +2,6 @@ import { Project, Consultant } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useMemo } from 'react'
 
 interface ProjectListProps {
   projects: Project[]
@@ -11,12 +10,6 @@ interface ProjectListProps {
 }
 
 export default function ProjectList({ projects, consultants, onAssign }: ProjectListProps) {
-  // Create consultant map once
-  const consultantMap = useMemo(() => 
-    Object.fromEntries(consultants.map(c => [c._id || c.id, c])),
-    [consultants]
-  )
-
   return (
     <Card>
       <CardHeader>
@@ -38,9 +31,9 @@ export default function ProjectList({ projects, consultants, onAssign }: Project
               <div className="mt-2">
                 <h4 className="text-sm font-semibold">Assigned Consultants:</h4>
                 <ul className="list-disc list-inside">
-                  {project.assignedConsultants.map(id => (
-                    <li key={id} className="text-sm">
-                      {consultantMap[id]?.name}
+                  {project.assignedConsultants.map(consultant => (
+                    <li key={consultant.id} className="text-sm">
+                      {consultant.name}
                     </li>
                   ))}
                 </ul>
@@ -52,7 +45,7 @@ export default function ProjectList({ projects, consultants, onAssign }: Project
                   </SelectTrigger>
                   <SelectContent>
                     {consultants
-                      .filter(c => !project.assignedConsultants.includes(c._id || c.id))
+                      .filter(c => !project.assignedConsultants.some(ac => ac.id === c._id || ac.id === c.id))
                       .map(consultant => (
                         <SelectItem key={consultant._id || consultant.id} value={consultant._id || consultant.id}>
                           {consultant.name}

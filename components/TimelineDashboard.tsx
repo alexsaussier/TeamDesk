@@ -41,19 +41,15 @@ export default function TimelineDashboard() {
     fetchData()
   }, [session])
 
-  const handleAddProject = async (newProject: Omit<Project, 'id'>) => {
+  const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProject),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to add project')
-      }
+      if (!response.ok) throw new Error('Failed to add project')
 
       const addedProject: Project = await response.json()
       setProjects([...projects, addedProject])

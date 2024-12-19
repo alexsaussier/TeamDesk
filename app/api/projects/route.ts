@@ -58,13 +58,20 @@ export async function GET() {
 
     const organizationId = session.user.organizationId
     const projects = await Project.find({ organizationId })
+      .populate('assignedConsultants', 'name skills picture')
 
     const transformedProjects = projects.map(project => ({
       ...project.toObject(),
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
-      assignedConsultants: project.assignedConsultants.map((id: mongoose.Types.ObjectId) => id.toString())
+      assignedConsultants: project.assignedConsultants.map((consultant: any) => ({
+        id: consultant._id.toString(),
+        _id: consultant._id.toString(),
+        name: consultant.name,
+        skills: consultant.skills,
+        picture: consultant.picture
+      }))
     }))
 
     return NextResponse.json(transformedProjects)

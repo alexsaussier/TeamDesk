@@ -21,7 +21,13 @@ export interface Project {
   requiredSkills: string[];
   startDate: string;
   endDate: string;
-  assignedConsultants: string[];
+  assignedConsultants: {
+    id: string;
+    _id: string;
+    name: string;
+    skills: string[];
+    picture: string;
+  }[];
   status: ProjectStatus;
   createdAt: string;
   updatedAt: string;

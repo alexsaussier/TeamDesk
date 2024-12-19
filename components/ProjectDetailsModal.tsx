@@ -36,9 +36,7 @@ export function ProjectDetailsModal({
   if (!localProject) return null
 
   // Check if assignedConsultants is an array of Consultants (PopulatedProject) or strings (Project)
-  const assignedConsultants = consultants.filter(consultant => 
-    localProject.assignedConsultants.includes(consultant._id || consultant.id)
-  )
+  const assignedConsultants = localProject.assignedConsultants
 
   const handleAssign = async (consultantId: string) => {
     try {
@@ -48,9 +46,11 @@ export function ProjectDetailsModal({
       if (localProject) {
         setLocalProject(prev => {
           if (!prev) return null
+          const newConsultant = consultants.find(c => c._id === consultantId || c.id === consultantId)
+          if (!newConsultant) return prev
           return {
             ...prev,
-            assignedConsultants: [...prev.assignedConsultants, consultantId]
+            assignedConsultants: [...prev.assignedConsultants, newConsultant]
           }
         })
       }
