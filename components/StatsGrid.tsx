@@ -25,12 +25,6 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
 
   const liveProjects = projects.filter(p => p.status === 'Started').length
 
-  const nextMonth = new Date()
-  nextMonth.setMonth(nextMonth.getMonth() + 1)
-  const projectsNextMonth = projects.filter(p => {
-    const startDate = new Date(p.startDate)
-    return startDate <= nextMonth && (p.status === 'Started' || p.status === 'Sold')
-  }).length
 
   const nextProject = getNextSoldProject(projects)
 
