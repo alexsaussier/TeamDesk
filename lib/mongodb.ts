@@ -33,10 +33,17 @@ if (process.env.NODE_ENV === 'development') {
 // For Mongoose connections
 export const connectDB = async () => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection
+    if (mongoose.connections[0].readyState) {
+      return mongoose.connections[0]
     }
-    return await mongoose.connect(uri, { dbName: 'Resourcing-app-demo' })
+
+    await mongoose.connect(uri, {
+      dbName: 'Resourcing-app-demo',
+      bufferCommands: false,
+      maxPoolSize: 10
+    })
+
+    return mongoose.connections[0]
   } catch (error) {
     console.error('MongoDB connection error:', error)
     throw error
