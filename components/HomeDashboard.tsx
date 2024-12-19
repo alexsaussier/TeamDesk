@@ -8,13 +8,16 @@ import StatsGrid from './StatsGrid'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function HomeDashboard() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!session) return
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+    
+    if (status !== 'authenticated') return
 
     const fetchData = async () => {
       try {
@@ -43,7 +46,7 @@ export default function HomeDashboard() {
     }
 
     fetchData()
-  }, [session])
+  }, [session, status])
 
   if (isLoading) {
     return (

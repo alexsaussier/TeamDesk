@@ -9,13 +9,16 @@ import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 
 export default function TimelineDashboard() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const { isOpen, openModal, closeModal } = useProjectModal()
 
   useEffect(() => {
-    if (!session) return
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+    
+    if (status !== 'authenticated') return
 
     const fetchData = async () => {
       try {
@@ -39,7 +42,7 @@ export default function TimelineDashboard() {
     }
 
     fetchData()
-  }, [session])
+  }, [session, status])
 
   const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
     try {

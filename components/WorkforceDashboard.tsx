@@ -8,12 +8,15 @@ import AddConsultantModal from './AddConsultantModal'
 import { Button } from '@/components/ui/button'
 
 export default function WorkforceDashboard() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
-    if (!session) return
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+    
+    if (status !== 'authenticated') return
 
     const fetchConsultants = async () => {
       try {
@@ -27,7 +30,7 @@ export default function WorkforceDashboard() {
     }
 
     fetchConsultants()
-  }, [session])
+  }, [session, status])
 
   const handleConsultantDeleted = async (id: string) => {
     try {
