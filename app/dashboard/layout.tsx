@@ -18,12 +18,10 @@ export default function DashboardLayout({
 }) {
   return (
     <div className={`${inter.className} flex h-screen`}>
-      <AuthProvider>
         <Navbar />
         <main className="flex-1 overflow-auto p-4">
           {children}
         </main>
-      </AuthProvider>
     </div>
   )
 } 
