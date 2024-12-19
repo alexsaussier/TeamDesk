@@ -28,7 +28,6 @@ const calculateUtilization = (
   const today = new Date()
   const isCurrentMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
 
-  console.log("Calculating utilization at date: ", date)
 
   //NEED TO CHANGE THIS METHOD - ITERATE BY PROJECT AND INCREMENT FTEE NEED, INSTEAD OF ITERATING CONSULTANTS
   consultants.forEach(consultant => {
@@ -37,9 +36,13 @@ const calculateUtilization = (
         const project = projects.find(p => p.id.toString() === assignmentId.toString())
         
         
+        
         if (project && 
-            new Date(project.startDate) <= date && 
-            new Date(project.endDate) >= date) {
+          new Date(project.startDate) <= date && 
+          new Date(project.endDate) >= date) {
+
+          console.log("analysing project: ", project.name)
+          console.log("project stauts is: ", project.status)
           // For current month's official utilization, only count 'started' projects
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
             assignedConsultants++
@@ -49,8 +52,9 @@ const calculateUtilization = (
             assignedConsultants++
           }
           // For expected utilization, count all three states
-          else if (includeExpected && ['Started', 'Sold', 'Discussion'].includes(project.status)) {
+          else if (includeExpected && ['Discussions','Started', 'Sold'].includes(project.status)) {
             assignedConsultants++
+            console.log("incremented expected utilization with project:", project.name)
           }
         }
       })
@@ -58,7 +62,6 @@ const calculateUtilization = (
   })
 
   console.log("utilization: ", (assignedConsultants / totalConsultants) * 100)
-  console.log("--------------NEXT DATE------------------")
 
   return (assignedConsultants / totalConsultants) * 100
 }
@@ -67,23 +70,29 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
   const today = new Date()
   const data: UtilizationData[] = []
 
+  console.log("Date: ", today.toISOString().split('T')[0])
   // Start with today
   data.push({
     date: today.toISOString().split('T')[0],
     officialUtilization: calculateUtilization(consultants, projects, today, false),
     expectedUtilization: calculateUtilization(consultants, projects, today, true)
   })
+  console.log("calculated data point: ", data[data.length - 1])
+  console.log("--------------NEXT DATE------------------")
 
   // Then add first day of next 6 months
   for (let i = 1; i <= 6; i++) {
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + i, 2)
-   
+    console.log("Date: ", firstOfMonth.toISOString().split('T')[0])
     
     data.push({
       date: firstOfMonth.toISOString().split('T')[0],
       officialUtilization: calculateUtilization(consultants, projects, firstOfMonth, false),
       expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true)
     })
+    console.log("calculated data point: ", data[data.length - 1])
+    console.log("--------------NEXT DATE------------------")
+
   }
 
   return data
