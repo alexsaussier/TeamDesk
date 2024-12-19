@@ -12,7 +12,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   const today = new Date()
   const staffedConsultants = consultants.filter(c => 
     c.assignments?.some(assignmentId => {
-      const project = projects.find(p => p._id === assignmentId)
+      const project = projects.find(p => p.id === assignmentId)
       if (!project) return false
       const startDate = new Date(project.startDate)
       const endDate = project.endDate ? new Date(project.endDate) : null
