@@ -6,11 +6,13 @@ import { Consultant } from '@/types'
 import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
 import { Button } from '@/components/ui/button'
+import SearchBar from './SearchBar'
 
 export default function WorkforceDashboard() {
   const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     console.log('Session status:', status)
@@ -70,6 +72,14 @@ export default function WorkforceDashboard() {
     }
   }
 
+  const filteredConsultants = consultants.filter(consultant => {
+    const query = searchQuery.toLowerCase()
+    return (
+      consultant.name.toLowerCase().includes(query) ||
+      consultant.skills.some(skill => skill.toLowerCase().includes(query))
+    )
+  })
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -77,8 +87,13 @@ export default function WorkforceDashboard() {
         <Button onClick={() => setIsModalOpen(true)}>Add Consultant</Button>
       </div>
 
+      <SearchBar 
+        onSearch={setSearchQuery}
+        placeholder="Search by name or skills..."
+      />
+
       <WorkforceList 
-        consultants={consultants}
+        consultants={filteredConsultants}
         onConsultantDeleted={handleConsultantDeleted}
       />
 
