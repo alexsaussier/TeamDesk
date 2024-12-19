@@ -52,7 +52,7 @@ export const authOptions = {
       async jwt({ token, user }: { token: JWT; user: NextAuthUser }) {
         if (user) {
           token.organizationId = user.organizationId
-          token.id = user.id || user._id?.toString() || token.sub || ''
+          token.id = user.id || token.sub || ''
         } else {
           token.id = token.sub || token.id || ''
         }
