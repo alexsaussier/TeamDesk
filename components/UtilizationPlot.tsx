@@ -5,7 +5,6 @@ import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
-import { Info } from 'lucide-react'
 
 interface UtilizationPlotProps {
   consultants: Consultant[]

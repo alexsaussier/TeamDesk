@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import { Project, Consultant, ProjectStatus } from '@/types'
 import ProjectKanban from './ProjectKanban'
 import AddProjectModal from './AddProjectModal'
-import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
-import { PlusCircle } from 'lucide-react'
 import { GradientButton } from '@/components/GradientButton'
 
 export default function ProjectDashboard() {

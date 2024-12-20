@@ -3,11 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Project, Consultant } from '@/types'
 import Timeline from './Timeline'
-import { Button } from '@/components/ui/button'
 import AddProjectModal from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
-import { PlusCircle } from 'lucide-react'
 import { GradientButton } from '@/components/GradientButton'
 
 export default function TimelineDashboard() {

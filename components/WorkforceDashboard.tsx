@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import { Consultant } from '@/types'
 import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
-import { Button } from '@/components/ui/button'
 import SearchBar from './SearchBar'
 import { GradientButton } from "@/components/GradientButton"
 
