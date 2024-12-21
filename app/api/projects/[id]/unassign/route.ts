@@ -4,11 +4,9 @@ import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import mongoose from 'mongoose'
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request) {
   try {
     await connectDB()
 
@@ -18,7 +16,12 @@ export async function POST(
     }
 
     const { consultantId } = await request.json()
-    const projectId = params.id
+    const urlParts = request.url.split('/')
+    const projectId = urlParts[urlParts.length - 2] // Get the ID before 'unassign'
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
+    }
 
     // Update both documents
     await Promise.all([
