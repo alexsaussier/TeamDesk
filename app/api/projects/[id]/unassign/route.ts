@@ -4,8 +4,12 @@ import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import mongoose from 'mongoose'
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectDB()
 
@@ -15,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     const { consultantId } = await request.json()
-    const projectId = request.url.split('/').pop()
+    const projectId = params.id
 
     // Update both documents
     await Promise.all([
