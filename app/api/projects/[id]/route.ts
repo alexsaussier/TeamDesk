@@ -62,13 +62,10 @@ export async function PATCH(request: Request) {
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
     await connectDB()
-    const projectId = params.id
+    const projectId = request.url.split('/').pop()
 
     // First, remove project assignments from consultants
     await Consultant.updateMany(
