@@ -4,6 +4,7 @@ import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+// Get all consultants for the current organization
 export async function GET() {
   try {
     // Ensure DB connection is established before querying

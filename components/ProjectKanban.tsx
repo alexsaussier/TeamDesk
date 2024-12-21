@@ -5,6 +5,7 @@ import { useState } from "react"
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { ProjectDetailsModal } from '@/components/ProjectDetailsModal'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Spinner } from "@/components/ui/spinner"
 
 interface ProjectKanbanProps {
   projects: Project[]
@@ -33,13 +34,25 @@ const columnHeaderColors = {
 
 export default function ProjectKanban({ projects, consultants, onAssign, onUnassign, onUpdateStatus, onDelete }: ProjectKanbanProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null)
 
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return
     
     const { draggableId, destination } = result
     const newStatus = destination.droppableId as ProjectStatus
-    onUpdateStatus(draggableId, newStatus)
+    
+    // Set updating state
+    setUpdatingProjectId(draggableId)
+    
+    try {
+      await onUpdateStatus(draggableId, newStatus)
+    } catch (error) {
+      console.error('Failed to update project status:', error)
+      // You might want to show an error toast here
+    } finally {
+      setUpdatingProjectId(null)
+    }
   }
 
   return (
@@ -72,12 +85,20 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
                               className={snapshot.isDragging ? 'rotate-2' : ''}
                             >
                               <Card 
-                                className={`cursor-pointer transition-all duration-200 bg-white
+                                className={`cursor-pointer transition-all duration-200 bg-white relative
                                   ${snapshot.isDragging 
                                     ? 'shadow-lg ring-2 ring-blue-500/50' 
-                                    : 'hover:shadow-md hover:-translate-y-1'}`}
+                                    : 'hover:shadow-md hover:-translate-y-1'}
+                                  ${updatingProjectId === project.id 
+                                    ? 'opacity-50 blur-[1px]' 
+                                    : ''}`}
                                 onClick={() => setSelectedProject(project)}
                               >
+                                {updatingProjectId === project.id && (
+                                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                                    <Spinner className="h-6 w-6 text-blue-600" />
+                                  </div>
+                                )}
                                 <CardHeader className="pb-3">
                                   <CardTitle className="text-lg font-semibold text-gray-800">
                                     {project.name}

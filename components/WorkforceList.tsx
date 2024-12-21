@@ -6,6 +6,7 @@ import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteWorkerModal from './DeleteWorkerModal'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 interface ConsultantListProps {
   consultants: Consultant[]
@@ -17,6 +18,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
   const [projectDetails, setProjectDetails] = useState<Record<string, Project>>({})
   const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   // Fetch project details for all assignments
   useEffect(() => {
@@ -147,7 +149,11 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           const futureAssignments = getFutureAssignments(consultant)
 
           return (
-            <Card key={consultant._id} className="bg-gray-100">
+            <Card 
+              key={consultant._id} 
+              className="bg-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
+            >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>{consultant.name}</span>
