@@ -61,7 +61,11 @@ export default function TimelineDashboard() {
 
       if (!response.ok) throw new Error('Failed to add project')
 
-      const addedProject: Project = await response.json()
+      const data = await response.json()
+      const addedProject: Project = {
+        ...data,
+        id: data.id || data._id, // Convert _id to id if needed
+      }
       setProjects([...projects, addedProject])
       closeModal()
     } catch (error) {
