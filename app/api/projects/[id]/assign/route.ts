@@ -4,7 +4,7 @@ import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isConsultantAvailable } from '@/utils/consultantAvailability'
+import { checkConsultantAvailability } from '@/utils/consultantAvailability'
 import mongoose from 'mongoose'
 
 export async function POST(request: NextRequest) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       _id: { $in: consultant.assignments }
     })
     
-    const isAvailable = isConsultantAvailable(
+    const { isAvailable, hasConflicts } = checkConsultantAvailability(
       {
         ...consultant.toObject(),
         id: consultant._id.toString()
@@ -68,7 +68,10 @@ export async function POST(request: NextRequest) {
 
     if (!isAvailable) {
       return NextResponse.json(
-        { error: 'Consultant is not available during this period' },
+        { 
+          error: 'Consultant is not available during this period',
+          hasConflicts 
+        },
         { status: 400 }
       )
     }
