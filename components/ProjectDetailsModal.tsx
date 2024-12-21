@@ -3,15 +3,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
-import { isConsultantAvailable } from '@/utils/consultantAvailability'
+import { checkConsultantAvailability } from '@/utils/consultantAvailability'
 import { Spinner } from '@/components/ui/spinner'
-import { Trash2, MinusCircle } from 'lucide-react'
+import { Trash2, MinusCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteProjectModal from './DeleteProjectModal'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
   consultants: Consultant[]
+  allProjects: Project[]
   isOpen: boolean
   onClose: () => void
   onAssign: (consultantId: string, projectId: string) => void
@@ -24,6 +26,7 @@ interface ProjectDetailsModalProps {
 export function ProjectDetailsModal({
   project,
   consultants,
+  allProjects,
   isOpen,
   onClose,
   onAssign,
@@ -211,16 +214,31 @@ export function ProjectDetailsModal({
                     const isAssigned = assignedConsultants.some(ac => 
                       ac._id === consultant._id || ac.id === consultant.id
                     );
-                    const isAvailable = isConsultantAvailable(consultant, localProject, []);
+                    const { isAvailable, hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
                     
-                    if (isAssigned || !isAvailable) return null;
+                    if (isAssigned) return null;
                     
                     return (
                       <SelectItem 
                         key={consultant._id || consultant.id} 
                         value={consultant._id || consultant.id}
+                        className="flex items-center justify-between"
                       >
-                        {consultant.name}
+                        <div className="flex items-center gap-2">
+                          {consultant.name}
+                          {hasConflicts && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Warning: This consultant has overlapping project assignments</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       </SelectItem>
                     );
                   })}

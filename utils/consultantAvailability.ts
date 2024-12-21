@@ -1,10 +1,10 @@
 import { Project, Consultant } from '@/types'
 
-export const isConsultantAvailable = (
+export const checkConsultantAvailability = (
   consultant: Consultant,
   project: Project,
   allProjects: Project[]
-): boolean => {
+): { isAvailable: boolean; hasConflicts: boolean } => {
   const projectStart = new Date(project.startDate)
   const projectEnd = new Date(project.endDate)
 
@@ -13,8 +13,7 @@ export const isConsultantAvailable = (
     p.assignedConsultants.some(ac => ac.id === consultant._id || ac.id === consultant.id)
   )
 
-  // Check for overlap with any existing assignments
-  return !consultantProjects.some(assignedProject => {
+  const hasConflicts = consultantProjects.some(assignedProject => {
     const assignedStart = new Date(assignedProject.startDate)
     const assignedEnd = new Date(assignedProject.endDate)
 
@@ -23,4 +22,9 @@ export const isConsultantAvailable = (
       (assignedStart <= projectEnd && assignedEnd >= projectStart)
     )
   })
+
+  return {
+    isAvailable: !hasConflicts,
+    hasConflicts
+  }
 } 

@@ -165,6 +165,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
       <ProjectDetailsModal
         project={selectedProject}
         consultants={consultants}
+        allProjects={projects}
         isOpen={selectedProject !== null}
         onClose={() => setSelectedProject(null)}
         onAssign={onAssign}
