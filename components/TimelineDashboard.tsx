@@ -14,7 +14,7 @@ export default function TimelineDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const { isOpen, openModal, closeModal } = useProjectModal()
-  const { isDeleting, deleteProject } = useProjectDelete(
+  const { deleteProject } = useProjectDelete(
     (projectId) => {
       setProjects(prev => prev.filter(p => p.id !== projectId))
       console.log('Project deleted:', projectId)

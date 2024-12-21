@@ -14,7 +14,7 @@ export default function ProjectDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const { isOpen, openModal, closeModal } = useProjectModal()
-  const { isDeleting, deleteProject: deleteProjectAction } = useProjectDelete(
+  const { deleteProject: deleteProjectAction } = useProjectDelete(
     (projectId) => setProjects(prev => prev.filter(p => p.id !== projectId))
   )
 

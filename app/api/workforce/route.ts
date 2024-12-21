@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth'
 export async function GET() {
   try {
     // Ensure DB connection is established before querying
-    const db = await connectDB()
+    await connectDB()
     
     const session = await getServerSession(authOptions)
     if (!session) {
