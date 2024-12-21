@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import { Spinner } from '@/components/ui/spinner'
-import { Trash2 } from 'lucide-react'
+import { Trash2, MinusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteProjectModal from './DeleteProjectModal'
 
@@ -18,6 +18,7 @@ interface ProjectDetailsModalProps {
   onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => void
   columns: ProjectStatus[]
   onDelete: (projectId: string) => void
+  onUnassign: (consultantId: string, projectId: string) => void
 }
 
 export function ProjectDetailsModal({
@@ -28,7 +29,8 @@ export function ProjectDetailsModal({
   onAssign,
   onUpdateStatus,
   columns,
-  onDelete
+  onDelete,
+  onUnassign
 }: ProjectDetailsModalProps) {
   const [localProject, setLocalProject] = useState<Project | null>(null)
   const [isAssigning, setIsAssigning] = useState(false)
@@ -101,6 +103,27 @@ export function ProjectDetailsModal({
     }
   }
 
+  const handleUnassign = async (consultantId: string) => {
+    try {
+      setIsAssigning(true)
+      await onUnassign(consultantId, localProject.id)
+      
+      setLocalProject(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          assignedConsultants: prev.assignedConsultants.filter(c => 
+            c._id !== consultantId && c.id !== consultantId
+          )
+        }
+      })
+    } catch (error) {
+      console.error('Error unassigning consultant:', error)
+    } finally {
+      setIsAssigning(false)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -153,6 +176,17 @@ export function ProjectDetailsModal({
                         {consultant.skills.length > 2 && '...'}
                       </span>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 ml-2 text-gray-400 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleUnassign(consultant._id || consultant.id)
+                      }}
+                    >
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))
               ) : (

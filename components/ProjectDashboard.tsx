@@ -83,6 +83,36 @@ export default function ProjectDashboard() {
     }
   }
 
+  const unassignConsultant = async (consultantId: string, projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/unassign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ consultantId }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to unassign consultant')
+      }
+
+      // Refresh data
+      const [projectsResponse, consultantsResponse] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/workforce')
+      ])
+
+      const projectsData = await projectsResponse.json()
+      const consultantsData = await consultantsResponse.json()
+
+      setProjects(projectsData)
+      setConsultants(consultantsData)
+    } catch (error) {
+      console.error('Error unassigning consultant:', error)
+    }
+  }
+
   const updateProjectStatus = async (projectId: string, newStatus: ProjectStatus) => {
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
@@ -143,6 +173,7 @@ export default function ProjectDashboard() {
         projects={projects} 
         consultants={consultants} 
         onAssign={assignConsultant}
+        onUnassign={unassignConsultant}
         onUpdateStatus={updateProjectStatus}
         onDelete={async (projectId) => {
           await deleteProjectAction(projectId)

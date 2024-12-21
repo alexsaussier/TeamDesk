@@ -12,7 +12,7 @@ interface TimelineProps {
   consultants: Consultant[]
   columns: ProjectStatus[]
   onDelete: (projectId: string) => Promise<void>
-
+  onUnassign: (consultantId: string, projectId: string) => Promise<void>
 }
 
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
@@ -77,7 +77,7 @@ const getProjectCellStyle = (project: Project, month: string, months: string[]):
   return ''
 }
 
-export default function Timeline({ projects, consultants, columns, onDelete }: TimelineProps) {
+export default function Timeline({ projects, consultants, columns, onDelete, onUnassign }: TimelineProps) {
   const sortedProjects = [...projects].sort((a, b) => 
     new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   )
@@ -178,6 +178,7 @@ export default function Timeline({ projects, consultants, columns, onDelete }: T
         onAssign={handleAssign}
         onUpdateStatus={handleStatusUpdate}
         onDelete={onDelete}
+        onUnassign={onUnassign}
         columns={columns}
       />
     </>

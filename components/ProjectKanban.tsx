@@ -10,6 +10,7 @@ interface ProjectKanbanProps {
   projects: Project[]
   consultants: Consultant[]
   onAssign: (consultantId: string, projectId: string) => Promise<void>
+  onUnassign: (consultantId: string, projectId: string) => Promise<void>
   onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => Promise<void>
   onDelete: (projectId: string) => Promise<void>
 }
@@ -30,7 +31,7 @@ const columnHeaderColors = {
   'Completed': 'text-slate-600'
 }
 
-export default function ProjectKanban({ projects, consultants, onAssign, onUpdateStatus, onDelete }: ProjectKanbanProps) {
+export default function ProjectKanban({ projects, consultants, onAssign, onUnassign, onUpdateStatus, onDelete }: ProjectKanbanProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleDragEnd = (result: DropResult) => {
@@ -146,6 +147,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
         isOpen={selectedProject !== null}
         onClose={() => setSelectedProject(null)}
         onAssign={onAssign}
+        onUnassign={onUnassign}
         onUpdateStatus={onUpdateStatus}
         onDelete={onDelete}
         columns={columns}
