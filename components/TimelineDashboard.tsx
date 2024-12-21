@@ -7,12 +7,19 @@ import AddProjectModal from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
+import { useProjectDelete } from '@/hooks/useProjectDelete'
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const { isOpen, openModal, closeModal } = useProjectModal()
+  const { isDeleting, deleteProject } = useProjectDelete(
+    (projectId) => {
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      console.log('Project deleted:', projectId)
+    }
+  )
 
   useEffect(() => {
     console.log('Session status:', status)
@@ -76,6 +83,9 @@ export default function TimelineDashboard() {
         projects={projects} 
         consultants={consultants}
         columns={['Discussions', 'Sold', 'Started', 'Completed']}
+        onDelete={async (projectId) => {
+          await deleteProject(projectId)
+        }}
       />
       <div className="flex justify-start">
         <GradientButton 

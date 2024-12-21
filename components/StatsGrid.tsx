@@ -38,13 +38,24 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
           <Users className="h-4 w-4 text-muted-foreground mr-2" />
+          <CardTitle className="text-sm font-medium">Current Utilization</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow flex flex-col justify-end pt-4">
+          <div className="text-3xl font-bold tracking-tight">{staffedPercentage.toFixed(1)}%</div>
+          <p className="text-xs text-muted-foreground mt-1">&nbsp;</p>
+        </CardContent>
+      </Card>
+      <Card 
+        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        onClick={() => router.push('/dashboard/workforce')}
+      >
+        <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+          <Users className="h-4 w-4 text-muted-foreground mr-2" />
           <CardTitle className="text-sm font-medium">Team Size</CardTitle>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-end pt-2">
           <div className="text-3xl font-bold tracking-tight">{totalConsultants}</div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {staffedPercentage.toFixed(1)}% currently staffed
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">&nbsp;</p>
         </CardContent>
       </Card>
 
@@ -79,6 +90,8 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
           </p>
         </CardContent>
       </Card>
+
+      
     </div>
   )
 }

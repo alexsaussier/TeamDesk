@@ -5,6 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { isConsultantAvailable } from '@/utils/consultantAvailability'
 import { Spinner } from '@/components/ui/spinner'
+import { Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import DeleteProjectModal from './DeleteProjectModal'
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
@@ -14,6 +17,7 @@ interface ProjectDetailsModalProps {
   onAssign: (consultantId: string, projectId: string) => void
   onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => void
   columns: ProjectStatus[]
+  onDelete: (projectId: string) => void
 }
 
 export function ProjectDetailsModal({
@@ -23,11 +27,14 @@ export function ProjectDetailsModal({
   onClose,
   onAssign,
   onUpdateStatus,
-  columns
+  columns,
+  onDelete
 }: ProjectDetailsModalProps) {
   const [localProject, setLocalProject] = useState<Project | null>(null)
   const [isAssigning, setIsAssigning] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     setLocalProject(project)
@@ -78,6 +85,19 @@ export function ProjectDetailsModal({
       // You might want to show an error toast here
     } finally {
       setIsUpdatingStatus(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true)
+      await onDelete(localProject.id)
+      onClose()
+    } catch (error) {
+      console.error('Error deleting project:', error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
     }
   }
 
@@ -197,8 +217,27 @@ export function ProjectDetailsModal({
               </Select>
             </div>
           </div>
+
+          <div className="flex justify-end pt-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:text-red-600"
+              onClick={() => setDeleteModalOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </DialogContent>
+
+      <DeleteProjectModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        projectName={localProject.name}
+        isDeleting={isDeleting}
+      />
     </Dialog>
   )
 }

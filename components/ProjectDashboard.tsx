@@ -7,12 +7,16 @@ import AddProjectModal from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
+import { useProjectDelete } from '@/hooks/useProjectDelete'
 
 export default function ProjectDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const { isOpen, openModal, closeModal } = useProjectModal()
+  const { isDeleting, deleteProject: deleteProjectAction } = useProjectDelete(
+    (projectId) => setProjects(prev => prev.filter(p => p.id !== projectId))
+  )
 
   useEffect(() => {
     console.log('Session status:', status)
@@ -140,6 +144,9 @@ export default function ProjectDashboard() {
         consultants={consultants} 
         onAssign={assignConsultant}
         onUpdateStatus={updateProjectStatus}
+        onDelete={async (projectId) => {
+          await deleteProjectAction(projectId)
+        }}
       />
       <AddProjectModal
         isOpen={isOpen}

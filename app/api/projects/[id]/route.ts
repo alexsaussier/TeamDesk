@@ -4,6 +4,7 @@ import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
+import { Consultant } from '@/models/Consultant'
 
 // Updates a project's status and tracks who made the change
 export async function PATCH(request: Request) {
@@ -56,6 +57,35 @@ export async function PATCH(request: Request) {
     console.error('Error in PATCH /api/projects/[id]:', error)
     return NextResponse.json(
       { error: 'Internal Server Error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB()
+    const projectId = params.id
+
+    // First, remove project assignments from consultants
+    await Consultant.updateMany(
+      { assignments: projectId },
+      { $pull: { assignments: projectId } }
+    )
+
+    // Then delete the project
+    await Project.deleteOne({
+      _id: new mongoose.Types.ObjectId(projectId)
+    })
+
+    return NextResponse.json({ message: 'Project deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting project:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete project' },
       { status: 500 }
     )
   }

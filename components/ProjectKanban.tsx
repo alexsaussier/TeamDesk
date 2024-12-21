@@ -9,8 +9,9 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 interface ProjectKanbanProps {
   projects: Project[]
   consultants: Consultant[]
-  onAssign: (consultantId: string, projectId: string) => void
-  onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => void
+  onAssign: (consultantId: string, projectId: string) => Promise<void>
+  onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => Promise<void>
+  onDelete: (projectId: string) => Promise<void>
 }
 
 const columns: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
@@ -29,7 +30,7 @@ const columnHeaderColors = {
   'Completed': 'text-slate-600'
 }
 
-export default function ProjectKanban({ projects, consultants, onAssign, onUpdateStatus }: ProjectKanbanProps) {
+export default function ProjectKanban({ projects, consultants, onAssign, onUpdateStatus, onDelete }: ProjectKanbanProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleDragEnd = (result: DropResult) => {
@@ -146,6 +147,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUpdat
         onClose={() => setSelectedProject(null)}
         onAssign={onAssign}
         onUpdateStatus={onUpdateStatus}
+        onDelete={onDelete}
         columns={columns}
       />
     </>
