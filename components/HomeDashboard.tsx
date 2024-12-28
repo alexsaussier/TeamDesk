@@ -86,11 +86,13 @@ export default function HomeDashboard() {
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="text-2xl font-semibold mb-6">Current Period Performance</h2>
+        <h2 className="text-2xl font-semibold mb-6">General Team Stats</h2>
         <StatsGrid consultants={consultants} projects={projects} />
-        <div className="mt-6">
-          <UtilizationMetrics consultants={consultants} projects={projects} />
-        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Current Period Utilization</h2>
+        <UtilizationMetrics consultants={consultants} projects={projects} />
       </section>
 
       <section>

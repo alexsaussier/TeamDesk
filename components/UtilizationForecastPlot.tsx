@@ -15,6 +15,7 @@ interface UtilizationData {
   date: string
   officialUtilization: number
   expectedUtilization: number
+  target: number
 }
 
 const calculateUtilization = (
@@ -74,13 +75,15 @@ const calculateUtilization = (
 const generateUtilizationData = (consultants: Consultant[], projects: Project[]): UtilizationData[] => {
   const today = new Date()
   const data: UtilizationData[] = []
+  const target = 85
 
   console.log("Date: ", today.toISOString().split('T')[0])
   // Start with today
   data.push({
     date: today.toISOString().split('T')[0],
     officialUtilization: calculateUtilization(consultants, projects, today, false),
-    expectedUtilization: calculateUtilization(consultants, projects, today, true)
+    expectedUtilization: calculateUtilization(consultants, projects, today, true),
+    target: target
   })
   console.log("calculated data point: ", data[data.length - 1])
   console.log("--------------NEXT DATE------------------")
@@ -93,7 +96,8 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
     data.push({
       date: firstOfMonth.toISOString().split('T')[0],
       officialUtilization: calculateUtilization(consultants, projects, firstOfMonth, false),
-      expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true)
+      expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true),
+      target: target
     })
     console.log("calculated data point: ", data[data.length - 1])
     console.log("--------------NEXT DATE------------------")
@@ -126,6 +130,10 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
                 label: "Expected Utilization",
                 color: "#93c5fd",
               },
+              target: {
+                label: "Target",
+                color: "#dc2626",
+              },
             }}
             className="h-[400px]"
           >
@@ -153,7 +161,6 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
                   stroke="#2563eb"
                   name="Official Utilization" 
                   strokeWidth={2}
-                  dot={false}
                 />
                 <Line 
                   type="monotone" 
@@ -163,7 +170,14 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
                   strokeOpacity={0.5}
                   name="Expected Utilization" 
                   strokeWidth={2}
-                  dot={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="#dc2626" 
+                  strokeDasharray="3 3"
+                  name="Target"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
