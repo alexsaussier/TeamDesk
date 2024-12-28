@@ -3,9 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Consultant, Project } from '@/types'
-import UtilizationPlot from './UtilizationPlot'
+import UtilizationForecastPlot from './UtilizationForecastPlot'
 import StatsGrid from './StatsGrid'
+import { UtilizationMetrics } from './UtilizationMetrics'
 import { Spinner } from '@/components/ui/spinner'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
+import { UtilizationHistoricalChart } from './UtilizationHistoricalChart'
 
 export default function HomeDashboard() {
   const { data: session, status } = useSession()
@@ -50,6 +55,17 @@ export default function HomeDashboard() {
     fetchData()
   }, [session, status])
 
+  const metrics = calculateUtilizationMetrics(consultants, projects)
+  const historicalData = metrics.lastTwelveMonths.map((value, index) => {
+    const date = new Date()
+    date.setMonth(date.getMonth() - (11 - index))
+    return {
+      month: date.toLocaleString('default', { month: 'short' }),
+      utilization: value,
+      target: metrics.ytd.target
+    }
+  })
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
@@ -68,9 +84,24 @@ export default function HomeDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <StatsGrid consultants={consultants} projects={projects} />
-      <UtilizationPlot consultants={consultants} projects={projects} />
+    <div className="space-y-12">
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Current Period Performance</h2>
+        <StatsGrid consultants={consultants} projects={projects} />
+        <div className="mt-6">
+          <UtilizationMetrics consultants={consultants} projects={projects} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Utilization Forecast</h2>
+        <UtilizationForecastPlot consultants={consultants} projects={projects} />
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Historical Performance</h2>
+        <UtilizationHistoricalChart consultants={consultants} projects={projects} />
+      </section>
     </div>
   )
 }

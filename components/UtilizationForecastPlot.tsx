@@ -113,7 +113,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <Card className="lg:col-span-3 border-blue-100">
         <CardHeader>
-          <CardTitle>Team Utilization Forecast</CardTitle>
+          <CardTitle>Next 6 Months Forecast</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer
