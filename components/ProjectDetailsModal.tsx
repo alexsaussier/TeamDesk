@@ -214,7 +214,7 @@ export function ProjectDetailsModal({
                     const isAssigned = assignedConsultants.some(ac => 
                       ac._id === consultant._id || ac.id === consultant.id
                     );
-                    const { isAvailable, hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
+                    const { hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
                     
                     if (isAssigned) return null;
                     
