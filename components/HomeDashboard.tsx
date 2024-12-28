@@ -7,7 +7,6 @@ import UtilizationForecastPlot from './UtilizationForecastPlot'
 import StatsGrid from './StatsGrid'
 import { UtilizationMetrics } from './UtilizationMetrics'
 import { Spinner } from '@/components/ui/spinner'
-import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
 import { UtilizationHistoricalChart } from './UtilizationHistoricalChart'
 
 export default function HomeDashboard() {
