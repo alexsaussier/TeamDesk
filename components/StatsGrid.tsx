@@ -21,7 +21,6 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       return startDate <= today && (!endDate || endDate >= today)
     })
   ).length
-  const staffedPercentage = (staffedConsultants / totalConsultants) * 100
 
   const liveProjects = projects.filter(p => p.status === 'Started').length
 

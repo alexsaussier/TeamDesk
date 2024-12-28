@@ -53,17 +53,6 @@ export default function HomeDashboard() {
     fetchData()
   }, [session, status])
 
-  const metrics = calculateUtilizationMetrics(consultants, projects)
-  const historicalData = metrics.lastTwelveMonths.map((value, index) => {
-    const date = new Date()
-    date.setMonth(date.getMonth() - (11 - index))
-    return {
-      month: date.toLocaleString('default', { month: 'short' }),
-      utilization: value,
-      target: metrics.ytd.target
-    }
-  })
-
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
