@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
@@ -62,27 +62,31 @@ export async function PATCH(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     await connectDB()
     const projectId = request.url.split('/').pop()
+    const projectObjectId = new mongoose.Types.ObjectId(projectId)
 
     // First, remove project assignments from consultants
     await Consultant.updateMany(
-      { assignments: projectId },
-      { $pull: { assignments: projectId } }
+      { 'assignments.projectId': projectId },
+      { $pull: { assignments: { projectId: projectId } } }
     )
 
     // Then delete the project
-    await Project.deleteOne({
-      _id: new mongoose.Types.ObjectId(projectId)
-    })
+    await Project.findByIdAndDelete(projectObjectId)
 
-    return NextResponse.json({ message: 'Project deleted successfully' })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting project:', error)
+    console.error('Error in DELETE /api/projects/[id]:', error)
     return NextResponse.json(
-      { error: 'Failed to delete project' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     )
   }

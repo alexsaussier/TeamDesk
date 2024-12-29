@@ -47,11 +47,10 @@ export async function POST(request: Request) {
   }
 }
 
+// Get all projects
 export async function GET() {
   try {
     await connectDB()
-    console.log('Connected to MongoDB - fetching projects')
-
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -60,28 +59,32 @@ export async function GET() {
     const organizationId = session.user.organizationId
     const projects = await Project.find({ organizationId })
       .populate({
-        path: 'assignedConsultants',
+        path: 'assignedConsultants.consultantId',
         model: Consultant,
         select: 'name skills picture'
       })
 
-    console.log('Fetched projects and the assigned consultants:', projects)
+    console.log('Fetched projects and the assigned consultants:', projects[0].assignedConsultants)
 
+    // Necessary to update to object, some fields to string and assignedConsultants.
     const transformedProjects = projects.map(project => ({
       ...project.toObject(),
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
-      assignedConsultants: project.assignedConsultants.map((consultant: { _id: string; name: string; skills: string[]; picture: string }) => ({
-        id: consultant._id.toString(),
-        _id: consultant._id.toString(),
-        name: consultant.name,
-        skills: consultant.skills,
-        picture: consultant.picture
+      assignedConsultants: project.assignedConsultants.map((assignment: { 
+        consultantId: { _id: string; name: string; skills: string[]; picture: string }; 
+        percentage: number 
+      }) => ({
+        id: assignment.consultantId._id.toString(),
+        name: assignment.consultantId.name,
+        skills: assignment.consultantId.skills,
+        picture: assignment.consultantId.picture,
+        percentage: assignment.percentage
       }))
     }))
 
-    console.log('Sending response back to the client. Transformed projects:', transformedProjects)
+    console.log('Sending response back to the client. Transformed projects:', transformedProjects[0].assignedConsultants)
 
     return NextResponse.json(transformedProjects)
   } catch (error) {
