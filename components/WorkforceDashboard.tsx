@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { Consultant } from '@/types'
 import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
@@ -32,7 +31,7 @@ export default function WorkforceDashboard() {
     fetchConsultants()
   }, [])
 
-  const handleAddConsultant = async (newConsultant: Omit<Consultant, 'id'>) => {
+  const handleAddConsultant = async () => {
     try {
       await fetchConsultants() // Fetch fresh data after adding
       setIsModalOpen(false)
