@@ -7,9 +7,11 @@ import { authOptions } from '@/lib/auth'
 import { notFound } from 'next/navigation'
 import mongoose from 'mongoose'
 
+type Props = Promise<{ id: string }>
 
 
-export default async function ConsultantPage( params: {id: string} ) {
+export default async function ConsultantPage({ params }: {params: Props}) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session) return notFound()
 
@@ -17,7 +19,7 @@ export default async function ConsultantPage( params: {id: string} ) {
 
   const [consultant, projects] = await Promise.all([
     Consultant.findOne({
-      _id: params.id,
+      _id: id,
       organizationId: new mongoose.Types.ObjectId(session.user.organizationId)
     }),
     Project.find({ organizationId: session.user.organizationId })
