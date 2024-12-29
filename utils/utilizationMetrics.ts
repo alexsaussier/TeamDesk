@@ -38,7 +38,7 @@ export const calculatePeriodUtilization = (
       if (projectStart <= endDate && projectEnd >= startDate) {
         const overlapStart = projectStart > startDate ? projectStart : startDate
         const overlapEnd = projectEnd < endDate ? projectEnd : endDate
-        const assignedDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24))
+        const assignedDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) * (assignment.percentage / 100)
         totalAssignedDays += assignedDays
       }
     })

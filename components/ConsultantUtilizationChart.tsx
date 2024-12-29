@@ -36,7 +36,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
             ? projectEnd 
             : new Date(month.getFullYear(), month.getMonth() + 1, 0)
           
-          assignedDays += Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24))
+          assignedDays += Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) * (assignment.percentage / 100)
         }
       })
 
