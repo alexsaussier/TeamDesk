@@ -9,7 +9,6 @@ import SearchBar from './SearchBar'
 import { GradientButton } from "@/components/GradientButton"
 
 export default function WorkforceDashboard() {
-  const { data: session, status } = useSession()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -82,10 +81,16 @@ export default function WorkforceDashboard() {
         placeholder="Search by name or skills..."
       />
 
-      <WorkforceList 
-        consultants={filteredConsultants}
-        onConsultantDeleted={handleConsultantDeleted}
-      />
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      ) : (
+        <WorkforceList 
+          consultants={filteredConsultants}
+          onConsultantDeleted={handleConsultantDeleted}
+        />
+      )}
 
       <AddConsultantModal
         isOpen={isModalOpen}

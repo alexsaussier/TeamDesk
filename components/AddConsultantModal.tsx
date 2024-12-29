@@ -120,6 +120,11 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
               placeholder="https://example.com/avatar.jpg"
             />
           </div>
+          {error && (
+            <div className="text-sm text-red-600">
+              {error}
+            </div>
+          )}
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
