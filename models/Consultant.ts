@@ -28,6 +28,6 @@ const ConsultantSchema = new mongoose.Schema({
   }
 })
 
-ConsultantSchema.index({ name: 1 }, { unique: true })
+ConsultantSchema.index({ organizationId: 1, name: 1 }, { unique: true })
 
 export const Consultant = mongoose.models.Consultant || mongoose.model('Consultant', ConsultantSchema)

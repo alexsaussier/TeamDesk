@@ -41,7 +41,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     }
 
     fetchProjectDetails()
-  }, [])
+  }, [consultants])
 
   const handleDeleteClick = (consultant: Consultant) => {
     setSelectedConsultant(consultant)
@@ -151,12 +151,17 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           return (
             <Card 
               key={consultant._id} 
-              className="bg-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-gray-100 cursor-pointer hover:shadow-md transition-shadow relative"
               onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
-                  <span>{consultant.name}</span>
+                  <div className="flex flex-col">
+                    <span>{consultant.name}</span>
+                    <span className="text-sm font-normal text-gray-500 capitalize">
+                      {consultant.level}
+                    </span>
+                  </div>
                   <Image 
                     src={consultant.picture} 
                     alt={`${consultant.name}'s picture`} 
@@ -234,14 +239,19 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   </div>
                 </div>
               </CardContent>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute bottom-2 right-2 text-gray-400 hover:text-red-600"
-                onClick={() => handleDeleteClick(consultant)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="absolute bottom-2 right-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation() // Prevent card click when clicking delete
+                    handleDeleteClick(consultant)
+                  }}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              </div>
             </Card>
           )
         })}

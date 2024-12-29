@@ -13,26 +13,35 @@ export default function WorkforceDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+
+  const fetchConsultants = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/workforce')
+      if (!response.ok) throw new Error('Failed to fetch consultants')
+      const data = await response.json()
+      setConsultants(data)
+    } catch (error) {
+      console.error('Error fetching consultants:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    console.log('Session status:', status)
-    console.log('Session data:', session)
-    
-    if (status !== 'authenticated') return
-
-    const fetchConsultants = async () => {
-      try {
-        const response = await fetch('/api/workforce')
-        if (!response.ok) throw new Error('Failed to fetch consultants')
-        const data = await response.json()
-        setConsultants(data)
-      } catch (error) {
-        console.error('Error fetching consultants:', error)
-      }
-    }
-
     fetchConsultants()
-  }, [session, status])
+  }, [])
+
+  const handleAddConsultant = async (newConsultant: Omit<Consultant, 'id'>) => {
+    try {
+      await fetchConsultants() // Fetch fresh data after adding
+      setIsModalOpen(false)
+    } catch (error) {
+      console.error('Error in handleAddConsultant:', error)
+      throw error // Re-throw to be handled by the modal
+    }
+  }
 
   const handleConsultantDeleted = async (id: string) => {
     try {
@@ -44,31 +53,9 @@ export default function WorkforceDashboard() {
         throw new Error('Failed to delete consultant')
       }
 
-      setConsultants(prev => prev.filter(c => c._id !== id))
+      setConsultants(prev => prev.filter(c => c.id !== id))
     } catch (error) {
       console.error('Error deleting consultant:', error)
-    }
-  }
-
-  const handleAddConsultant = async (newConsultant: Omit<Consultant, 'id'>) => {
-    try {
-      const response = await fetch('/api/workforce', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newConsultant),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to add consultant')
-      }
-
-      const addedConsultant = await response.json()
-      setConsultants(prev => [...prev, addedConsultant])
-      setIsModalOpen(false)
-    } catch (error) {
-      console.error('Error adding consultant:', error)
     }
   }
 
