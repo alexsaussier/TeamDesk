@@ -151,6 +151,23 @@ export function ProjectDetailsModal({
                 </span>
               </div>
               <div>
+                <span className="text-sm font-medium">Team Size:</span>
+                <div className="grid grid-cols-3 gap-4 mt-1">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Junior:</span>
+                    <span className="ml-2">{localProject.teamSize?.junior ?? 0}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Manager:</span>
+                    <span className="ml-2">{localProject.teamSize?.manager ?? 0}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Partner:</span>
+                    <span className="ml-2">{localProject.teamSize?.partner ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+              <div>
                 <span className="text-sm font-medium">Required Skills:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {localProject.requiredSkills.map(skill => (
