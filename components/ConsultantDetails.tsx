@@ -23,7 +23,7 @@ const getCurrentProject = (consultant: Consultant | null, projects: Project[]): 
   const today = new Date()
   
   return projects.find(project => 
-    consultant.assignments.includes(project.id) &&
+    consultant.assignments.some(assignment => assignment.projectId === project.id) &&
     new Date(project.startDate) <= today &&
     new Date(project.endDate) >= today
   ) || null
@@ -35,7 +35,7 @@ const getNextProject = (consultant: Consultant | null, projects: Project[]): Pro
   
   return projects
     .filter(project => 
-      consultant.assignments.includes(project.id) &&
+      consultant.assignments.some(assignment => assignment.projectId === project.id) &&
       new Date(project.startDate) > today
     )
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0] || null
@@ -50,8 +50,8 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
   let assignedDays = 0
   const totalDays = 365
 
-  consultant.assignments.forEach(assignmentId => {
-    const project = projects.find(p => p.id === assignmentId)
+  consultant.assignments.forEach(assignment => {
+    const project = projects.find(p => p.id === assignment.projectId)
     if (!project) return
 
     const startDate = new Date(project.startDate)
@@ -59,7 +59,7 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
     if (startDate < today && endDate > twelveMonthsAgo) {
       const assignmentStart = startDate > twelveMonthsAgo ? startDate : twelveMonthsAgo
       const assignmentEnd = endDate < today ? endDate : today
-      assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
+      assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000) * (assignment.percentage / 100)
     }
   })
 
