@@ -58,8 +58,8 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     let assignedDays = 0
     const totalDays = 365
 
-    consultant.assignments.forEach(assignmentId => {
-      const project = projectDetails[assignmentId]
+    consultant.assignments.forEach(assignment => {
+      const project = projectDetails[assignment.projectId]
       if (!project) return
 
       const startDate = new Date(project.startDate)
@@ -67,7 +67,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
       if (startDate < today && endDate > twelveMonthsAgo) {
         const assignmentStart = startDate > twelveMonthsAgo ? startDate : twelveMonthsAgo
         const assignmentEnd = endDate < today ? endDate : today
-        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
+        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000) * (assignment.percentage / 100)
       }
     })
 
@@ -84,8 +84,8 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     let assignedDays = 0
     const totalDays = 90
 
-    consultant.assignments.forEach(assignmentId => {
-      const project = projectDetails[assignmentId]
+    consultant.assignments.forEach(assignment => {
+      const project = projectDetails[assignment.projectId]
       if (!project) return
 
       const startDate = new Date(project.startDate)
@@ -106,7 +106,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     if (!projectDetails || !consultant.assignments?.length) return null
     
     const today = new Date()
-    const project = projectDetails[consultant.assignments[0]]
+    const project = projectDetails[consultant.assignments[0].projectId]
     if (!project) return null
     
     const startDate = new Date(project.startDate)
@@ -119,7 +119,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     
     const today = new Date()
     return consultant.assignments
-      .map(assignmentId => projectDetails[assignmentId])
+      .map(assignment => projectDetails[assignment.projectId])
       .filter(project => {
         if (!project) return false
         return new Date(project.startDate) > today

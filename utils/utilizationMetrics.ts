@@ -28,8 +28,8 @@ export const calculatePeriodUtilization = (
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
   consultants.forEach(consultant => {
-    consultant.assignments.forEach(assignmentId => {
-      const project = projects.find(p => p.id === assignmentId)
+    consultant.assignments.forEach(assignment => {
+      const project = projects.find(p => p.id === assignment.projectId)
       if (!project || project.status !== 'Started') return
 
       const projectStart = new Date(project.startDate)
