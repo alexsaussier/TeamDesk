@@ -42,32 +42,25 @@ const calculateUtilization = (
           new Date(project.startDate) <= date && 
           new Date(project.endDate) >= date) {
 
-          console.log("analysing project: ", project.name)
-          console.log("project stauts is: ", project.status)
           // For current month's official utilization, only count 'started' projects
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
             assignedConsultants++
-            console.log("assigned consultant name: ", consultant.name)
           }
           // For future official utilization, count 'started' projects
           else if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
             assignedConsultants++
-            console.log("assigned consultant name: ", consultant.name)
-
+            
           }
           // For expected utilization, count all three states
           else if (includeExpected && ['Discussions','Started', 'Sold'].includes(project.status)) {
             assignedConsultants++
-            console.log("incremented expected utilization with project:", project.name)
-            console.log("assigned consultant name: ", consultant.name)
-
+            
           }
         }
       })
     }
   })
 
-  console.log("utilization: ", (assignedConsultants / totalConsultants) * 100)
 
   return (assignedConsultants / totalConsultants) * 100
 }
@@ -77,7 +70,6 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
   const data: UtilizationData[] = []
   const target = 85
 
-  console.log("Date: ", today.toISOString().split('T')[0])
   // Start with today
   data.push({
     date: today.toISOString().split('T')[0],
@@ -85,13 +77,11 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
     expectedUtilization: calculateUtilization(consultants, projects, today, true),
     target: target
   })
-  console.log("calculated data point: ", data[data.length - 1])
-  console.log("--------------NEXT DATE------------------")
+  
 
   // Then add first day of next 6 months
   for (let i = 1; i <= 6; i++) {
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + i, 2)
-    console.log("Date: ", firstOfMonth.toISOString().split('T')[0])
     
     data.push({
       date: firstOfMonth.toISOString().split('T')[0],
@@ -99,8 +89,7 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
       expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true),
       target: target
     })
-    console.log("calculated data point: ", data[data.length - 1])
-    console.log("--------------NEXT DATE------------------")
+    
 
   }
 

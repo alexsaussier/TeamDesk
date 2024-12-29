@@ -43,6 +43,10 @@ export const calculatePeriodUtilization = (
       }
     })
   })
+  console.log("startDate: ", startDate, " - endDate: ", endDate)
+  console.log("totalAssignedDays: ", totalAssignedDays)
+  console.log("totalConsultants: ", totalConsultants)
+  console.log("totalDays: ", totalDays)
 
   return (totalAssignedDays / (totalConsultants * totalDays)) * 100
 }
@@ -56,7 +60,7 @@ export const calculateUtilizationMetrics = (
   const startOfYear = new Date(today.getFullYear(), 0, 1)
   const startOfQuarter = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1)
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const startOfWeek = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000)
+  const startOfWeek = new Date(today.getTime() - ((today.getDay() + 6) % 7) * 24 * 60 * 60 * 1000)
 
   // Calculate historical monthly utilization
   const lastTwelveMonths = Array.from({ length: 12 }, (_, i) => {
