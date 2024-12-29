@@ -12,6 +12,11 @@ const ProjectSchema = new mongoose.Schema({
   requiredSkills: [String],
   startDate: String,
   endDate: String,
+  teamSize: {
+    junior: { type: Number, required: true, default: 0 },
+    manager: { type: Number, required: true, default: 0 },
+    partner: { type: Number, required: true, default: 0 }
+  },
   assignedConsultants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Consultant'

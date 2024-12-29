@@ -13,6 +13,12 @@ export interface Consultant {
 
 export type ProjectStatus = 'Discussions' | 'Sold' | 'Started' | 'Completed';
 
+export interface TeamSize {
+  junior: number;
+  manager: number;
+  partner: number;
+}
+
 export interface Project {
   id: string;
   organizationId: string;
@@ -21,6 +27,7 @@ export interface Project {
   requiredSkills: string[];
   startDate: string;
   endDate: string;
+  teamSize: TeamSize;
   assignedConsultants: {
     id: string;
     _id: string;
@@ -39,6 +46,17 @@ export const getNextSoldProject = (projects: Project[]): Project | null => {
   return projects
     .filter(project => 
       project.status === 'Sold' && 
+      new Date(project.startDate) > today
+    )
+    .sort((a, b) => 
+      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    )[0] || null;
+};
+
+export const getNextStartingProject = (projects: Project[]): Project | null => {
+  const today = new Date();
+  return projects
+    .filter(project => 
       new Date(project.startDate) > today
     )
     .sort((a, b) => 

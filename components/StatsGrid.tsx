@@ -1,8 +1,9 @@
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getNextSoldProject } from '@/types/index'
+import { getNextStartingProject } from '@/types/index'
 import { Users, Briefcase, ArrowRight } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
 
 interface StatsGridProps {
   consultants: Consultant[]
@@ -16,7 +17,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   const liveProjects = projects.filter(p => p.status === 'Started').length
 
 
-  const nextProject = getNextSoldProject(projects)
+  const nextProject = getNextStartingProject(projects)
 
   const router = useRouter()
 
@@ -63,9 +64,19 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
           <div className="text-xl font-bold tracking-tight">
             {nextProject ? nextProject.name : "No upcoming projects"}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {nextProject ? `Starts on ${new Date(nextProject.startDate).toLocaleDateString()}` : "\u00A0"}
-          </p>
+          {nextProject && (
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-muted-foreground">
+                Starts on {new Date(nextProject.startDate).toLocaleDateString()}
+              </p>
+              <Badge variant="secondary" className="ml-2">
+                Status: {nextProject.status}
+              </Badge>
+            </div>
+          )}
+          {!nextProject && (
+            <p className="text-xs text-muted-foreground mt-1">&nbsp;</p>
+          )}
         </CardContent>
       </Card>
 

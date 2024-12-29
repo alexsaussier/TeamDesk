@@ -19,16 +19,21 @@ interface AddProjectModalProps {
 
 const projectStatuses: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
 
-export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectModalProps) {
+export function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectModalProps) {
   const { data: session } = useSession()
   const { selectedProject } = useProjectModal()
   const [formData, setFormData] = useState({
     name: '',
     client: '',
-    requiredSkills: '',
+    requiredSkills: [] as string[],
     startDate: '',
     endDate: '',
     status: 'Discussions' as ProjectStatus,
+    teamSize: {
+      junior: 0,
+      manager: 0,
+      partner: 0
+    }
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,12 +44,13 @@ export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddP
       const newProject = {
         name: formData.name,
         client: formData.client,
-        requiredSkills: formData.requiredSkills.split(',').map(skill => skill.trim()),
+        requiredSkills: formData.requiredSkills,
         startDate: formData.startDate,
         endDate: formData.endDate,
         assignedConsultants: [],
         status: formData.status,
         organizationId: session?.user?.organizationId || '', //there should always be an organizationId to avoid collisions between organizations
+        teamSize: formData.teamSize
       }
       onAdd(newProject)
     }
@@ -52,10 +58,15 @@ export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddP
     setFormData({
       name: '',
       client: '',
-      requiredSkills: '',
+      requiredSkills: [],
       startDate: '',
       endDate: '',
       status: 'Discussions',
+      teamSize: {
+        junior: 0,
+        manager: 0,
+        partner: 0
+      }
     })
   }
 
@@ -97,7 +108,7 @@ export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddP
               <Label htmlFor="requiredSkills">Required Skills (comma-separated) *</Label>
               <Input
                 id="requiredSkills"
-                value={formData.requiredSkills}
+                value={formData.requiredSkills.join(', ')}
                 onChange={(e) => handleChange('requiredSkills', e.target.value)}
                 placeholder="e.g., Strategy, Finance, Technology"
                 required
@@ -145,6 +156,62 @@ export default function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddP
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Team Size</Label>
+                <div className="grid grid-cols-3 gap-4 mt-2">
+                  <div>
+                    <Label className="text-sm">Junior</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.teamSize.junior}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        teamSize: {
+                          ...prev.teamSize,
+                          junior: parseFloat(e.target.value)
+                        }
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Manager</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.teamSize.manager}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        teamSize: {
+                          ...prev.teamSize,
+                          manager: parseFloat(e.target.value)
+                        }
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Partner</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.teamSize.partner}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        teamSize: {
+                          ...prev.teamSize,
+                          partner: parseFloat(e.target.value)
+                        }
+                      }))}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

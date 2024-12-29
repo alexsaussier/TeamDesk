@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Project, Consultant, ProjectStatus } from '@/types'
 import ProjectKanban from './ProjectKanban'
-import AddProjectModal from './AddProjectModal'
+import { AddProjectModal } from './AddProjectModal'
 import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
