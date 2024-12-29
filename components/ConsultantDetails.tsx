@@ -15,7 +15,8 @@ import ConsultantSkillsCard from '@/components/ConsultantSkillsCard'
 import { notFound } from 'next/navigation'
 
 interface ConsultantDetailsProps {
-  consultantId: string
+  consultant: Consultant
+  projects: Project[]
 }
 
 // Helper functions
@@ -67,39 +68,8 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
   return Math.round((assignedDays / totalDays) * 100)
 }
 
-export default function ConsultantDetails({ consultantId }: ConsultantDetailsProps) {
-  const [consultant, setConsultant] = useState<Consultant | null>(null)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export default function ConsultantDetails({ consultant, projects }: ConsultantDetailsProps) {
   const router = useRouter()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [consultantRes, projectsRes] = await Promise.all([
-          fetch(`/api/workforce/${consultantId}`),
-          fetch('/api/projects')
-        ])
-
-        if (!consultantRes.ok) throw new Error('Failed to fetch consultant')
-        if (!projectsRes.ok) throw new Error('Failed to fetch projects')
-
-        const consultantData = await consultantRes.json()
-        const projectsData = await projectsRes.json()
-
-        setConsultant(consultantData)
-        setProjects(projectsData)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [consultantId])
-
-  if (!consultant && !isLoading) return notFound()
 
   return (
     <div className="space-y-6">
