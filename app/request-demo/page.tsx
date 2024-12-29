@@ -55,7 +55,7 @@ export default function RequestDemo() {
         <div className="max-w-md mx-auto text-center p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Thank You!</h1>
           <p className="text-gray-600">
-            We've received your demo request and will be in touch shortly.
+            We have received your demo request and will be in touch shortly.
           </p>
         </div>
       </div>
