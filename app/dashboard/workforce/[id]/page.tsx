@@ -7,11 +7,9 @@ import { authOptions } from '@/lib/auth'
 import { notFound } from 'next/navigation'
 import mongoose from 'mongoose'
 
-type Props = {
-  params: { id: string }
-}
 
-export default async function ConsultantPage({ params }: Props) {
+
+export default async function ConsultantPage( params: {id: string} ) {
   const session = await getServerSession(authOptions)
   if (!session) return notFound()
 
