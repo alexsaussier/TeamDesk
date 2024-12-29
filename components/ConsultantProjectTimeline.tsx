@@ -12,7 +12,7 @@ export default function ConsultantProjectTimeline({ consultant, projects }: Cons
     if (!consultant || !projects.length) return []
     
     return consultant.assignments
-      .map(assignmentId => projects.find(p => p.id === assignmentId))
+      .map(assignment => projects.find(p => p.id === assignment.projectId))
       .filter((project): project is Project => project !== undefined)
       .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
   }
