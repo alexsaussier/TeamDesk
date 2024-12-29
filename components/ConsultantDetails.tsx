@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from 'react'
 import { Consultant, Project } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +11,6 @@ import { useRouter } from 'next/navigation'
 import ConsultantUtilizationChart from '@/components/ConsultantUtilizationChart'
 import ConsultantProjectTimeline from '@/components/ConsultantProjectTimeline'
 import ConsultantSkillsCard from '@/components/ConsultantSkillsCard'
-import { notFound } from 'next/navigation'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
