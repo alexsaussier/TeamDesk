@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   try {
     await connectDB()
 
@@ -18,7 +18,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const consultantId = await params.id
+    const consultantId = params.id
     if (!mongoose.Types.ObjectId.isValid(consultantId)) {
       return NextResponse.json(
         { error: 'Invalid consultant ID' },
