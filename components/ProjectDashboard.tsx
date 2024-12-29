@@ -48,7 +48,7 @@ export default function ProjectDashboard() {
     fetchData()
   }, [session, status])
 
-  const assignConsultant = async (consultantId: string, projectId: string) => {
+  const assignConsultant = async (consultantId: string, projectId: string, percentage: number = 100) => {
     try {
       console.log('Making API request with:', { consultantId, projectId });
       
@@ -57,7 +57,7 @@ export default function ProjectDashboard() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ consultantId }),
+        body: JSON.stringify({ consultantId, percentage }),
       })
 
       if (!response.ok) {

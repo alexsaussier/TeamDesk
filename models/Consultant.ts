@@ -7,19 +7,25 @@ const ConsultantSchema = new mongoose.Schema({
     ref: 'Organization'
   },
   name: { type: String, required: true },
+  level: { 
+    type: String, 
+    enum: ['junior', 'manager', 'partner'],
+    required: true,
+    default: 'junior'
+  },
   skills: [String],
   assignments: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Project'
+    projectId: { type: String, required: true },
+    percentage: { type: Number, required: true, min: 0, max: 100, default: 100 }
   }],
-  picture: { type: String, default: '/default-avatar.png' },
+  picture: String,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'User'
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+  }
 })
 
 ConsultantSchema.index({ name: 1 }, { unique: true })

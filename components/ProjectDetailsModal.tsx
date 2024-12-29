@@ -16,7 +16,7 @@ interface ProjectDetailsModalProps {
   allProjects: Project[]
   isOpen: boolean
   onClose: () => void
-  onAssign: (consultantId: string, projectId: string) => void
+  onAssign: (consultantId: string, projectId: string, percentage: number) => void
   onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => void
   columns: ProjectStatus[]
   onDelete: (projectId: string) => void
@@ -52,15 +52,9 @@ export function ProjectDetailsModal({
 
   const handleAssign = async (consultantId: string) => {
     try {
-      console.log('Assigning consultant:', {
-        consultantId,
-        projectId: localProject.id,
-        // Log the full objects to inspect
-        consultant: consultants.find(c => c._id === consultantId || c.id === consultantId),
-        project: localProject
-      })
+      const percentage = 100; // You might want to add a UI input for this
       setIsAssigning(true)
-      await onAssign(consultantId, localProject.id)
+      await onAssign(consultantId, localProject.id, percentage)
       
       if (localProject) {
         setLocalProject(prev => {
@@ -69,7 +63,7 @@ export function ProjectDetailsModal({
           if (!newConsultant) return prev
           return {
             ...prev,
-            assignedConsultants: [...prev.assignedConsultants, newConsultant]
+            assignedConsultants: [...prev.assignedConsultants, { ...newConsultant, percentage }]
           }
         })
       }

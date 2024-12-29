@@ -2,53 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { checkConsultantAvailability } from '@/utils/consultantAvailability'
 import mongoose from 'mongoose'
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
+    const body = await request.json()
+    const { consultantId, percentage } = body
+    const projectId = request.url.split('/projects/')[1].split('/assign')[0]
 
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get projectId from URL using proper URL parsing
-    const url = new URL(request.url)
-    const projectId = url.pathname.split('/projects/')[1].split('/assign')[0]
-    const { consultantId } = await request.json()
-
-    console.log('Received IDs:', { projectId, consultantId })
-
-    // Validate MongoDB ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(projectId) || !mongoose.Types.ObjectId.isValid(consultantId)) {
-      return NextResponse.json(
-        { error: 'Invalid ID format' },
-        { status: 400 }
-      )
-    }
-
-    // Convert string IDs to ObjectId
     const projectObjectId = new mongoose.Types.ObjectId(projectId)
     const consultantObjectId = new mongoose.Types.ObjectId(consultantId)
 
-    // Get project and consultant without populate
-    const project = await Project.findById(projectObjectId)
-    const consultant = await Consultant.findById(consultantObjectId)
+    const [consultant, project] = await Promise.all([
+      Consultant.findById(consultantObjectId),
+      Project.findById(projectObjectId)
+    ])
 
-    if (!project || !consultant) {
+    if (!consultant || !project) {
       return NextResponse.json(
-        { error: 'Project or consultant not found' },
+        { error: 'Consultant or Project not found' },
         { status: 404 }
       )
     }
 
     // Get all projects for availability check
     const allProjects = await Project.find({
-      _id: { $in: consultant.assignments }
+      _id: { $in: consultant.assignments.map((a: { projectId: string }) => a.projectId) }
     })
     
     const { isAvailable, hasConflicts } = checkConsultantAvailability(
@@ -76,13 +57,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update both documents
+    // Update both documents with percentage information
     await Promise.all([
       Project.findByIdAndUpdate(projectObjectId, {
-        $addToSet: { assignedConsultants: consultantObjectId }
+        $push: { 
+          assignedConsultants: {
+            consultantId: consultantObjectId,
+            percentage
+          }
+        }
       }),
       Consultant.findByIdAndUpdate(consultantObjectId, {
-        $addToSet: { assignments: projectObjectId }
+        $push: { 
+          assignments: {
+            projectId: projectObjectId,
+            percentage
+          }
+        }
       })
     ])
 

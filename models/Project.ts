@@ -18,8 +18,18 @@ const ProjectSchema = new mongoose.Schema({
     partner: { type: Number, required: true, default: 0 }
   },
   assignedConsultants: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Consultant'
+    consultantId: { 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Consultant',
+      required: true
+    },
+    percentage: { 
+      type: Number, 
+      required: true,
+      min: 0,
+      max: 100,
+      default: 100
+    }
   }],
   status: { 
     type: String, 

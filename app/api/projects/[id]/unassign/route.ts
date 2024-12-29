@@ -1,35 +1,34 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB()
+    const body = await request.json()
+    const { consultantId } = body
+    const projectId = request.url.split('/projects/')[1].split('/unassign')[0]
 
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { consultantId } = await request.json()
-    const urlParts = request.url.split('/')
-    const projectId = urlParts[urlParts.length - 2] // Get the ID before 'unassign'
-
-    if (!mongoose.Types.ObjectId.isValid(projectId)) {
-      return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
-    }
+    const projectObjectId = new mongoose.Types.ObjectId(projectId)
+    const consultantObjectId = new mongoose.Types.ObjectId(consultantId)
 
     // Update both documents
     await Promise.all([
-      Project.findByIdAndUpdate(projectId, {
-        $pull: { assignedConsultants: consultantId }
+      Project.findByIdAndUpdate(projectObjectId, {
+        $pull: { 
+          assignedConsultants: { 
+            consultantId: consultantObjectId 
+          }
+        }
       }),
-      Consultant.findByIdAndUpdate(consultantId, {
-        $pull: { assignments: projectId }
+      Consultant.findByIdAndUpdate(consultantObjectId, {
+        $pull: { 
+          assignments: { 
+            projectId: projectObjectId 
+          }
+        }
       })
     ])
 
