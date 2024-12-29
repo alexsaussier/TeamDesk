@@ -26,7 +26,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <Button size="lg" asChild>
-              <Link href="/auth/signup">Get Started</Link>
+              <Link href="/request-demo">Request a Demo</Link>
             </Button>
           </div>
         </div>
