@@ -6,10 +6,7 @@ import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 
 // Get a single consultant by ID
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
+export async function GET(request: Request) {
   try {
     await connectDB()
 
@@ -18,16 +15,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const consultantId = params.id
-    if (!mongoose.Types.ObjectId.isValid(consultantId)) {
-      return NextResponse.json(
-        { error: 'Invalid consultant ID' },
-        { status: 400 }
-      )
-    }
+    const id = request.url.split('/').pop()
+    
 
     const consultant = await Consultant.findOne({
-      _id: new mongoose.Types.ObjectId(consultantId),
+      _id: new mongoose.Types.ObjectId(id),
       organizationId: new mongoose.Types.ObjectId(session.user.organizationId)
     })
 
