@@ -29,7 +29,7 @@ export const calculatePeriodUtilization = (
 
   consultants.forEach(consultant => {
     consultant.assignments.forEach(assignment => {
-      const project = projects.find(p => p.id === assignment.projectId)
+      const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
       if (!project || project.status !== 'Started') return
 
       const projectStart = new Date(project.startDate)
@@ -43,10 +43,10 @@ export const calculatePeriodUtilization = (
       }
     })
   })
-  console.log("startDate: ", startDate, " - endDate: ", endDate)
-  console.log("totalAssignedDays: ", totalAssignedDays)
-  console.log("totalConsultants: ", totalConsultants)
-  console.log("totalDays: ", totalDays)
+  //console.log("startDate: ", startDate, " - endDate: ", endDate)
+  //console.log("totalAssignedDays: ", totalAssignedDays)
+  //console.log("totalConsultants: ", totalConsultants)
+  //console.log("totalDays: ", totalDays)
 
   return (totalAssignedDays / (totalConsultants * totalDays)) * 100
 }

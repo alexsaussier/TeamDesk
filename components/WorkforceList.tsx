@@ -59,7 +59,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
     const totalDays = 365
 
     consultant.assignments.forEach(assignment => {
-      const project = projectDetails[assignment.projectId]
+      const project = projectDetails[assignment.projectId.toString()]
       if (!project) return
 
       const startDate = new Date(project.startDate)

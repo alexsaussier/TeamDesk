@@ -12,7 +12,7 @@ export default function ConsultantSkillsCard({ consultant, projects }: Consultan
     if (!consultant || !projects.length) return 0
     
     const skillProjects = projects.filter(project => 
-      project.assignedConsultants.some(ac => ac.id === consultant._id) &&
+      project.assignedConsultants.some(ac => ac.id.toString() === consultant._id.toString()) &&
       project.requiredSkills.includes(skill)
     )
 
@@ -23,7 +23,7 @@ export default function ConsultantSkillsCard({ consultant, projects }: Consultan
     if (!consultant || !projects.length) return null
     
     const skillProjects = projects.filter(project => 
-      project.assignedConsultants.some(ac => ac.id === consultant._id) &&
+      project.assignedConsultants.some(ac => ac.id.toString() === consultant._id.toString()) &&
       project.requiredSkills.includes(skill)
     )
 
@@ -71,7 +71,7 @@ export default function ConsultantSkillsCard({ consultant, projects }: Consultan
             <h3 className="text-sm font-medium text-muted-foreground mb-3">Project Experience</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {projects
-                .filter(project => project.assignedConsultants.some(ac => ac.id === consultant?._id))
+                .filter(project => project.assignedConsultants.some(ac => ac.id.toString() === consultant?._id.toString()))
                 .map(project => (
                   <Card key={project.id}>
                     <CardContent className="pt-4">

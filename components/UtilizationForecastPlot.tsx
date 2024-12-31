@@ -5,6 +5,7 @@ import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import ConsultantUtilizationChart from './ConsultantUtilizationChart'
 
 interface UtilizationPlotProps {
   consultants: Consultant[]
@@ -33,10 +34,8 @@ const calculateUtilization = (
   //NEED TO CHANGE THIS METHOD - ITERATE BY PROJECT AND INCREMENT FTEE NEED, INSTEAD OF ITERATING CONSULTANTS
   consultants.forEach(consultant => {
     if (consultant.assignments) {
-      consultant.assignments.forEach(assignmentId => {
-        const project = projects.find(p => p.id.toString() === assignmentId.toString())
-        
-        
+      consultant.assignments.forEach(assignment => {
+        const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
         
         if (project && 
           new Date(project.startDate) <= date && 
@@ -82,13 +81,19 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
   // Then add first day of next 6 months
   for (let i = 1; i <= 6; i++) {
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + i, 2)
+    const officialUtilization = calculateUtilization(consultants, projects, firstOfMonth, false)
+    const expectedUtilization = calculateUtilization(consultants, projects, firstOfMonth, true)
     
     data.push({
       date: firstOfMonth.toISOString().split('T')[0],
-      officialUtilization: calculateUtilization(consultants, projects, firstOfMonth, false),
-      expectedUtilization: calculateUtilization(consultants, projects, firstOfMonth, true),
+      officialUtilization: officialUtilization,
+      expectedUtilization: expectedUtilization,
       target: target
     })
+    console.log("generating utilization data with for ", firstOfMonth)
+    console.log("officialUtilization: ", officialUtilization)
+    console.log("expectedUtilization: ", expectedUtilization)
+
     
 
   }
@@ -97,6 +102,7 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
 }
 
 export default function UtilizationPlot({ consultants, projects }: UtilizationPlotProps) {
+  console.log("generating utilization data with consultants: ", consultants, "\n and projects: ", projects)
   const utilizationData = useMemo(() => generateUtilizationData(consultants, projects), [
     JSON.stringify(consultants),
     JSON.stringify(projects)

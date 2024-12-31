@@ -21,7 +21,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
       let assignedDays = 0
 
       consultant.assignments.forEach(assignment => {
-        const project = projects.find(p => p.id === assignment.projectId)
+        const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
         if (!project) return
 
         const projectStart = new Date(project.startDate)
