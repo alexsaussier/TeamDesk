@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { checkConsultantAvailability } from '@/utils/consultantAvailability'
 import { Spinner } from '@/components/ui/spinner'
-import { Trash2, MinusCircle, AlertTriangle } from 'lucide-react'
+import { Trash2, MinusCircle, AlertTriangle, ClipboardList, Users, LayoutGrid, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteProjectModal from './DeleteProjectModal'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -124,77 +124,93 @@ export function ProjectDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{localProject.name}</DialogTitle>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-xl font-semibold">{localProject.name}</DialogTitle>
+          <p className="text-muted-foreground mt-1">{localProject.client}</p>
         </DialogHeader>
 
-        <div className="grid gap-6">
-          {/* Project Details Section */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Project Details</h4>
-            <div className="grid gap-2">
-              <div>
-                <span className="text-sm font-medium">Client:</span>
-                <span className="text-sm ml-2">{localProject.client}</span>
-              </div>
-              <div>
-                <span className="text-sm font-medium">Timeline:</span>
-                <span className="text-sm ml-2">
-                  {new Date(localProject.startDate).toLocaleDateString()} - 
-                  {new Date(localProject.endDate).toLocaleDateString()}
+        <div className="grid gap-8 overflow-y-auto pr-2">
+          {/* Project Details Card */}
+          <div className="bg-card rounded-lg border p-4">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              Project Details
+            </h3>
+            <div className="grid gap-4">
+              {/* Timeline Section */}
+              <div className="bg-sky-50 rounded-lg p-4">
+                <span className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4" />
+                  Timeline
                 </span>
-              </div>
-              <div>
-                <span className="text-sm font-medium">Team Size:</span>
-                <div className="grid grid-cols-3 gap-4 mt-1">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Junior:</span>
-                    <span className="ml-2">{localProject.teamSize?.junior ?? 0}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Manager:</span>
-                    <span className="ml-2">{localProject.teamSize?.manager ?? 0}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Partner:</span>
-                    <span className="ml-2">{localProject.teamSize?.partner ?? 0}</span>
-                  </div>
+                <div className="flex items-center gap-2 font-medium">
+                  <span>{new Date(localProject.startDate).toLocaleDateString()}</span>
+                  <span>-</span>
+                  <span>{new Date(localProject.endDate).toLocaleDateString()}</span>
                 </div>
               </div>
-              <div>
-                <span className="text-sm font-medium">Required Skills:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
+              
+              {/* Team Size Section */}
+              <div className="bg-sky-50 rounded-lg p-4">
+                <span className="text-sm text-muted-foreground block mb-2">Team Size:</span>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { label: 'Junior', value: localProject.teamSize?.junior ?? 0 },
+                    { label: 'Manager', value: localProject.teamSize?.manager ?? 0 },
+                    { label: 'Partner', value: localProject.teamSize?.partner ?? 0 }
+                  ].map(({ label, value }) => (
+                    <div key={label} className="bg-background rounded-md p-3">
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="text-2xl font-semibold">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Required Skills Section */}
+              <div className="bg-sky-50 rounded-lg p-4">
+                <span className="text-sm text-muted-foreground block mb-2">Required Skills:</span>
+                <div className="flex flex-wrap gap-1.5">
                   {localProject.requiredSkills.map(skill => (
-                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                    <Badge key={skill} variant="secondary" className="px-3 py-1">
+                      {skill}
+                    </Badge>
                   ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Team Section */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Project Team</h4>
-            <div className="grid gap-2">
+          {/* Project Team Card */}
+          <div className="bg-card rounded-lg border p-4">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              Project Team
+            </h3>
+            <div className="grid gap-2 mb-6">
               {assignedConsultants.length > 0 ? (
                 assignedConsultants.map(consultant => (
                   <div 
                     key={consultant._id || consultant.id}
-                    className="flex items-center gap-2 text-sm bg-secondary/20 rounded-md p-2"
+                    className="flex items-center gap-3 bg-secondary/10 rounded-lg p-3 hover:bg-secondary/20 transition-colors"
                   >
-                    <span className="h-2 w-2 rounded-full bg-secondary"></span>
-                    <span>{consultant.name}</span>
-                    {consultant.skills && consultant.skills.length > 0 && (
-                      <span className="text-muted-foreground ml-auto">
-                        {consultant.skills.slice(0, 2).join(', ')}
-                        {consultant.skills.length > 2 && '...'}
-                      </span>
-                    )}
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      {consultant.name.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{consultant.name}</p>
+                      {consultant.skills && (
+                        <p className="text-xs text-muted-foreground">
+                          {consultant.skills.slice(0, 2).join(', ')}
+                          {consultant.skills.length > 2 && '...'}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-4 w-4 ml-2 text-gray-400 hover:text-red-600"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleUnassign(consultant._id || consultant.id)
@@ -205,91 +221,95 @@ export function ProjectDetailsModal({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No team members assigned yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No team members assigned yet
+                </p>
               )}
             </div>
-          </div>
 
-          {/* Actions Section */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-            <div className="flex flex-col gap-2">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Assign Team Members
-                {isAssigning && <Spinner className="ml-2 inline-block h-4 w-4" />}
-              </h4>
-              <Select onValueChange={handleAssign} disabled={isAssigning}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Add team member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {consultants.map(consultant => {
-                    const isAssigned = assignedConsultants.some(ac => 
-                      ac._id === consultant._id || ac.id === consultant.id
-                    );
-                    const { hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
-                    
-                    if (isAssigned) return null;
-                    
-                    return (
-                      <SelectItem 
-                        key={consultant._id || consultant.id} 
-                        value={consultant._id || consultant.id}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          {consultant.name}
-                          {hasConflicts && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Warning: This consultant has overlapping project assignments</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </div>
+            {/* Actions Section */}
+            <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t">
+              <div>
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  Assign Team Members
+                  {isAssigning && <Spinner className="h-4 w-4" />}
+                </h4>
+                <Select onValueChange={handleAssign} disabled={isAssigning}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Add team member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {consultants.map(consultant => {
+                      const isAssigned = assignedConsultants.some(ac => 
+                        ac._id === consultant._id || ac.id === consultant.id
+                      );
+                      const { hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
+                      
+                      if (isAssigned) return null;
+                      
+                      return (
+                        <SelectItem 
+                          key={consultant._id || consultant.id} 
+                          value={consultant._id || consultant.id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            {consultant.name}
+                            {hasConflicts && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Warning: This consultant has overlapping project assignments</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  Update Status
+                  {isUpdatingStatus && <Spinner className="h-4 w-4" />}
+                </h4>
+                <Select 
+                  value={localProject.status} 
+                  onValueChange={handleStatusChange}
+                  disabled={isUpdatingStatus}
+                >
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {columns.map(status => (
+                      <SelectItem key={status} value={status}>
+                        {status}
                       </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Update Status
-                {isUpdatingStatus && <Spinner className="ml-2 inline-block h-4 w-4" />}
-              </h4>
-              <Select 
-                value={localProject.status} 
-                onValueChange={handleStatusChange}
-                disabled={isUpdatingStatus}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {columns.map(status => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          {/* Delete Button */}
+          <div className="flex justify-end">
             <Button
               variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-red-600"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive"
               onClick={() => setDeleteModalOpen(true)}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Project
             </Button>
           </div>
         </div>
