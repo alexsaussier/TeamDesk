@@ -54,7 +54,7 @@ export const calculatePeriodUtilization = (
 export const calculateUtilizationMetrics = (
   consultants: Consultant[],
   projects: Project[],
-  targetUtilization: number = 85 // Default target
+  targetUtilization: number = 75 // Default target
 ): UtilizationPeriods => {
   const today = new Date()
   const startOfYear = new Date(today.getFullYear(), 0, 1)

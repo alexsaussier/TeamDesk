@@ -132,6 +132,8 @@ export default function TimelineDashboard() {
         isOpen={isOpen}
         onClose={closeModal}
         onAdd={handleAddProject}
+        consultants={consultants}
+        allProjects={projects}
       />
     </div>
   )

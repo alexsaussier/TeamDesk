@@ -187,6 +187,8 @@ export default function ProjectDashboard() {
         isOpen={isOpen}
         onClose={closeModal}
         onAdd={handleAddProject}
+        consultants={consultants}
+        allProjects={projects}
       />
     </div>
   )

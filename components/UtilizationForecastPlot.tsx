@@ -66,7 +66,7 @@ const calculateUtilization = (
 const generateUtilizationData = (consultants: Consultant[], projects: Project[]): UtilizationData[] => {
   const today = new Date()
   const data: UtilizationData[] = []
-  const target = 85
+  const target = 75
 
   // Start with today
   data.push({
