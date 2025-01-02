@@ -25,7 +25,7 @@ export function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectMo
   const [formData, setFormData] = useState({
     name: '',
     client: '',
-    requiredSkills: [] as string[],
+    requiredSkills: '',
     startDate: '',
     endDate: '',
     status: 'Discussions' as ProjectStatus,
@@ -44,13 +44,20 @@ export function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectMo
       const newProject = {
         name: formData.name,
         client: formData.client,
-        requiredSkills: formData.requiredSkills,
+        requiredSkills: formData.requiredSkills
+          .split(',')
+          .map(skill => skill.trim())
+          .filter(Boolean),
         startDate: formData.startDate,
         endDate: formData.endDate,
         assignedConsultants: [],
         status: formData.status,
-        organizationId: session?.user?.organizationId || '', //there should always be an organizationId to avoid collisions between organizations
-        teamSize: formData.teamSize
+        organizationId: session?.user?.organizationId || '',
+        teamSize: {
+          junior: Number(formData.teamSize.junior) || 0,
+          manager: Number(formData.teamSize.manager) || 0,
+          partner: Number(formData.teamSize.partner) || 0
+        }
       }
       onAdd(newProject)
     }
@@ -58,7 +65,7 @@ export function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectMo
     setFormData({
       name: '',
       client: '',
-      requiredSkills: [],
+      requiredSkills: '',
       startDate: '',
       endDate: '',
       status: 'Discussions',
@@ -108,7 +115,7 @@ export function AddProjectModal({ isOpen, onClose, onAdd, onEdit }: AddProjectMo
               <Label htmlFor="requiredSkills">Required Skills (comma-separated) *</Label>
               <Input
                 id="requiredSkills"
-                value={formData.requiredSkills.join(', ')}
+                value={formData.requiredSkills}
                 onChange={(e) => handleChange('requiredSkills', e.target.value)}
                 placeholder="e.g., Strategy, Finance, Technology"
                 required

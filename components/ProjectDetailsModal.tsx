@@ -47,6 +47,7 @@ export function ProjectDetailsModal({
 
   if (!localProject) return null
 
+  console.log("selected project", localProject)
   // Check if assignedConsultants is an array of Consultants (PopulatedProject) or strings (Project)
   const assignedConsultants = localProject.assignedConsultants
 

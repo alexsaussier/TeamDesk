@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const organizationId = session.user.organizationId
 
     const body = await request.json()
-    const { name, client, requiredSkills, startDate, endDate, status, assignedConsultants } = body
+    const { name, client, requiredSkills, startDate, endDate, status, assignedConsultants, teamSize } = body
 
     const newProject = new Project({
       organizationId,
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       requiredSkills,
       startDate,
       endDate,
+      teamSize,
       assignedConsultants: assignedConsultants || [],
       status: status || 'Discussions',
       updatedBy: userId,

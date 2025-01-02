@@ -31,17 +31,10 @@ const getProjectMonths = (projects: Project[]): string[] => {
   const today = new Date()
   today.setDate(1) // Set to first day of current month
   
-  const endDates = projects.map(project => new Date(project.endDate))
-  const minDate = today
-  const maxDate = new Date(Math.max(...endDates.map(date => date.getTime())))
+  const futureDate = new Date(today)
+  futureDate.setMonth(today.getMonth() + 11) // Add 11 months to show a total of 12 months
   
-  if (maxDate < today) {
-    const futureDate = new Date(today)
-    futureDate.setMonth(today.getMonth() + 11)
-    return getMonthsBetweenDates(today, futureDate)
-  }
-  
-  return getMonthsBetweenDates(minDate, maxDate)
+  return getMonthsBetweenDates(today, futureDate)
 }
 
 const isProjectActiveInMonth = (project: Project, month: string): boolean => {
