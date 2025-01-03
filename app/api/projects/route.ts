@@ -62,7 +62,7 @@ export async function GET() {
       .populate({
         path: 'assignedConsultants.consultantId',
         model: Consultant,
-        select: 'name skills picture'
+        select: 'name skills picture level'
       })
 
     console.log('Fetched projects and the assigned consultants:', projects[0].assignedConsultants)
@@ -74,14 +74,15 @@ export async function GET() {
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
       assignedConsultants: project.assignedConsultants.map((assignment: { 
-        consultantId: { _id: string; name: string; skills: string[]; picture: string }; 
+        consultantId: { _id: string; name: string; skills: string[]; picture: string; level: string }; 
         percentage: number 
       }) => ({
         id: assignment.consultantId._id.toString(),
         name: assignment.consultantId.name,
         skills: assignment.consultantId.skills,
         picture: assignment.consultantId.picture,
-        percentage: assignment.percentage
+        percentage: assignment.percentage,
+        level: assignment.consultantId.level,
       }))
     }))
 

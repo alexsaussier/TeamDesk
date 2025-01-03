@@ -43,6 +43,7 @@ export interface Project {
     skills: string[];
     picture: string;
     percentage: number;
+    level: ConsultantLevel;
   }[];
   status: ProjectStatus;
   createdAt: string;

@@ -64,7 +64,11 @@ export function ProjectDetailsModal({
           if (!newConsultant) return prev
           return {
             ...prev,
-            assignedConsultants: [...prev.assignedConsultants, { ...newConsultant, percentage }]
+            assignedConsultants: [...prev.assignedConsultants, { 
+              ...newConsultant, 
+              percentage,
+              level: newConsultant.level
+            }]
           }
         })
       }
@@ -170,7 +174,7 @@ export function ProjectDetailsModal({
 
               {/* Required Skills Section */}
               <div className="bg-sky-50 rounded-lg p-4">
-                <span className="text-sm text-muted-foreground block mb-2">Required Skills:</span>
+                <span className="text-sm text-muted-foreground block mb-2">Needed Skills:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {localProject.requiredSkills.map(skill => (
                     <Badge key={skill} variant="secondary" className="px-3 py-1">
@@ -195,17 +199,22 @@ export function ProjectDetailsModal({
                     key={consultant._id || consultant.id}
                     className="flex items-center gap-3 bg-secondary/10 rounded-lg p-3 hover:bg-secondary/20 transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      {consultant.name.charAt(0)}
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                      {consultant.picture ? (
+                        <img 
+                          src={consultant.picture} 
+                          alt={consultant.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span>{consultant.name.charAt(0)}</span>
+                      )}
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{consultant.name}</p>
-                      {consultant.skills && (
-                        <p className="text-xs text-muted-foreground">
-                          {consultant.skills.slice(0, 2).join(', ')}
-                          {consultant.skills.length > 2 && '...'}
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {consultant.level}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
