@@ -27,7 +27,7 @@ const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   return months
 }
 
-const getProjectMonths = (projects: Project[]): string[] => {
+const getProjectMonths = (): string[] => {
   const today = new Date()
   today.setDate(1) // Set to first day of current month
   
@@ -74,7 +74,7 @@ export default function Timeline({ projects, consultants, columns, onDelete, onU
   const sortedProjects = [...projects].sort((a, b) => 
     new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   )
-  const months = getProjectMonths(sortedProjects)
+  const months = getProjectMonths()
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleAssign = async (consultantId: string, projectId: string) => {

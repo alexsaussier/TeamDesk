@@ -48,7 +48,7 @@ export function AddProjectModal({
     }
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  {/*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (selectedProject) {
       onEdit?.(selectedProject)
@@ -68,7 +68,7 @@ export function AddProjectModal({
         teamSize: formData.teamSize
       }
       onAdd(newProject)
-    }
+    }}
     // Reset form
     setFormData({
       name: '',
@@ -83,7 +83,7 @@ export function AddProjectModal({
         partner: 0
       }
     })
-  }
+  */}
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))

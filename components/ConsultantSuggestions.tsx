@@ -31,7 +31,7 @@ interface AssignmentCounts {
   }
 }
 
-function ConsultantCard({ consultant, matchScore, skillsMatch, skillsMissing, isAvailable, onAssign }: ConsultantSuggestionProps & { onAssign: (id: string) => void }) {
+function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, onAssign }: ConsultantSuggestionProps & { onAssign: (id: string) => void }) {
   return (
     <div className="border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -164,7 +164,7 @@ export default function ConsultantSuggestions({
     <div className="space-y-6">
       {Object.entries(projectRequirements.teamSize)
         .filter(([_, count]) => count > 0)
-        .map(([level, count]) => (
+        .map(([level]) => (
           <div key={level} className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium capitalize">
