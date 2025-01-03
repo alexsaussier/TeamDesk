@@ -163,7 +163,7 @@ export default function ConsultantSuggestions({
   return (
     <div className="space-y-6">
       {Object.entries(projectRequirements.teamSize)
-        .filter(([_, count]) => count > 0)
+        .filter(([, count]) => count > 0)
         .map(([level]) => (
           <div key={level} className="space-y-3">
             <div className="flex items-center justify-between">

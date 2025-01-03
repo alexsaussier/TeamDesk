@@ -242,7 +242,7 @@ export default function LandingPage() {
                   Team & Skills Visualization
                 </h3>
                 <p className="text-gray-600">
-                  Get a comprehensive view of your team's perfromance, skills and availabilities.
+                  Get a comprehensive view of your team&apos;s perfromance, skills and availabilities.
                   Identify gaps and opportunities in your talent pool.
                 </p>
                 <ul className="space-y-2">

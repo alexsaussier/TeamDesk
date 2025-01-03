@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import ConsultantSuggestions from './ConsultantSuggestions'
 import { useSession } from 'next-auth/react'
-import { useProjectModal } from '@/hooks/useProjectModal'
+//import { useProjectModal } from '@/hooks/useProjectModal'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -26,12 +26,10 @@ export function AddProjectModal({
   isOpen, 
   onClose, 
   onAdd, 
-  onEdit,
   consultants,
   allProjects 
 }: AddProjectModalProps) {
   const { data: session } = useSession()
-  const { selectedProject } = useProjectModal()
   const [step, setStep] = useState(1)
   const [selectedConsultants, setSelectedConsultants] = useState<string[]>([])
   const [formData, setFormData] = useState({
