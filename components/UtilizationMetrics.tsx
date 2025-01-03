@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Consultant, Project } from '@/types'
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState, useMemo } from 'react'
 
 interface UtilizationMetricsProps {
   consultants: Consultant[]
@@ -9,39 +11,100 @@ interface UtilizationMetricsProps {
 }
 
 export function UtilizationMetrics({ consultants, projects }: UtilizationMetricsProps) {
-  const metrics = calculateUtilizationMetrics(consultants, projects)
+  const [selectedLevel, setSelectedLevel] = useState<string>('all')
+
+  // Get unique consultant levels
+  const consultantLevels = useMemo(() => {
+    const levels = new Set(consultants.map(c => c.level))
+    return Array.from(levels)
+  }, [consultants])
+
+  // Filter consultants based on selected level
+  const filteredConsultants = useMemo(() => {
+    if (selectedLevel === 'all') return consultants
+    return consultants.filter(c => c.level === selectedLevel)
+  }, [consultants, selectedLevel])
+
+  const metrics = calculateUtilizationMetrics(filteredConsultants, projects)
   const today = new Date()
   const startOfWeek = new Date(today.getTime() - ((today.getDay() || 7) - 1) * 24 * 60 * 60 * 1000) //To make it start on Monday
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   
   const periods = [
     { 
-      label: `Week: ${startOfWeek.getDate()} to ${today.getDate()} ${startOfWeek.toLocaleString('default', { month: 'long' })}`, 
+      id: 'week',
+      label: (
+        <div>
+          <div>This week</div>
+          <div className="text-xs italic text-muted-foreground">
+            {startOfWeek.toLocaleString('default', { month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+      ),
       ...metrics.wtd 
     },
     { 
-      label: `Month: ${startOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}`, 
+      id: 'month',
+      label: (
+        <div>
+          <div>Month to date</div>
+          <div className="text-xs italic text-muted-foreground">
+            {startOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </div>
+        </div>
+      ),
       ...metrics.mtd 
     },
     { 
-      label: `Quarter: Q${Math.floor(today.getMonth() / 3) + 1} ${today.getFullYear()}`, 
+      id: 'quarter',
+      label: (
+        <div>
+          <div>Quarter to date</div>
+          <div className="text-xs italic text-muted-foreground">
+            {`Q${Math.floor(today.getMonth() / 3) + 1} ${today.getFullYear()}`}
+          </div>
+        </div>
+      ),
       ...metrics.qtd 
     },
     { 
-      label: `Year: ${today.getFullYear()}`, 
+      id: 'year',
+      label: (
+        <div>
+          <div>Year to date</div>
+          <div className="text-xs italic text-muted-foreground">
+            {today.getFullYear()}
+          </div>
+        </div>
+      ),
       ...metrics.ytd 
     },
   ]
 
-
   return (
     <div className="space-y-6">
+      <div className="flex justify-start mb-4">
+        
+        <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Levels</SelectItem>
+            {consultantLevels.map(level => (
+              <SelectItem key={level} value={level} className="capitalize">
+                {level}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {periods.map((period) => (
-          <Card key={period.label}>
+          <Card key={period.id} className="transition-all duration-200 bg-gray-50 border-2 border-sky-100 hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-md font-medium h-[40px]">{period.label}</CardTitle>
-              
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">

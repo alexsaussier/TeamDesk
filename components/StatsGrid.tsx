@@ -25,7 +25,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <Card 
-        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/workforce')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -34,12 +34,12 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-end pt-2">
           <div className="text-3xl font-bold tracking-tight">{totalConsultants}</div>
-          <p className="text-xs text-muted-foreground mt-1">&nbsp;</p>
+          <p className="text-xs text-right text-muted-foreground mt-1">View team</p>
         </CardContent>
       </Card>
 
       <Card 
-        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/projects')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -48,12 +48,12 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-end pt-4">
           <div className="text-3xl font-bold tracking-tight">{liveProjects}</div>
-          <p className="text-xs text-muted-foreground mt-1">&nbsp;</p>
+          <p className="text-xs text-right text-muted-foreground mt-1">View projects</p>
         </CardContent>
       </Card>
       
       <Card 
-        className="flex flex-col transition-all duration-200 bg-blue-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/timeline')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">

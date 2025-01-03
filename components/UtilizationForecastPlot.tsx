@@ -5,6 +5,8 @@ import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState } from 'react'
 
 interface UtilizationPlotProps {
   consultants: Consultant[]
@@ -18,6 +20,14 @@ interface UtilizationData {
   target: number
 }
 
+const FORECAST_PERIODS = {
+  '3': 3,
+  '6': 6,
+  '12': 12,
+} as const
+
+type ForecastPeriod = keyof typeof FORECAST_PERIODS
+
 const calculateUtilization = (
   consultants: Consultant[], 
   projects: Project[], 
@@ -25,6 +35,7 @@ const calculateUtilization = (
   includeExpected: boolean
 ): number => {
   const totalConsultants = consultants.length
+  if (totalConsultants === 0) return 0
   let assignedConsultants = 0
   const today = new Date()
   const isCurrentMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
@@ -59,11 +70,14 @@ const calculateUtilization = (
     }
   })
 
-
   return (assignedConsultants / totalConsultants) * 100
 }
 
-const generateUtilizationData = (consultants: Consultant[], projects: Project[]): UtilizationData[] => {
+const generateUtilizationData = (
+  consultants: Consultant[], 
+  projects: Project[],
+  monthsToForecast: number
+): UtilizationData[] => {
   const today = new Date()
   const data: UtilizationData[] = []
   const target = 75
@@ -77,8 +91,8 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
   })
   
 
-  // Then add first day of next 6 months
-  for (let i = 1; i <= 6; i++) {
+  // Then add first day of next X months
+  for (let i = 1; i <= monthsToForecast; i++) {
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth() + i, 2)
     const officialUtilization = calculateUtilization(consultants, projects, firstOfMonth, false)
     const expectedUtilization = calculateUtilization(consultants, projects, firstOfMonth, true)
@@ -89,29 +103,66 @@ const generateUtilizationData = (consultants: Consultant[], projects: Project[])
       expectedUtilization: expectedUtilization,
       target: target
     })
-    console.log("generating utilization data with for ", firstOfMonth)
-    console.log("officialUtilization: ", officialUtilization)
-    console.log("expectedUtilization: ", expectedUtilization)
-
     
-
   }
 
   return data
 }
 
 export default function UtilizationPlot({ consultants, projects }: UtilizationPlotProps) {
-  console.log("generating utilization data with consultants: ", consultants, "\n and projects: ", projects)
-  const utilizationData = useMemo(() => generateUtilizationData(consultants, projects), [
-    JSON.stringify(consultants),
-    JSON.stringify(projects)
-  ])
+  const [selectedLevel, setSelectedLevel] = useState<string>('all')
+  const [forecastPeriod, setForecastPeriod] = useState<ForecastPeriod>('6')
+
+  // Get unique consultant levels
+  const consultantLevels = useMemo(() => {
+    const levels = new Set(consultants.map(c => c.level))
+    return Array.from(levels)
+  }, [consultants])
+
+  // Filter consultants based on selected level
+  const filteredConsultants = useMemo(() => {
+    if (selectedLevel === 'all') return consultants
+    return consultants.filter(c => c.level === selectedLevel)
+  }, [consultants, selectedLevel])
+
+  const utilizationData = useMemo(
+    () => generateUtilizationData(filteredConsultants, projects, FORECAST_PERIODS[forecastPeriod]),
+    [filteredConsultants, projects, forecastPeriod]
+  )
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <Card className="lg:col-span-3 border-blue-100">
         <CardHeader>
-          <CardTitle>Next 6 Months Forecast</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Next {forecastPeriod} Months Forecast</CardTitle>
+            <div className="flex gap-4">
+              <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  {consultantLevels.map(level => (
+                    <SelectItem key={level} value={level} className="capitalize">
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={forecastPeriod} onValueChange={(value: ForecastPeriod) => setForecastPeriod(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Forecast period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 Months</SelectItem>
+                  <SelectItem value="6">6 Months</SelectItem>
+                  <SelectItem value="12">12 Months</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ChartContainer
