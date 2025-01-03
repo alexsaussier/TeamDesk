@@ -144,20 +144,50 @@ export function ProjectDetailsModal({
             <div className="grid gap-4">
               {/* Timeline Section */}
               <div className="bg-sky-50 rounded-lg p-4">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4" />
-                  Timeline
-                </span>
-                <div className="flex items-center gap-2 font-medium">
-                  <span>{new Date(localProject.startDate).toLocaleDateString()}</span>
-                  <span>-</span>
-                  <span>{new Date(localProject.endDate).toLocaleDateString()}</span>
+                <div className="grid grid-cols-2">
+                  <div>
+                    <span className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
+                      <LayoutGrid className="h-4 w-4" />
+                      Status
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Select 
+                        value={localProject.status} 
+                        onValueChange={handleStatusChange}
+                        disabled={isUpdatingStatus}
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {columns.map(status => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {isUpdatingStatus && <Spinner className="h-4 w-4" />}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-end">
+                    <span className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
+                      <Calendar className="h-4 w-4" />
+                      Timeline
+                    </span>
+                    <div className="flex items-center gap-2 font-medium">
+                      <span>{new Date(localProject.startDate).toLocaleDateString()}</span>
+                      <span>-</span>
+                      <span>{new Date(localProject.endDate).toLocaleDateString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
               {/* Team Size Section */}
               <div className="bg-sky-50 rounded-lg p-4">
-                <span className="text-sm text-muted-foreground block mb-2">Team Size:</span>
+                <span className="text-sm text-muted-foreground block mb-2">Expected Team Size</span>
                 <div className="grid grid-cols-3 gap-4">
                   {[
                     { label: 'Junior', value: localProject.teamSize?.junior ?? 0 },
@@ -174,7 +204,7 @@ export function ProjectDetailsModal({
 
               {/* Required Skills Section */}
               <div className="bg-sky-50 rounded-lg p-4">
-                <span className="text-sm text-muted-foreground block mb-2">Needed Skills:</span>
+                <span className="text-sm text-muted-foreground block mb-2">Needed Skills</span>
                 <div className="flex flex-wrap gap-1.5">
                   {localProject.requiredSkills.map(skill => (
                     <Badge key={skill} variant="secondary" className="px-3 py-1">
@@ -284,28 +314,7 @@ export function ProjectDetailsModal({
                 </Select>
               </div>
 
-              <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  Update Status
-                  {isUpdatingStatus && <Spinner className="h-4 w-4" />}
-                </h4>
-                <Select 
-                  value={localProject.status} 
-                  onValueChange={handleStatusChange}
-                  disabled={isUpdatingStatus}
-                >
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {columns.map(status => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              
             </div>
           </div>
 

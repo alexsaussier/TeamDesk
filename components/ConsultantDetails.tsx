@@ -22,11 +22,43 @@ const getCurrentProject = (consultant: Consultant | null, projects: Project[]): 
   if (!consultant || !projects.length) return null
   const today = new Date()
   
-  return projects.find(project => 
-    consultant.assignments.some(assignment => assignment.projectId === project.id) &&
-    new Date(project.startDate) <= today &&
-    new Date(project.endDate) >= today
-  ) || null
+  // Debug logs
+  console.log("Consultant assignments:", consultant.assignments)
+  console.log("Available projects:", projects.map(p => ({ id: p.id, name: p.name })))
+  
+  return projects.find(project => {
+    if (!project?.id) return false
+    
+    const matchingAssignment = consultant.assignments.find(assignment => {
+      if (!assignment?.projectId) return false
+      
+      console.log("Project and assignment id comparison:", project.id, assignment.projectId)
+      // Try different comparison methods
+      const matches = [
+        project.id === assignment.projectId,
+        project.id === String(assignment.projectId),
+        String(project.id) === String(assignment.projectId)
+      ].some(Boolean)
+      
+      if (matches) {
+        console.log("Found matching project:", project.name)
+        console.log("Project dates:", {
+          start: project.startDate,
+          end: project.endDate,
+          today: today
+        })
+      }
+      
+      return matches
+    })
+    
+    if (!matchingAssignment) return false
+    
+    const isCurrentProject = new Date(project.startDate) <= today && 
+                           new Date(project.endDate) >= today
+    
+    return isCurrentProject
+  }) || null
 }
 
 const getNextProject = (consultant: Consultant | null, projects: Project[]): Project | null => {
@@ -34,10 +66,18 @@ const getNextProject = (consultant: Consultant | null, projects: Project[]): Pro
   const today = new Date()
   
   return projects
-    .filter(project => 
-      consultant.assignments.some(assignment => assignment.projectId === project.id) &&
-      new Date(project.startDate) > today
-    )
+    .filter(project => {
+      if (!project?.id) return false
+      return consultant.assignments.some(assignment => {
+        if (!assignment?.projectId) return false
+        return (
+          project.id === assignment.projectId ||
+          project.id === String(assignment.projectId) ||
+          project.id.toString() === assignment.projectId.toString()
+        ) &&
+        new Date(project.startDate) > today
+      })
+    })
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0] || null
 }
 
@@ -51,7 +91,14 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
   const totalDays = 365
 
   consultant.assignments.forEach(assignment => {
-    const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
+    if (!assignment?.projectId) return
+
+    const project = projects.find(p => 
+      p.id === assignment.projectId || 
+      p.id === String(assignment.projectId) ||
+      (p.id && assignment.projectId && p.id.toString() === assignment.projectId.toString())
+    )
+    
     if (!project) return
 
     const startDate = new Date(project.startDate)
@@ -116,7 +163,7 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
         />
         <StatsCard
           icon={<TrendingUp className="h-5 w-5" />}
-          title="Next 12M Utilization"
+          title="Past 12M Utilization"
           value={`${calculateUtilization(consultant, projects)}%`}
         />
         <StatsCard

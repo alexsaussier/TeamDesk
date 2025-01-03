@@ -17,7 +17,7 @@ export default async function ConsultantPage({ params }: {params: Props}) {
 
   await connectDB()
 
-  const [consultant, projects] = await Promise.all([
+  const [consultant, projectDocs] = await Promise.all([
     Consultant.findOne({
       _id: id,
       organizationId: new mongoose.Types.ObjectId(session.user.organizationId)
@@ -26,6 +26,13 @@ export default async function ConsultantPage({ params }: {params: Props}) {
   ])
 
   if (!consultant) return notFound()
+
+  // Transform MongoDB documents to include id field
+  const projects = projectDocs.map(project => ({
+    ...project.toObject(),
+    id: project._id.toString(),
+    _id: project._id.toString()
+  }))
 
   return (
     <div className="p-4 max-w-7xl mx-auto">

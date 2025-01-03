@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Consultant, Project } from '@/types'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 interface ConsultantUtilizationChartProps {
   consultant: Consultant | null
@@ -8,20 +9,28 @@ interface ConsultantUtilizationChartProps {
 }
 
 export default function ConsultantUtilizationChart({ consultant, projects }: ConsultantUtilizationChartProps) {
-  // Calculate monthly utilization for the past 12 months
-  const calculateMonthlyUtilization = () => {
+  const calculateMonthlyData = () => {
     if (!consultant || !projects.length) return []
 
     const months = []
     const today = new Date()
     
-    for (let i = 11; i >= 0; i--) {
-      const month = new Date(today.getFullYear(), today.getMonth() - i, 1)
+    // Start from 6 months ago
+    for (let i = -6; i <= 5; i++) {
+      const month = new Date(today.getFullYear(), today.getMonth() + i, 1)
       const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
-      let assignedDays = 0
+      let officialDays = 0
+      let expectedDays = 0
 
       consultant.assignments.forEach(assignment => {
-        const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
+        if (!assignment?.projectId) return
+
+        const project = projects.find(p => 
+          p.id === assignment.projectId ||
+          p.id === String(assignment.projectId) ||
+          (p.id && assignment.projectId && p.id.toString() === assignment.projectId.toString())
+        )
+        
         if (!project) return
 
         const projectStart = new Date(project.startDate)
@@ -36,43 +45,106 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
             ? projectEnd 
             : new Date(month.getFullYear(), month.getMonth() + 1, 0)
           
-          assignedDays += Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) * (assignment.percentage / 100)
+          const daysInPeriod = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24))
+          
+          // For official utilization, only count 'Started' projects
+          if (project.status === 'Started') {
+            officialDays += daysInPeriod * (assignment.percentage / 100)
+          }
+          
+          // For expected utilization, count all relevant statuses
+          if (['Discussions', 'Started', 'Sold'].includes(project.status)) {
+            expectedDays += daysInPeriod * (assignment.percentage / 100)
+          }
         }
       })
 
       months.push({
         month: month.toLocaleString('default', { month: 'short' }),
-        utilization: Math.round((assignedDays / daysInMonth) * 100)
+        officialUtilization: Math.round((officialDays / daysInMonth) * 100),
+        expectedUtilization: Math.round((expectedDays / daysInMonth) * 100),
+        target: 75,
+        isCurrentMonth: i === 0
       })
     }
 
     return months
   }
 
-  const data = calculateMonthlyUtilization()
+  const data = calculateMonthlyData()
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly Utilization</CardTitle>
+        <CardTitle>12-Month Utilization View</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <XAxis dataKey="month" />
-              <YAxis domain={[0, 100]} />
-              <Tooltip 
-                formatter={(value) => [`${value}%`, 'Utilization']}
-                cursor={{ fill: 'transparent' }}
-              />
-              <Bar 
-                dataKey="utilization" 
-                fill="#3b82f6"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <ChartContainer
+            config={{
+              expectedUtilization: {
+                label: "Expected Utilization",
+                color: "#93c5fd",
+              },
+              officialUtilization: {
+                label: "Official Utilization",
+                color: "#2563eb",
+              },
+              target: {
+                label: "Target",
+                color: "#dc2626",
+              },
+            }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="month" 
+                  tick={({ x, y, payload }) => (
+                    <text
+                      x={x}
+                      y={y + 10}
+                      textAnchor="middle"
+                      fill={data[payload.index].isCurrentMonth ? "#2563eb" : "currentColor"}
+                      fontWeight={data[payload.index].isCurrentMonth ? "bold" : "normal"}
+                    >
+                      {payload.value}
+                    </text>
+                  )}
+                />
+                <YAxis domain={[0, 100]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ReferenceLine
+                  x={data.find(d => d.isCurrentMonth)?.month}
+                  stroke="#2563eb"
+                  strokeDasharray="3 3"
+                  label={{ value: 'Current', position: 'top', fill: '#2563eb' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="expectedUtilization" 
+                  stroke="#93c5fd" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="officialUtilization" 
+                  stroke="#2563eb" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="#dc2626" 
+                  strokeDasharray="3 3"
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

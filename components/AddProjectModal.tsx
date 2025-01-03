@@ -10,7 +10,7 @@ import { useProjectModal } from '@/hooks/useProjectModal'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
+import { ConsultantLevel } from '@/types'
 interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
@@ -120,7 +120,8 @@ export function AddProjectModal({
           name: consultant?.name || '',
           skills: consultant?.skills || [],
           picture: consultant?.picture || '',
-          percentage: 100
+          percentage: 100,
+          level: (consultant?.level || 'junior') as ConsultantLevel
         }
       }),
       status: formData.status,

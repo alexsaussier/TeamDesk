@@ -176,12 +176,12 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                 >
                   <span className="text-gray-500 text-xs mr-1">Utilization</span>
                   <span className="text-gray-300 mx-2">|</span>
-                  <span className="text-gray-700">12M:</span> 
+                  <span className="text-gray-700">Last 12M:</span> 
                   <span className={`ml-1 ${utilization >= 100 ? 'text-green-600' : utilization > 50 ? 'text-lime-800' : 'text-red-600'}`}>
                     {utilization}%
                   </span>
                   <span className="text-gray-300 mx-2">|</span>
-                  <span className="text-gray-700">3M:</span> 
+                  <span className="text-gray-700">Next 3M:</span> 
                   <span className={`ml-1 ${calculateForecastedUtilization(consultant) >= 100 ? 'text-green-600' : calculateForecastedUtilization(consultant) > 50 ? 'text-lime-800' : 'text-red-600'}`}>
                     {calculateForecastedUtilization(consultant)}%
                   </span>
