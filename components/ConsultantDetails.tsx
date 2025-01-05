@@ -10,7 +10,7 @@ import { ArrowLeft, Calendar, Briefcase, TrendingUp, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import ConsultantUtilizationChart from '@/components/ConsultantUtilizationChart'
 import ConsultantProjectTimeline from '@/components/ConsultantProjectTimeline'
-import ConsultantSkillsCard from '@/components/ConsultantSkillsCard'
+import ConsultantProjectHistory from '@/components/ConsultantProjectHistory'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
@@ -139,8 +139,9 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
             </Avatar>
             <div className="space-y-2">
               <h1 className="text-2xl font-bold">{consultant?.name}</h1>
+              <div className="text-muted-foreground capitalize">Level: {consultant?.level}</div>
               <div className="flex flex-wrap gap-2">
-                {consultant?.skills.map(skill => (
+                Skills: {consultant?.skills.map(skill => (
                   <Badge key={skill} variant="secondary">{skill}</Badge>
                 ))}
               </div>
@@ -211,7 +212,7 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
         </TabsContent>
 
         <TabsContent value="skills" className="mt-6">
-          <ConsultantSkillsCard 
+          <ConsultantProjectHistory 
             consultant={consultant}
             projects={projects}
           />

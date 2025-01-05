@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react'
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Trash2 } from 'lucide-react'
+import { Trash2, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteWorkerModal from './DeleteWorkerModal'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface ConsultantListProps {
   consultants: Consultant[]
@@ -162,13 +167,41 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                       {consultant.level}
                     </span>
                   </div>
-                  <Image 
-                    src={consultant.picture} 
-                    alt={`${consultant.name}'s picture`} 
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Image 
+                      src={consultant.picture} 
+                      alt={`${consultant.name}'s picture`} 
+                      width={40}
+                      height={40}
+                      className="rounded-full"
+                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="hover:bg-gray-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-40" align="end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteClick(consultant)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </CardTitle>
                 <Badge 
                   variant="secondary"
@@ -239,19 +272,6 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute bottom-2 right-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation() // Prevent card click when clicking delete
-                    handleDeleteClick(consultant)
-                  }}
-                >
-                  <Trash2 className="h-5 w-5" />
-                </Button>
-              </div>
             </Card>
           )
         })}

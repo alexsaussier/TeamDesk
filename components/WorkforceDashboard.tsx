@@ -6,11 +6,13 @@ import WorkforceList from './WorkforceList'
 import AddConsultantModal from './AddConsultantModal'
 import SearchBar from './SearchBar'
 import { GradientButton } from "@/components/GradientButton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function WorkforceDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [levelFilter, setLevelFilter] = useState<string>("all")
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchConsultants = async () => {
@@ -58,11 +60,13 @@ export default function WorkforceDashboard() {
   }
 
   const filteredConsultants = consultants.filter(consultant => {
-    const query = searchQuery.toLowerCase()
-    return (
-      consultant.name.toLowerCase().includes(query) ||
-      consultant.skills.some(skill => skill.toLowerCase().includes(query))
-    )
+    const matchesSearch = searchQuery.toLowerCase().trim() === "" || 
+      consultant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      consultant.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    const matchesLevel = levelFilter === "all" || consultant.level === levelFilter
+
+    return matchesSearch && matchesLevel
   })
 
   return (
@@ -75,10 +79,25 @@ export default function WorkforceDashboard() {
         />
       </div>
 
-      <SearchBar 
-        onSearch={setSearchQuery}
-        placeholder="Search by name or skills..."
-      />
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <SearchBar 
+            onSearch={setSearchQuery}
+            placeholder="Search by name or skills..."
+          />
+        </div>
+        <Select value={levelFilter} onValueChange={setLevelFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Levels</SelectItem>
+            <SelectItem value="junior">Junior</SelectItem>
+            <SelectItem value="manager">Manager</SelectItem>
+            <SelectItem value="partner">Partner</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center items-center min-h-[200px]">
