@@ -36,7 +36,7 @@ const calculateUtilization = (
 ): number => {
   const totalConsultants = consultants.length
   if (totalConsultants === 0) return 0
-  let assignedConsultants = 0
+  let weightedAssignedConsultants = 0
   const today = new Date()
   const isCurrentMonth = date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
 
@@ -53,24 +53,23 @@ const calculateUtilization = (
 
           // For current month's official utilization, only count 'started' projects
           if (isCurrentMonth && !includeExpected && project.status === 'Started') {
-            assignedConsultants++
+            weightedAssignedConsultants += (assignment.percentage / 100)
           }
           // For future official utilization, count 'started' projects
           else if (!isCurrentMonth && !includeExpected && ['Started'].includes(project.status)) {
-            assignedConsultants++
-            
+            weightedAssignedConsultants += (assignment.percentage / 100)
           }
-          // For expected utilization, count all three states
+          // For expected utilization, count all three states with weighting
           else if (includeExpected && ['Discussions','Started', 'Sold'].includes(project.status)) {
-            assignedConsultants++
-            
+            const weight = project.status === 'Discussions' ? (project.chanceToClose / 100) : 1
+            weightedAssignedConsultants += (assignment.percentage / 100) * weight
           }
         }
       })
     }
   })
 
-  return (assignedConsultants / totalConsultants) * 100
+  return (weightedAssignedConsultants / totalConsultants) * 100
 }
 
 const generateUtilizationData = (

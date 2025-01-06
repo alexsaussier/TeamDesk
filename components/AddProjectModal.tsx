@@ -39,6 +39,7 @@ export function AddProjectModal({
     startDate: '',
     endDate: '',
     status: 'Discussions' as ProjectStatus,
+    chanceToClose: 2,
     teamSize: {
       junior: 0,
       manager: 0,
@@ -124,8 +125,11 @@ export function AddProjectModal({
       }),
       status: formData.status,
       organizationId: session?.user?.organizationId || '',
-      teamSize: formData.teamSize
+      teamSize: formData.teamSize,
+      chanceToClose: parseInt(formData.chanceToClose.toString())
     }
+
+    console.log("creating a new project: ", newProject)
     
     onAdd(newProject)
     handleClose()
@@ -145,7 +149,8 @@ export function AddProjectModal({
         junior: 0,
         manager: 0,
         partner: 0
-      }
+      },
+      chanceToClose: 100
     })
     onClose()
   }
@@ -242,6 +247,20 @@ export function AddProjectModal({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="chanceToClose">Chance to Close (%)</Label>
+                <Input
+                  id="chanceToClose"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.chanceToClose}
+                  onChange={(e) => handleChange('chanceToClose', e.target.value)}
+                  disabled={formData.status !== 'Discussions'}
+                  required
+                />
               </div>
 
               <div className="space-y-4">

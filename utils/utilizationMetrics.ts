@@ -30,7 +30,9 @@ export const calculatePeriodUtilization = (
   consultants.forEach(consultant => {
     consultant.assignments.forEach(assignment => {
       const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
-      if (!project || project.status !== 'Started') return
+      if (!project) return
+
+      if (project.status !== 'Started') return
 
       const projectStart = new Date(project.startDate)
       const projectEnd = new Date(project.endDate)
@@ -40,6 +42,42 @@ export const calculatePeriodUtilization = (
         const overlapEnd = projectEnd < endDate ? projectEnd : endDate
         const assignedDays = Math.max(1, Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) + 1) * (assignment.percentage / 100)
         totalAssignedDays += assignedDays
+      }
+    })
+  })
+
+  return (totalAssignedDays / (totalConsultants * totalDays)) * 100
+}
+
+export const calculateExpectedPeriodUtilization = (
+  consultants: Consultant[],
+  projects: Project[],
+  startDate: Date,
+  endDate: Date
+): number => {
+  const totalConsultants = consultants.length
+  if (totalConsultants === 0) return 0
+
+  let totalAssignedDays = 0
+  const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+
+  consultants.forEach(consultant => {
+    consultant.assignments.forEach(assignment => {
+      const project = projects.find(p => p.id.toString() === assignment.projectId.toString())
+      if (!project) return
+
+      if (project.status === 'Completed') return
+
+      const projectStart = new Date(project.startDate)
+      const projectEnd = new Date(project.endDate)
+      
+      if (projectStart <= endDate && projectEnd >= startDate) {
+        const overlapStart = projectStart > startDate ? projectStart : startDate
+        const overlapEnd = projectEnd < endDate ? projectEnd : endDate
+        const assignedDays = Math.max(1, Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) + 1) * (assignment.percentage / 100)
+        
+        const weight = project.status === 'Discussions' ? project.chanceToClose / 100 : 1
+        totalAssignedDays += assignedDays * weight
       }
     })
   })

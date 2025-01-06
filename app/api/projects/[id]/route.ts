@@ -28,20 +28,34 @@ export async function PATCH(request: Request) {
 
     const organizationId = session.user.organizationId
     const body = await request.json()
-    const { status } = body
+    const { status, chanceToClose } = body
+
+    // Prepare update object
+    const updateData: any = {
+      updatedAt: new Date(),
+      updatedBy: session.user.id
+    }
+
+    // If status is being updated
+    if (status) {
+      updateData.status = status
+      // If moving from Discussions to any other status, set chanceToClose to 100%
+      if (status !== 'Discussions') {
+        updateData.chanceToClose = 100
+      }
+    }
+
+    // If chanceToClose is being updated directly
+    if (typeof chanceToClose === 'number') {
+      updateData.chanceToClose = chanceToClose
+    }
 
     const project = await Project.findOneAndUpdate(
       {
         _id: new mongoose.Types.ObjectId(projectId),
         organizationId: new mongoose.Types.ObjectId(organizationId)
       },
-      {
-        $set: {
-          status,
-          updatedAt: new Date(),
-          updatedBy: session.user.id
-        }
-      },
+      { $set: updateData },
       { new: true }
     )
 

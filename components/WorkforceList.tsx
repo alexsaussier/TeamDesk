@@ -100,7 +100,9 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
       if (startDate < threeMonthsFromNow && endDate > today) {
         const assignmentStart = startDate > today ? startDate : today
         const assignmentEnd = endDate < threeMonthsFromNow ? endDate : threeMonthsFromNow
-        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000)
+        const weight = project.status === 'Discussions' ? (project.chanceToClose / 100) : 1
+        assignedDays += (assignmentEnd.getTime() - assignmentStart.getTime()) / (24 * 60 * 60 * 1000) * 
+                       (assignment.percentage / 100) * weight
       }
     })
 

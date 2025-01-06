@@ -36,6 +36,7 @@ export interface Project {
   startDate: string;
   endDate: string;
   teamSize: TeamSize;
+  chanceToClose: number;
   assignedConsultants: {
     id: string;
     _id: string;

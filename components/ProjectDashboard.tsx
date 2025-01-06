@@ -153,6 +153,7 @@ export default function ProjectDashboard() {
       }
 
       const data = await response.json()
+      console.log("Added a new project: ", data)
       const addedProject: Project = {
         ...data,
         id: data.id || data._id, // Convert _id to id if needed

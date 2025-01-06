@@ -52,9 +52,10 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
             officialDays += daysInPeriod * (assignment.percentage / 100)
           }
           
-          // For expected utilization, count all relevant statuses
+          // For expected utilization, count all relevant statuses with chanceToClose weighting
           if (['Discussions', 'Started', 'Sold'].includes(project.status)) {
-            expectedDays += daysInPeriod * (assignment.percentage / 100)
+            const weight = project.status === 'Discussions' ? (project.chanceToClose / 100) : 1
+            expectedDays += daysInPeriod * (assignment.percentage / 100) * weight
           }
         }
       })

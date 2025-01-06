@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { checkConsultantAvailability } from '@/utils/consultantAvailability'
 import { Spinner } from '@/components/ui/spinner'
-import { Trash2, MinusCircle, AlertTriangle, ClipboardList, Users, LayoutGrid, Calendar } from 'lucide-react'
+import { Trash2, MinusCircle, AlertTriangle, ClipboardList, Users, LayoutGrid, Calendar, Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import DeleteProjectModal from './DeleteProjectModal'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
@@ -21,6 +23,7 @@ interface ProjectDetailsModalProps {
   columns: ProjectStatus[]
   onDelete: (projectId: string) => void
   onUnassign: (consultantId: string, projectId: string) => void
+  onUpdateChanceToClose: (projectId: string, chanceToClose: number) => Promise<void>
 }
 
 export function ProjectDetailsModal({
@@ -33,13 +36,16 @@ export function ProjectDetailsModal({
   onUpdateStatus,
   columns,
   onDelete,
-  onUnassign
+  onUnassign,
+  onUpdateChanceToClose
 }: ProjectDetailsModalProps) {
   const [localProject, setLocalProject] = useState<Project | null>(null)
   const [isAssigning, setIsAssigning] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditingChanceToClose, setIsEditingChanceToClose] = useState(false)
+  const [tempChanceToClose, setTempChanceToClose] = useState<number | null>(null)
 
   useEffect(() => {
     setLocalProject(project)
@@ -47,7 +53,6 @@ export function ProjectDetailsModal({
 
   if (!localProject) return null
 
-  console.log("selected project", localProject)
   // Check if assignedConsultants is an array of Consultants (PopulatedProject) or strings (Project)
   const assignedConsultants = localProject.assignedConsultants
 
@@ -126,6 +131,24 @@ export function ProjectDetailsModal({
     }
   }
 
+  const handleChanceToCloseChange = async () => {
+    if (tempChanceToClose === null) return
+    
+    try {
+      setIsUpdatingStatus(true)
+      const numericValue = Math.min(100, Math.max(0, tempChanceToClose))
+      
+      await onUpdateChanceToClose(localProject.id, numericValue)
+      setLocalProject(prev => prev ? { ...prev, chanceToClose: numericValue } : null)
+      setIsEditingChanceToClose(false)
+      setTempChanceToClose(null)
+    } catch (error) {
+      console.error('Error updating chance to close:', error)
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
@@ -144,7 +167,7 @@ export function ProjectDetailsModal({
             <div className="grid gap-4">
               {/* Timeline Section */}
               <div className="bg-sky-50 rounded-lg p-4">
-                <div className="grid grid-cols-2">
+                <div className="grid grid-cols-3">
                   <div>
                     <span className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
                       <LayoutGrid className="h-4 w-4" />
@@ -169,6 +192,81 @@ export function ProjectDetailsModal({
                       </Select>
                       {isUpdatingStatus && <Spinner className="h-4 w-4" />}
                     </div>
+                  </div>
+
+                  <div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <Label 
+                              htmlFor="chanceToClose" 
+                              className="text-sm text-muted-foreground block mb-2"
+                            >
+                              Chance to Close (%)
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              {isEditingChanceToClose ? (
+                                <>
+                                  <Input
+                                    id="chanceToClose"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={tempChanceToClose ?? localProject.chanceToClose ?? 1}
+                                    onChange={(e) => setTempChanceToClose(parseInt(e.target.value) || 0)}
+                                    className="w-[100px]"
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-green-600 hover:text-green-700"
+                                    onClick={handleChanceToCloseChange}
+                                    disabled={isUpdatingStatus}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-600 hover:text-red-700"
+                                    onClick={() => {
+                                      setIsEditingChanceToClose(false)
+                                      setTempChanceToClose(null)
+                                    }}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-[100px] h-9 bg-background flex items-center px-3 rounded-md border">
+                                    {localProject.chanceToClose ?? 1}%
+                                  </div>
+                                  {localProject.status === 'Discussions' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => {
+                                        setIsEditingChanceToClose(true)
+                                      }}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {localProject.status === 'Discussions' 
+                            ? "Estimated probability of winning this project"
+                            : "Chance to close is only updateable if the project has not yet been sold"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   
                   <div className="flex flex-col items-end">

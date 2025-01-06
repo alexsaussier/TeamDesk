@@ -103,6 +103,24 @@ export default function Timeline({ projects, consultants, columns, onDelete, onU
     }
   }
 
+  const updateChanceToClose = async (projectId: string, chanceToClose: number) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/chance-to-close`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chanceToClose })
+      })
+
+      if (!response.ok) throw new Error('Failed to update chance to close')
+      
+      // Refresh projects data
+      const projectsResponse = await fetch('/api/projects')
+      const projectsData = await projectsResponse.json()
+    } catch (error) {
+      console.error('Error updating chance to close:', error)
+    }
+  }
+
   return (
     <>
       <Card>
@@ -174,6 +192,7 @@ export default function Timeline({ projects, consultants, columns, onDelete, onU
         onDelete={onDelete}
         onUnassign={onUnassign}
         columns={columns}
+        onUpdateChanceToClose={updateChanceToClose}
       />
     </>
   )

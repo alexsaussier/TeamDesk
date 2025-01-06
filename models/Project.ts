@@ -36,6 +36,12 @@ const ProjectSchema = new mongoose.Schema({
     enum: ['Discussions', 'Sold', 'Started', 'Completed'],
     default: 'Discussions'
   },
+  chanceToClose: {
+    type: Number,
+    default: 100,
+    min: 0,
+    max: 100
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   updatedBy: {
