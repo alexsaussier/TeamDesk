@@ -67,7 +67,6 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
       
       // Refresh projects data
       const projectsResponse = await fetch('/api/projects')
-      const projectsData = await projectsResponse.json()
     } catch (error) {
       console.error('Error updating chance to close:', error)
     }

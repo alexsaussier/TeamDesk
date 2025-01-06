@@ -6,6 +6,14 @@ import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 import { Consultant } from '@/models/Consultant'
 
+// Add this interface to bundle the data attributes that can be updated
+interface ProjectUpdateData {
+  updatedAt: Date;
+  updatedBy: string;
+  status?: string;
+  chanceToClose?: number;
+}
+
 // Updates a project's status and tracks who made the change
 export async function PATCH(request: Request) {
   try {
@@ -31,7 +39,7 @@ export async function PATCH(request: Request) {
     const { status, chanceToClose } = body
 
     // Prepare update object
-    const updateData: any = {
+    const updateData: ProjectUpdateData = {
       updatedAt: new Date(),
       updatedBy: session.user.id
     }

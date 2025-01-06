@@ -11,7 +11,7 @@ interface UtilizationHistoricalChartProps {
 }
 
 const HISTORICAL_PERIODS = {
-  '3': 4,
+  '3': 3,
   '6': 6,
   '12': 12,
 } as const
@@ -37,7 +37,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
   const metrics = calculateUtilizationMetrics(filteredConsultants, projects)
   
   const historicalData = useMemo(() => {
-    const months = parseInt(historicalPeriod)
+    const months = HISTORICAL_PERIODS[historicalPeriod]
     return Array.from({ length: months + 1 }, (_, index) => {
       const date = new Date()
       date.setMonth(date.getMonth() - (months - index))

@@ -115,7 +115,6 @@ export default function Timeline({ projects, consultants, columns, onDelete, onU
       
       // Refresh projects data
       const projectsResponse = await fetch('/api/projects')
-      const projectsData = await projectsResponse.json()
     } catch (error) {
       console.error('Error updating chance to close:', error)
     }
