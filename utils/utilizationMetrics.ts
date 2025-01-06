@@ -25,7 +25,7 @@ export const calculatePeriodUtilization = (
   if (totalConsultants === 0) return 0
 
   let totalAssignedDays = 0
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)
 
   consultants.forEach(consultant => {
     consultant.assignments.forEach(assignment => {
@@ -38,15 +38,11 @@ export const calculatePeriodUtilization = (
       if (projectStart <= endDate && projectEnd >= startDate) {
         const overlapStart = projectStart > startDate ? projectStart : startDate
         const overlapEnd = projectEnd < endDate ? projectEnd : endDate
-        const assignedDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) * (assignment.percentage / 100)
+        const assignedDays = Math.max(1, Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) + 1) * (assignment.percentage / 100)
         totalAssignedDays += assignedDays
       }
     })
   })
-  //console.log("startDate: ", startDate, " - endDate: ", endDate)
-  //console.log("totalAssignedDays: ", totalAssignedDays)
-  //console.log("totalConsultants: ", totalConsultants)
-  //console.log("totalDays: ", totalDays)
 
   return (totalAssignedDays / (totalConsultants * totalDays)) * 100
 }
@@ -57,10 +53,12 @@ export const calculateUtilizationMetrics = (
   targetUtilization: number = 75 // Default target
 ): UtilizationPeriods => {
   const today = new Date()
+  
+  // Calculate period start dates
   const startOfYear = new Date(today.getFullYear(), 0, 1)
   const startOfQuarter = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1)
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const startOfWeek = new Date(today.getTime() - ((today.getDay() + 6) % 7) * 24 * 60 * 60 * 1000)
+  const startOfWeek = new Date(today.getTime() - ((today.getDay() || 7) - 1) * 24 * 60 * 60 * 1000)
 
   // Calculate historical monthly utilization
   const lastTwelveMonths = Array.from({ length: 12 }, (_, i) => {
@@ -71,27 +69,21 @@ export const calculateUtilizationMetrics = (
 
   const averageLastYear = lastTwelveMonths.reduce((a, b) => a + b, 0) / 12
 
+  // Helper function to calculate metrics for a period
+  const calculateMetrics = (startDate: Date) => {
+    const current = calculatePeriodUtilization(consultants, projects, startDate, today)
+    return {
+      current,
+      target: targetUtilization,
+      delta: current - targetUtilization
+    }
+  }
+
   return {
-    ytd: {
-      current: calculatePeriodUtilization(consultants, projects, startOfYear, today),
-      target: targetUtilization,
-      delta: calculatePeriodUtilization(consultants, projects, startOfYear, today) - targetUtilization
-    },
-    qtd: {
-      current: calculatePeriodUtilization(consultants, projects, startOfQuarter, today),
-      target: targetUtilization,
-      delta: calculatePeriodUtilization(consultants, projects, startOfQuarter, today) - targetUtilization
-    },
-    mtd: {
-      current: calculatePeriodUtilization(consultants, projects, startOfMonth, today),
-      target: targetUtilization,
-      delta: calculatePeriodUtilization(consultants, projects, startOfMonth, today) - targetUtilization
-    },
-    wtd: {
-      current: calculatePeriodUtilization(consultants, projects, startOfWeek, today),
-      target: targetUtilization,
-      delta: calculatePeriodUtilization(consultants, projects, startOfWeek, today) - targetUtilization
-    },
+    ytd: calculateMetrics(startOfYear),
+    qtd: calculateMetrics(startOfQuarter),
+    mtd: calculateMetrics(startOfMonth),
+    wtd: calculateMetrics(startOfWeek),
     lastTwelveMonths,
     averageLastYear
   }
