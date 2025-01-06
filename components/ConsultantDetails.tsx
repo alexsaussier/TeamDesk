@@ -190,10 +190,10 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
             Timeline
           </TabsTrigger>
           <TabsTrigger 
-            value="skills"
+            value="history"
             className="bg-blue-50 data-[state=active]:bg-blue-100 data-[state=active]:text-primary data-[state=active]:shadow-sm"
           >
-            Skills & Experience
+            Project History
           </TabsTrigger>
         </TabsList>
 
@@ -211,7 +211,7 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
           />
         </TabsContent>
 
-        <TabsContent value="skills" className="mt-6">
+        <TabsContent value="history" className="mt-6">
           <ConsultantProjectHistory 
             consultant={consultant}
             projects={projects}

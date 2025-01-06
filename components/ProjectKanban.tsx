@@ -55,7 +55,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
     }
   }
 
-  const updateChanceToClose = async (projectId: string, chanceToClose: number): Promise<void> => {
+  const updateChanceToClose = async (projectId: string, chanceToClose: number) => {
     try {
       const response = await fetch(`/api/projects/${projectId}/chance-to-close`, {
         method: 'PATCH',
@@ -127,6 +127,12 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
                                 </CardHeader>
                                 <CardContent>
                                   <div className="space-y-3">
+                                    {column === 'Discussions' && (
+                                      <div className="mb-2 text-sm">
+                                        <span className="text-gray-600">Chance to close: </span>
+                                        <span className="font-medium">{project.chanceToClose}%</span>
+                                      </div>
+                                    )}
                                     <div className="flex flex-wrap gap-1.5">
                                       {project.requiredSkills.slice(0, 3).map(skill => (
                                         <Badge 
