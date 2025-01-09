@@ -48,7 +48,6 @@ export function ProjectDetailsModal({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditingChanceToClose, setIsEditingChanceToClose] = useState(false)
   const [tempChanceToClose, setTempChanceToClose] = useState<number | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     setLocalProject(project)
@@ -347,7 +346,7 @@ export function ProjectDetailsModal({
             </div>
             
             {Object.entries(organizeTeamSlots(localProject.teamSize, assignedConsultants))
-              .filter(([_, slots]) => slots.length > 0)
+              .filter(([, slots]) => slots.length > 0)
               .map(([level, slots]) => (
                 <div key={level} className="mb-6">
                   <h4 className="text-sm font-medium mb-3 capitalize">
