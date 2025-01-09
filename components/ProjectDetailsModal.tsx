@@ -12,7 +12,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ConsultantLevel } from '@/types'
-import { useRouter } from 'next/navigation'
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
