@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
 import { Home, LayoutDashboard, Kanban, Users, Calendar } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 // Reusable icon mapping with types
 
@@ -51,13 +52,31 @@ const navSections: NavSection[] = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const [orgName, setOrgName] = useState<string>("")
+
+  useEffect(() => {
+    const fetchOrgData = async () => {
+      try {
+        const response = await fetch('/api/organization')
+        const data = await response.json()
+        setOrgName(data.name)
+        console.log("org name: ", data.name)
+      } catch (error) {
+        console.error('Failed to fetch organization:', error)
+      }
+    }
+    fetchOrgData()
+  }, [])
 
   return (
     <nav className="bg-gray-100 w-64 h-screen p-4">
       <div className="flex flex-col h-full">
-        <Link href="/" className="text-2xl font-bold mb-8">
+        <Link href="/" className="text-2xl font-bold mb-2">
           TeamDesk
         </Link>
+        {orgName && (
+          <p className="text-sm text-gray-600 mb-6 px-1">{orgName}</p>
+        )}
         <div className="space-y-4">
           <div>
             <Button 
@@ -100,6 +119,7 @@ export default function Navbar() {
             </div>
           ))}
         </div>
+        
         <div className="mt-auto">
           <LogoutButton />
         </div>

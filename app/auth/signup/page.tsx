@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { redirect } from 'next/navigation'
 
 export default function SignUpPage() {
   const { status } = useSession()
@@ -18,9 +17,11 @@ export default function SignUpPage() {
   })
   const [error, setError] = useState('')
 
-  if (status === 'authenticated') {
-    redirect('/dashboard')
-  }
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard')
+    }
+  }, [status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +54,11 @@ export default function SignUpPage() {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unexpected error occurred')
     }
+  }
+
+  // Don't render the form if already authenticated
+  if (status === 'authenticated') {
+    return null
   }
 
   return (
