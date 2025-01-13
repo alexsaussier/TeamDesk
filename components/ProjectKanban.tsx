@@ -152,7 +152,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
                                     
                                     {project.assignedConsultants && project.assignedConsultants.length > 0 && (
                                       <div className="flex -space-x-2 pt-2">
-                                        {project.assignedConsultants.map((consultant) => (
+                                        {project.assignedConsultants.slice(0, 4).map((consultant) => (
                                           <Avatar 
                                             key={consultant.id} 
                                             className="border-2 border-white ring-2 ring-blue-500/10 w-8 h-8"

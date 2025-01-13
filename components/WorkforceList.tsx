@@ -170,13 +170,14 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Image 
-                      src={consultant.picture} 
-                      alt={`${consultant.name}'s picture`} 
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
+                    <div className="relative w-12 h-12">
+                      <Image 
+                        src={consultant.picture} 
+                        alt={`${consultant.name}'s picture`} 
+                        fill
+                        className="rounded-full object-cover"
+                      />
+                    </div>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
