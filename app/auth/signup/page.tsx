@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 export default function SignUpPage() {
   const { status } = useSession()
@@ -14,6 +16,7 @@ export default function SignUpPage() {
     email: '',
     password: '',
     organizationName: '',
+    populateWithMockData: false
   })
   const [error, setError] = useState('')
 
@@ -100,6 +103,18 @@ export default function SignUpPage() {
           className="w-full px-3 py-2 border rounded-md"
           required
         />
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="populate-data"
+            checked={formData.populateWithMockData}
+            onCheckedChange={(checked) => 
+              setFormData({ ...formData, populateWithMockData: checked })
+            }
+          />
+          <Label htmlFor="populate-data">
+            Populate account with sample data
+          </Label>
+        </div>
         <button
           type="submit"
           className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600"

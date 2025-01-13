@@ -28,6 +28,8 @@ const ConsultantSchema = new mongoose.Schema({
   }
 })
 
-ConsultantSchema.index({ organizationId: 1, name: 1 }, { unique: true })
+// Remove any existing indexes
+ConsultantSchema.index({  organizationId: 1, name: 1  }, { unique: true }) // Override the unique name index
+// OR completely remove any unique constraint on the name field
 
 export const Consultant = mongoose.models.Consultant || mongoose.model('Consultant', ConsultantSchema)

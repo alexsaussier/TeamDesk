@@ -51,7 +51,7 @@ const ProjectSchema = new mongoose.Schema({
   }
 })
 
-// Add compound index for organization and project name uniqueness
+// To avoid duplicate project names in the same organization
 ProjectSchema.index({ organizationId: 1, name: 1 }, { unique: true })
 
 export const Project = mongoose.models.Project || mongoose.model('Project', ProjectSchema)
