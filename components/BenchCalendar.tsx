@@ -134,15 +134,15 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
         </CardTitle>
         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-5 h-3 rounded-md bg-green-100 border border-green-500" />
             <span>Starting Project</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-5 h-3 rounded-md bg-red-100 border border-red-500" />
             <span>Coming on bench</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
+            <div className="w-5 h-3 rounded-md bg-amber-100 border border-amber-500" />
             <span>Both</span>
           </div>
         </div>
@@ -171,35 +171,27 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
 
               const hasConsultantsStarting = benchDate.consultants.some(c => c.type === 'starting')
               const hasConsultantsEnding = benchDate.consultants.some(c => c.type === 'ending')
+              const hasEvents = hasConsultantsStarting || hasConsultantsEnding
 
-              return (
+              return hasEvents ? (
                 <HoverCard key={benchDate.date.toISOString()} openDelay={100} closeDelay={50}>
                   <HoverCardTrigger asChild>
                     <div
                       className={`
-                        bg-background p-2 text-center relative
-                        ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-50 hover:bg-green-100' : ''}
-                        ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-50 hover:bg-red-100' : ''}
-                        ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-50 hover:bg-amber-100' : ''}
-                        ${(hasConsultantsStarting || hasConsultantsEnding) ? 'rounded-md' : ''}
+                        bg-background p-2 text-center relative rounded-md
+                        ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-100 hover:bg-green-200 border border-green-500' : ''}
+                        ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-100 hover:bg-red-200 border border-red-500' : ''}
+                        ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-100 hover:bg-amber-200 border border-amber-500' : ''}
+                        
                         ${isToday(benchDate.date) ? 'ring-2 ring-blue-500 rounded-full' : ''}
                       `}
                     >
                       <span className="text-sm">
                         {format(benchDate.date, 'd')}
                       </span>
-                      {(hasConsultantsStarting || hasConsultantsEnding) && (
-                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
-                          <div className={`w-1 h-1 rounded-full ${
-                            hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-500' : 
-                            !hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-500' : 
-                            'bg-amber-500'
-                          }`} />
-                        </div>
-                      )}
+                      
                     </div>
                   </HoverCardTrigger>
-                  
                   <HoverCardContent className="w-80">
                     <div className="space-y-4">
                       {hasConsultantsEnding && (
@@ -249,7 +241,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                                 <div className="flex-1">
                                   <p className="text-sm font-medium">{consultant.name}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    Starting: {nextAssignment.name}
+                                    Starting: {nextAssignment?.name}
                                   </p>
                                 </div>
                               </div>
@@ -259,6 +251,18 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                     </div>
                   </HoverCardContent>
                 </HoverCard>
+              ) : (
+                <div
+                  key={benchDate.date.toISOString()}
+                  className={`
+                    bg-background p-2 text-center relative
+                    ${isToday(benchDate.date) ? 'ring-2 ring-blue-500 rounded-full' : ''}
+                  `}
+                >
+                  <span className="text-sm">
+                    {format(benchDate.date, 'd')}
+                  </span>
+                </div>
               )
             })
           ))}

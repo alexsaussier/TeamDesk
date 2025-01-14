@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ConsultantBenchCard from './ConsultantBenchCard'
 import { getCurrentAssignment, getNextAssignment } from '@/lib/consultantUtils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface UpcomingBenchListProps {
   consultants: Consultant[]
@@ -9,6 +11,8 @@ interface UpcomingBenchListProps {
 }
 
 export default function UpcomingBenchList({ consultants, projects }: UpcomingBenchListProps) {
+  const [levelFilter, setLevelFilter] = useState<string>("all")
+
   const upcomingBench = consultants
     .map(consultant => {
       const currentAssignment = getCurrentAssignment(consultant, projects)
@@ -16,18 +20,18 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
       
       if (!currentAssignment) return null
       
-      // Calculate the gap between current assignment end and next assignment start (if exists)
       const availableFrom = new Date(currentAssignment.endDate)
       const gapDuration = nextAssignment 
         ? new Date(nextAssignment.startDate).getTime() - availableFrom.getTime()
         : Infinity
       
-      // Convert gap to days
       const gapDays = gapDuration / (1000 * 60 * 60 * 24)
       
-      // Only include if gap is 7 days or more
       if (gapDays < 7) return null
       
+      // Apply level filter
+      if (levelFilter !== "all" && consultant.level !== levelFilter) return null
+
       return {
         consultant,
         availableFrom,
@@ -39,21 +43,6 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
       item.availableFrom > new Date()
     )
     .sort((a, b) => a.availableFrom.getTime() - b.availableFrom.getTime())
-
-  if (upcomingBench.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Coming to Bench</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            No consultants coming to bench soon
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
 
   // Group by month
   const groupedByMonth = upcomingBench.reduce((acc, item) => {
@@ -74,24 +63,43 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Coming to Bench</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Coming to Bench</span>
+            <Select value={levelFilter} onValueChange={setLevelFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Filter by level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="junior">Junior</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
+                <SelectItem value="partner">Partner</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
-          {Object.entries(groupedByMonth).map(([monthYear, consultants]) => (
-            <div key={monthYear}>
-              <h3 className="text-lg font-semibold mb-4">{monthYear}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {consultants.map(({ consultant, availableFrom, nextAssignment }) => (
-                  <ConsultantBenchCard
-                    key={consultant._id}
-                    consultant={consultant}
-                    availableFrom={availableFrom}
-                    nextAssignment={nextAssignment}
-                  />
-                ))}
+          {Object.keys(groupedByMonth).length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              No consultants coming to bench soon
+            </p>
+          ) : (
+            Object.entries(groupedByMonth).map(([monthYear, consultants]) => (
+              <div key={monthYear}>
+                <h3 className="text-lg font-semibold mb-4">{monthYear}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {consultants.map(({ consultant, availableFrom, nextAssignment }) => (
+                    <ConsultantBenchCard
+                      key={consultant._id}
+                      consultant={consultant}
+                      availableFrom={availableFrom}
+                      nextAssignment={nextAssignment}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
