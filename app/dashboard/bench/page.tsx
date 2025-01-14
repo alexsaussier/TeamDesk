@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Consultant, Project } from '@/types'
 import CurrentBenchList from '@/components/CurrentBenchList'
 import UpcomingBenchList from '@/components/UpcomingBenchList'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import BenchCalendar from '@/components/BenchCalendar'
 
 export default function BenchPage() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -50,6 +50,11 @@ export default function BenchPage() {
       <h1 className="text-3xl font-bold">Bench Management</h1>
       
       <div className="space-y-8">
+        <BenchCalendar 
+          consultants={consultants}
+          projects={projects}
+        />
+
         <CurrentBenchList 
           consultants={consultants} 
           projects={projects} 

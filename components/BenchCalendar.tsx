@@ -22,6 +22,7 @@ interface BenchDate {
   consultants: Array<{
     consultant: Consultant
     nextAssignment: Project | null
+    type: 'starting' | 'ending'
   }>
 }
 
@@ -42,14 +43,14 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
     const monthEnd = endOfMonth(currentMonth)
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
     
-    // Get all consultants coming to bench
-    const benchTransitions = consultants
-      .map(consultant => {
-        const currentAssignment = getCurrentAssignment(consultant, projects)
-        const nextAssignment = getNextAssignment(consultant, projects)
-        
-        if (!currentAssignment) return null
-        
+    // Get all bench transitions (both starting and ending projects)
+    const benchTransitions = consultants.flatMap(consultant => {
+      const transitions = []
+      const currentAssignment = getCurrentAssignment(consultant, projects)
+      const nextAssignment = getNextAssignment(consultant, projects)
+      
+      // Coming onto bench (ending current project)
+      if (currentAssignment) {
         const availableFrom = new Date(currentAssignment.endDate)
         const gapDuration = nextAssignment 
           ? new Date(nextAssignment.startDate).getTime() - availableFrom.getTime()
@@ -57,22 +58,35 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
         
         const gapDays = gapDuration / (1000 * 60 * 60 * 24)
         
-        if (gapDays < 7) return null
-        
-        return {
-          date: availableFrom,
-          consultant,
-          nextAssignment
+        if (gapDays >= 7) {
+          transitions.push({
+            date: availableFrom,
+            consultant,
+            nextAssignment,
+            type: 'ending' as const
+          })
         }
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null)
+      }
+
+      // Coming off bench (starting next project)
+      if (nextAssignment) {
+        transitions.push({
+          date: new Date(nextAssignment.startDate),
+          consultant,
+          nextAssignment,
+          type: 'starting' as const
+        })
+      }
+
+      return transitions
+    })
     
-    // Map days to consultants becoming available
+    // Map days to consultants transitions
     return daysInMonth.map(date => ({
       date,
       consultants: benchTransitions
         .filter(transition => isSameDay(transition.date, date))
-        .map(({ consultant, nextAssignment }) => ({ consultant, nextAssignment }))
+        .map(({ consultant, nextAssignment, type }) => ({ consultant, nextAssignment, type }))
     }))
   }
 
@@ -118,6 +132,20 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
             </Button>
           </div>
         </CardTitle>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <span>Starting Project</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <span>Coming on bench</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-amber-500" />
+            <span>Both</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-7 gap-px bg-muted">
@@ -141,7 +169,8 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                 )
               }
 
-              const hasConsultants = benchDate.consultants.length > 0
+              const hasConsultantsStarting = benchDate.consultants.some(c => c.type === 'starting')
+              const hasConsultantsEnding = benchDate.consultants.some(c => c.type === 'ending')
 
               return (
                 <HoverCard key={benchDate.date.toISOString()} openDelay={100} closeDelay={50}>
@@ -149,51 +178,86 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                     <div
                       className={`
                         bg-background p-2 text-center relative
-                        ${hasConsultants ? 'bg-blue-50 hover:bg-blue-100 rounded-md' : ''}
+                        ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-50 hover:bg-green-100' : ''}
+                        ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-50 hover:bg-red-100' : ''}
+                        ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-50 hover:bg-amber-100' : ''}
+                        ${(hasConsultantsStarting || hasConsultantsEnding) ? 'rounded-md' : ''}
                         ${isToday(benchDate.date) ? 'ring-2 ring-blue-500 rounded-full' : ''}
                       `}
                     >
                       <span className="text-sm">
                         {format(benchDate.date, 'd')}
                       </span>
-                      {hasConsultants && (
+                      {(hasConsultantsStarting || hasConsultantsEnding) && (
                         <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
-                          <div className="w-1 h-1 rounded-full bg-blue-500" />
+                          <div className={`w-1 h-1 rounded-full ${
+                            hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-500' : 
+                            !hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-500' : 
+                            'bg-amber-500'
+                          }`} />
                         </div>
                       )}
                     </div>
                   </HoverCardTrigger>
                   
-                  {hasConsultants && (
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-4">
-                        <p className="text-sm font-medium">
-                          Coming to bench on {format(benchDate.date, 'MMM d, yyyy')}:
-                        </p>
+                  <HoverCardContent className="w-80">
+                    <div className="space-y-4">
+                      {hasConsultantsEnding && (
                         <div className="space-y-2">
-                          {benchDate.consultants.map(({ consultant, nextAssignment }) => (
-                            <div
-                              key={consultant._id}
-                              className="flex items-center gap-2"
-                            >
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={consultant.picture} />
-                              </Avatar>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">{consultant.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {nextAssignment 
-                                    ? `Next project starts ${format(new Date(nextAssignment.startDate), 'MMM d')}`
-                                    : 'No next project scheduled'
-                                  }
-                                </p>
+                          <p className="text-sm font-medium">
+                            Coming to bench on {format(benchDate.date, 'MMM d, yyyy')}:
+                          </p>
+                          {benchDate.consultants
+                            .filter(c => c.type === 'ending')
+                            .map(({ consultant, nextAssignment }) => (
+                              <div
+                                key={`ending-${consultant._id}`}
+                                className="flex items-center gap-2"
+                              >
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={consultant.picture} />
+                                </Avatar>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">{consultant.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {nextAssignment 
+                                      ? `Next project starts ${format(new Date(nextAssignment.startDate), 'MMM d')}`
+                                      : 'No next project scheduled'
+                                    }
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
                         </div>
-                      </div>
-                    </HoverCardContent>
-                  )}
+                      )}
+                      
+                      {hasConsultantsStarting && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">
+                            Starting projects on {format(benchDate.date, 'MMM d, yyyy')}:
+                          </p>
+                          {benchDate.consultants
+                            .filter(c => c.type === 'starting')
+                            .map(({ consultant, nextAssignment }) => (
+                              <div
+                                key={`starting-${consultant._id}`}
+                                className="flex items-center gap-2"
+                              >
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={consultant.picture} />
+                                </Avatar>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">{consultant.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Starting: {nextAssignment.name}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </HoverCardContent>
                 </HoverCard>
               )
             })

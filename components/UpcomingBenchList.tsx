@@ -1,7 +1,6 @@
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ConsultantBenchCard from './ConsultantBenchCard'
-import BenchCalendar from './BenchCalendar'
 import { getCurrentAssignment, getNextAssignment } from '@/lib/consultantUtils'
 
 interface UpcomingBenchListProps {
@@ -73,11 +72,6 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
 
   return (
     <div className="space-y-6">
-      <BenchCalendar 
-        consultants={consultants}
-        projects={projects}
-      />
-
       <Card>
         <CardHeader>
           <CardTitle>Coming to Bench</CardTitle>
