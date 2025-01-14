@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
-import { Home, LayoutDashboard, Kanban, Users, Calendar } from "lucide-react"
+import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -45,6 +45,11 @@ const navSections: NavSection[] = [
         href: "/dashboard/workforce",
         label: "Workforce View",
         icon: Users
+      },
+      {
+        href: "/dashboard/bench",
+        label: "Bench",
+        icon: Sofa
       }
     ]
   }
