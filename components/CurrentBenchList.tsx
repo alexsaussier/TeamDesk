@@ -23,7 +23,7 @@ export default function CurrentBenchList({ consultants, projects }: CurrentBench
     <Card className="">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Currently on Bench</span>
+          <span>Current Availabilities</span>
           <div className="flex items-center gap-4">
             <Select value={levelFilter} onValueChange={setLevelFilter}>
               <SelectTrigger className="w-[140px]">

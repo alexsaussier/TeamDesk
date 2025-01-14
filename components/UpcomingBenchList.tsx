@@ -64,7 +64,7 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
       <Card className="">
         <CardHeader >
           <CardTitle className="flex items-center justify-between">
-            <span>Coming to Bench</span>
+            <span>Upcoming Availabilities</span>
             <Select value={levelFilter} onValueChange={setLevelFilter}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Filter by level" />

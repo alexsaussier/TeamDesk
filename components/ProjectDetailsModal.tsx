@@ -47,6 +47,8 @@ export function ProjectDetailsModal({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditingChanceToClose, setIsEditingChanceToClose] = useState(false)
   const [tempChanceToClose, setTempChanceToClose] = useState<number | null>(null)
+  const [isEditingPercentage, setIsEditingPercentage] = useState<Record<string, boolean>>({})
+  const [tempPercentage, setTempPercentage] = useState<Record<string, number | null>>({})
 
   useEffect(() => {
     setLocalProject(project)
@@ -147,6 +149,40 @@ export function ProjectDetailsModal({
       console.error('Error updating chance to close:', error)
     } finally {
       setIsUpdatingStatus(false)
+    }
+  }
+
+  const handleUpdateAssignment = async (consultantId: string, percentage: number) => {
+    try {
+      setIsAssigning(true)
+      const response = await fetch(`/api/projects/${localProject.id}/update-assignment`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ consultantId, percentage }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update assignment percentage')
+      }
+
+      setLocalProject(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          assignedConsultants: prev.assignedConsultants.map(c => {
+            if ((c._id === consultantId || c.id === consultantId)) {
+              return { ...c, percentage }
+            }
+            return c
+          })
+        }
+      })
+    } catch (error) {
+      console.error('Error updating assignment percentage:', error)
+    } finally {
+      setIsAssigning(false)
     }
   }
 
@@ -379,17 +415,77 @@ export function ProjectDetailsModal({
                                 {consultant.level}
                               </p>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleUnassign(consultant._id || consultant.id)
-                              }}
-                            >
-                              <MinusCircle className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24">
+                                {isEditingPercentage?.[consultant._id || consultant.id] ? (
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={tempPercentage?.[consultant._id || consultant.id] ?? consultant.percentage}
+                                    onChange={(e) => setTempPercentage(prev => ({
+                                      ...prev,
+                                      [consultant._id || consultant.id]: parseInt(e.target.value) || 0
+                                    }))}
+                                    className="h-8"
+                                  />
+                                ) : (
+                                  <span className="text-sm">{consultant.percentage}%</span>
+                                )}
+                              </div>
+                              {isEditingPercentage?.[consultant._id || consultant.id] ? (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-green-600 hover:text-green-700"
+                                    onClick={() => {
+                                      const id = consultant._id || consultant.id;
+                                      handleUpdateAssignment(id, tempPercentage?.[id] ?? consultant.percentage);
+                                      setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
+                                      setTempPercentage(prev => ({ ...prev, [id]: null }));
+                                    }}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-600 hover:text-red-700"
+                                    onClick={() => {
+                                      const id = consultant._id || consultant.id;
+                                      setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
+                                      setTempPercentage(prev => ({ ...prev, [id]: null }));
+                                    }}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => {
+                                    const id = consultant._id || consultant.id;
+                                    setIsEditingPercentage(prev => ({ ...prev, [id]: true }));
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleUnassign(consultant._id || consultant.id)
+                                }}
+                              >
+                                <MinusCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </>
                         ) : (
                           <div className="flex-1 flex items-center justify-between">
