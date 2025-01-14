@@ -27,13 +27,6 @@ interface ConsultantSuggestionsProps {
   projectId: string;
 }
 
-interface AssignmentCounts {
-  [key: string]: {
-    assigned: number;
-    needed: number;
-  }
-}
-
 function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign }: ConsultantSuggestionProps) {
   return (
     <div className={`border rounded-lg p-4 space-y-3 ${isAssigned ? 'opacity-50' : ''}`}>

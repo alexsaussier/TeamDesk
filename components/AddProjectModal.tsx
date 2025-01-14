@@ -140,28 +140,7 @@ export function AddProjectModal({
 
   
 
-  const handleConsultantAssign = async (consultantId: string) => {
-    if (!createdProjectId) return
-
-    try {
-      const response = await fetch(`/api/projects/${createdProjectId}/assign`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          consultantId,
-          percentage: 100
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to assign consultant')
-      }
-    } catch (error) {
-      console.error('Error assigning consultant:', error)
-    }
-  }
+ 
 
   const handleClose = () => {
     setStep(1)
