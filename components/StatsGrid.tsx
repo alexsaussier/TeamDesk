@@ -1,9 +1,10 @@
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getNextStartingProject } from '@/types/index'
-import { Users, Briefcase, ArrowRight } from "lucide-react"
+import { Users, Briefcase, ArrowRight, Coffee } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
+import { getCurrentAssignment } from '@/lib/consultantUtils'
 
 interface StatsGridProps {
   consultants: Consultant[]
@@ -20,6 +21,12 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
   const nextProject = getNextStartingProject(projects)
 
   const router = useRouter()
+
+  // Calculate consultants currently on bench
+  const benchConsultants = consultants.filter(consultant => {
+    const currentAssignment = getCurrentAssignment(consultant, projects)
+    return !currentAssignment
+  })
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -38,6 +45,25 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
         </CardContent>
       </Card>
 
+      <Card 
+        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        onClick={() => router.push('/dashboard/bench')}
+      >
+        <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+          <Coffee className="h-4 w-4 text-muted-foreground mr-2" />
+          <CardTitle className="text-sm font-medium">On Bench</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow flex flex-col justify-end pt-2">
+          <div className="text-3xl font-bold tracking-tight flex items-baseline gap-2">
+            {benchConsultants.length}
+            <span className="text-lg font-normal text-muted-foreground">
+            | {Math.round((benchConsultants.length / totalConsultants) * 100)}% of team
+            </span>
+          </div>
+          <p className="text-xs text-right text-muted-foreground mt-1">View bench</p>
+</CardContent>
+      </Card>
+      
       <Card 
         className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
         onClick={() => router.push('/dashboard/projects')}

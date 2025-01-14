@@ -116,7 +116,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
   weeks.push(currentWeek)
 
   return (
-    <Card>
+    <Card className="bg-gray-50">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Bench Calendar</span>
@@ -197,7 +197,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                       {hasConsultantsEnding && (
                         <div className="space-y-2">
                           <p className="text-sm font-medium">
-                            Coming to bench on {format(benchDate.date, 'MMM d, yyyy')}:
+                            Coming on bench on {format(benchDate.date, 'MMM d, yyyy')}:
                           </p>
                           {benchDate.consultants
                             .filter(c => c.type === 'ending')

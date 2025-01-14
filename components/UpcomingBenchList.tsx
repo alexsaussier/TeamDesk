@@ -61,8 +61,8 @@ export default function UpcomingBenchList({ consultants, projects }: UpcomingBen
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
+      <Card className="">
+        <CardHeader >
           <CardTitle className="flex items-center justify-between">
             <span>Coming to Bench</span>
             <Select value={levelFilter} onValueChange={setLevelFilter}>

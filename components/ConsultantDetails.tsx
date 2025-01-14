@@ -161,6 +161,9 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
           icon={<Calendar className="h-5 w-5" />}
           title="Next Assignment"
           value={getNextProject(consultant, projects)?.name || "None scheduled"}
+          subtitle={getNextProject(consultant, projects)
+            ? `In ${Math.ceil((new Date(getNextProject(consultant, projects)!.startDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days - ${new Date(getNextProject(consultant, projects)!.startDate).toLocaleDateString()}`
+            : undefined}
         />
         <StatsCard
           icon={<TrendingUp className="h-5 w-5" />}
@@ -223,7 +226,17 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
 }
 
 // Helper component for stats cards
-function StatsCard({ icon, title, value }: { icon: React.ReactNode, title: string, value: string }) {
+function StatsCard({ 
+  icon, 
+  title, 
+  value, 
+  subtitle 
+}: { 
+  icon: React.ReactNode, 
+  title: string, 
+  value: string, 
+  subtitle?: string 
+}) {
   return (
     <Card>
       <CardContent className="pt-4">
@@ -232,6 +245,7 @@ function StatsCard({ icon, title, value }: { icon: React.ReactNode, title: strin
           <span className="text-sm font-medium">{title}</span>
         </div>
         <div className="text-2xl font-bold">{value}</div>
+        {subtitle && <div className="text-sm text-muted-foreground mt-1">{subtitle}</div>}
       </CardContent>
     </Card>
   )

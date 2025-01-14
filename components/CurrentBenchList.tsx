@@ -20,7 +20,7 @@ export default function CurrentBenchList({ consultants, projects }: CurrentBench
   })
 
   return (
-    <Card>
+    <Card className="">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Currently on Bench</span>
