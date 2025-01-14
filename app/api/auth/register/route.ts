@@ -93,7 +93,9 @@ export async function POST(request: Request) {
       ])
 
       // Second pass: Update assignments with new IDs
-      const updatePromises: Promise<any>[] = []
+      // Define a type for the update operations
+      type UpdateOperation = ReturnType<typeof Project.findByIdAndUpdate> | ReturnType<typeof Consultant.findByIdAndUpdate>
+      const updatePromises: UpdateOperation[] = []
 
       // Update project assignments
       templateProjects.forEach((project, index) => {
