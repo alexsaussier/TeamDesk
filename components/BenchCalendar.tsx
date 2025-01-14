@@ -7,7 +7,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import { getCurrentAssignment, getNextAssignment } from '@/lib/consultantUtils'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -45,38 +44,69 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
     
     // Get all bench transitions (both starting and ending projects)
     const benchTransitions = consultants.flatMap(consultant => {
-      const transitions = []
-      const currentAssignment = getCurrentAssignment(consultant, projects)
-      const nextAssignment = getNextAssignment(consultant, projects)
-      
-      // Coming onto bench (ending current project)
-      if (currentAssignment) {
-        const availableFrom = new Date(currentAssignment.endDate)
-        const gapDuration = nextAssignment 
-          ? new Date(nextAssignment.startDate).getTime() - availableFrom.getTime()
-          : Infinity
-        
-        const gapDays = gapDuration / (1000 * 60 * 60 * 24)
-        
-        if (gapDays >= 7) {
+      const transitions: Array<{
+        date: Date;
+        consultant: Consultant;
+        nextAssignment: Project | null;
+        type: 'starting' | 'ending';
+      }> = [];
+      const sortedAssignments = projects
+        .filter(project => 
+          consultant.assignments.some(a => a.projectId === project.id)
+        )
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+
+      // Process each assignment to find transitions
+      sortedAssignments.forEach((assignment, index) => {
+        const nextAssignment = sortedAssignments[index + 1]
+        const prevAssignment = sortedAssignments[index - 1]
+
+        // Check if coming onto bench (ending current assignment)
+        if (nextAssignment) {
+          const gapDuration = new Date(nextAssignment.startDate).getTime() - new Date(assignment.endDate).getTime()
+          const gapDays = gapDuration / (1000 * 60 * 60 * 24)
+          
+          if (gapDays >= 7) {
+            transitions.push({
+              date: new Date(assignment.endDate),
+              consultant,
+              nextAssignment,
+              type: 'ending' as const
+            })
+          }
+        } else {
+          // Last assignment - always show coming onto bench
           transitions.push({
-            date: availableFrom,
+            date: new Date(assignment.endDate),
             consultant,
-            nextAssignment,
+            nextAssignment: null,
             type: 'ending' as const
           })
         }
-      }
 
-      // Coming off bench (starting next project)
-      if (nextAssignment) {
-        transitions.push({
-          date: new Date(nextAssignment.startDate),
-          consultant,
-          nextAssignment,
-          type: 'starting' as const
-        })
-      }
+        // Check if coming off bench (starting this assignment)
+        if (prevAssignment) {
+          const gapDuration = new Date(assignment.startDate).getTime() - new Date(prevAssignment.endDate).getTime()
+          const gapDays = gapDuration / (1000 * 60 * 60 * 24)
+          
+          if (gapDays >= 7) {
+            transitions.push({
+              date: new Date(assignment.startDate),
+              consultant,
+              nextAssignment: assignment,
+              type: 'starting' as const
+            })
+          }
+        } else {
+          // First assignment - always show coming off bench
+          transitions.push({
+            date: new Date(assignment.startDate),
+            consultant,
+            nextAssignment: assignment,
+            type: 'starting' as const
+          })
+        }
+      })
 
       return transitions
     })
@@ -179,11 +209,11 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                     <div
                       className={`
                         bg-background p-2 text-center relative rounded-md
-                        ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-100 hover:bg-green-200 border border-green-500' : ''}
-                        ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-100 hover:bg-red-200 border border-red-500' : ''}
-                        ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-100 hover:bg-amber-200 border border-amber-500' : ''}
+                        ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-200 hover:bg-green-300' : ''}
+                        ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-200 hover:bg-red-300' : ''}
+                        ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-200 hover:bg-amber-300' : ''}
                         
-                        ${isToday(benchDate.date) ? 'ring-2 ring-blue-500 rounded-full' : ''}
+                        ${isToday(benchDate.date) ? 'ring-2 ring-sky-300 rounded-full' : ''}
                       `}
                     >
                       <span className="text-sm">
@@ -256,7 +286,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                   key={benchDate.date.toISOString()}
                   className={`
                     bg-background p-2 text-center relative
-                    ${isToday(benchDate.date) ? 'ring-2 ring-blue-500 rounded-full' : ''}
+                    ${isToday(benchDate.date) ? 'ring-2 ring-sky-600 rounded-md' : ''}
                   `}
                 >
                   <span className="text-sm">

@@ -158,7 +158,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           return (
             <Card 
               key={consultant._id} 
-              className="bg-gray-100 cursor-pointer hover:shadow-md transition-shadow relative"
+              className="bg-sky-50 border-sky-100 cursor-pointer hover:shadow-md transition-shadow relative"
               onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
             >
               <CardHeader>

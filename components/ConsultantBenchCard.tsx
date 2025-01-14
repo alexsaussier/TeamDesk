@@ -20,7 +20,7 @@ export default function ConsultantBenchCard({
 
   return (
     <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer bg-sky-50"
+      className="hover:shadow-md transition-shadow cursor-pointer bg-sky-50 border-sky-100"
       onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
     >
       <CardContent className="pt-6">
