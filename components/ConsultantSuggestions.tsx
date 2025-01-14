@@ -2,7 +2,8 @@ import { Consultant, Project, TeamSize } from "@/types"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react"
 
 interface ConsultantSuggestionProps {
   consultant: Consultant;
@@ -10,6 +11,8 @@ interface ConsultantSuggestionProps {
   skillsMatch: string[];
   skillsMissing: string[];
   isAvailable: boolean;
+  isAssigned: boolean;
+  onToggleAssign: (consultantId: string, assigned: boolean) => void;
 }
 
 interface ConsultantSuggestionsProps {
@@ -22,6 +25,7 @@ interface ConsultantSuggestionsProps {
   };
   onAssign: (consultantId: string) => void;
   allProjects: Project[];
+  projectId: string;
 }
 
 interface AssignmentCounts {
@@ -31,9 +35,9 @@ interface AssignmentCounts {
   }
 }
 
-function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, onAssign }: ConsultantSuggestionProps & { onAssign: (id: string) => void }) {
+function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign }: ConsultantSuggestionProps) {
   return (
-    <div className="border rounded-lg p-4 space-y-3">
+    <div className={`border rounded-lg p-4 space-y-3 ${isAssigned ? 'opacity-50' : ''}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
@@ -44,9 +48,16 @@ function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, onAs
             <p className="text-sm text-muted-foreground capitalize">{consultant.level}</p>
           </div>
         </div>
-        <Badge variant={isAvailable ? "win" : "destructive"}>
-          {isAvailable ? "Available" : "Unavailable"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={isAssigned}
+            onCheckedChange={(checked) => onToggleAssign(consultant._id, checked as boolean)}
+            disabled={!isAvailable}
+          />
+          <Badge variant={isAvailable ? "win" : "destructive"}>
+            {isAvailable ? "Available" : "Unavailable"}
+          </Badge>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -77,16 +88,8 @@ function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, onAs
               ))}
             </div>
           </div>
-        )}*/}
+        )*/}
       </div>
-
-      <Button 
-        className="w-full" 
-        onClick={() => onAssign(consultant._id)}
-        disabled={!isAvailable}
-      >
-        Assign to Project
-      </Button>
     </div>
   );
 }
@@ -95,8 +98,62 @@ export default function ConsultantSuggestions({
   consultants, 
   projectRequirements, 
   onAssign,
-  allProjects 
+  allProjects,
+  projectId 
 }: ConsultantSuggestionsProps) {
+  // Track assigned consultants locally
+  const [assignedConsultants, setAssignedConsultants] = useState<string[]>([])
+
+  const handleToggleAssign = async (consultantId: string, assigned: boolean) => {
+    if (!projectId) {
+      console.error('Project ID is undefined')
+      return
+    }
+
+    try {
+      if (assigned) {
+        // Call the assign API
+        const response = await fetch(`/api/projects/${projectId}/assign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            consultantId,
+            percentage: 100
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to assign consultant')
+        }
+        setAssignedConsultants(prev => [...prev, consultantId])
+      } else {
+        // Call the unassign API
+        const response = await fetch(`/api/projects/${projectId}/unassign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ consultantId }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to unassign consultant')
+        }
+        setAssignedConsultants(prev => prev.filter(id => id !== consultantId))
+      }
+    } catch (error) {
+      console.error('Error toggling consultant assignment:', error)
+      // Revert the UI state if the API call fails
+      if (assigned) {
+        setAssignedConsultants(prev => prev.filter(id => id !== consultantId))
+      } else {
+        setAssignedConsultants(prev => [...prev, consultantId])
+      }
+    }
+  }
+
   const calculateMatchScore = (consultant: Consultant): ConsultantSuggestionProps => {
     // Check availability
     const isAvailable = !consultant.assignments.some(assignment => {
@@ -130,7 +187,9 @@ export default function ConsultantSuggestions({
       matchScore,
       skillsMatch,
       skillsMissing,
-      isAvailable
+      isAvailable,
+      isAssigned: assignedConsultants.includes(consultant._id),
+      onToggleAssign: handleToggleAssign
     };
   };
 
@@ -168,7 +227,9 @@ export default function ConsultantSuggestions({
           <div key={level} className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium capitalize">
-                {level} Consultants ({assignmentCounts[level].assigned}/{assignmentCounts[level].needed} assigned)
+                {level} Consultants ({assignedConsultants.filter(id => 
+                  consultants.find(c => c._id === id)?.level === level
+                ).length}/{projectRequirements.teamSize[level as keyof TeamSize]} assigned)
               </h3>
               <Badge variant="outline">
                 {groupedSuggestions[level]?.filter(s => s.isAvailable).length || 0} available
@@ -180,7 +241,8 @@ export default function ConsultantSuggestions({
                 <ConsultantCard 
                   key={suggestion.consultant._id}
                   {...suggestion}
-                  onAssign={onAssign}
+                  isAssigned={assignedConsultants.includes(suggestion.consultant._id)}
+                  onToggleAssign={handleToggleAssign}
                 />
               ))}
               {(!groupedSuggestions[level] || groupedSuggestions[level].length === 0) && (

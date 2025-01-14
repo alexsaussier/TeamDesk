@@ -10,7 +10,8 @@ import { useSession } from 'next-auth/react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ConsultantLevel } from '@/types'
+
+
 interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
@@ -46,6 +47,7 @@ export function AddProjectModal({
       partner: 0
     }
   })
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
 
   {/*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,23 +87,20 @@ export function AddProjectModal({
   */}
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    if (field === 'status') {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value as ProjectStatus,
+        chanceToClose: value !== 'Discussions' ? 100 : prev.chanceToClose
+      }))
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }))
+    }
   }
 
-  const handleNext = (e: React.FormEvent) => {
+  const handleNext = async (e: React.FormEvent) => {
     e.preventDefault()
-    setStep(2)
-  }
-
-  const handleBack = () => {
-    setStep(1)
-  }
-
-  const handleConsultantAssign = (consultantId: string) => {
-    setSelectedConsultants(prev => [...prev, consultantId])
-  }
-
-  const handleFinalSubmit = () => {
+    
     const newProject = {
       name: formData.name,
       client: formData.client,
@@ -111,33 +110,67 @@ export function AddProjectModal({
         .filter(Boolean),
       startDate: formData.startDate,
       endDate: formData.endDate,
-      assignedConsultants: selectedConsultants.map(id => {
-        const consultant = consultants.find(c => c._id === id)
-        return {
-          id: consultant?._id || '',
-          _id: consultant?._id || '',
-          name: consultant?.name || '',
-          skills: consultant?.skills || [],
-          picture: consultant?.picture || '',
-          percentage: 100,
-          level: (consultant?.level || 'junior') as ConsultantLevel
-        }
-      }),
+      assignedConsultants: [],
       status: formData.status,
       organizationId: session?.user?.organizationId || '',
       teamSize: formData.teamSize,
       chanceToClose: parseInt(formData.chanceToClose.toString())
     }
 
-    console.log("creating a new project: ", newProject)
-    
-    onAdd(newProject)
-    handleClose()
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProject)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create project')
+      }
+
+      const createdProject = await response.json()
+      setCreatedProjectId(createdProject._id)
+      onAdd(createdProject)
+      setStep(2)
+    } catch (error) {
+      console.error("Error creating project: ", error)
+    }
+  }
+
+  
+
+  const handleConsultantAssign = async (consultantId: string) => {
+    if (!createdProjectId) return
+
+    try {
+      setSelectedConsultants(prev => [...prev, consultantId])
+      
+      const response = await fetch(`/api/projects/${createdProjectId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          consultantId,
+          percentage: 100
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to assign consultant')
+      }
+    } catch (error) {
+      console.error('Error assigning consultant:', error)
+      setSelectedConsultants(prev => prev.filter(id => id !== consultantId))
+    }
   }
 
   const handleClose = () => {
     setStep(1)
     setSelectedConsultants([])
+    setCreatedProjectId(null)
     setFormData({
       name: '',
       client: '',
@@ -163,166 +196,166 @@ export function AddProjectModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {step === 1 ? 'Add New Project' : '(Optional) - Assign Team Members'}
           </DialogTitle>
         </DialogHeader>
 
-        {step === 1 ? (
-          <form id="new-project-form" onSubmit={handleNext} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Project Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="Enter project name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="client">Client Name *</Label>
-                <Input
-                  id="client"
-                  value={formData.client}
-                  onChange={(e) => handleChange('client', e.target.value)}
-                  placeholder="Enter client name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="requiredSkills">Required Skills (comma-separated) *</Label>
-                <Input
-                  id="requiredSkills"
-                  value={formData.requiredSkills}
-                  onChange={(e) => handleChange('requiredSkills', e.target.value)}
-                  placeholder="e.g., Strategy, Finance, Technology"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto">
+          {step === 1 ? (
+            <form id="new-project-form" onSubmit={handleNext} className="mx-2 my-2 space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date *</Label>
+                  <Label htmlFor="name">Project Name *</Label>
                   <Input
-                    id="startDate"
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => handleChange('startDate', e.target.value)}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    placeholder="Enter project name"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date *</Label>
+                  <Label htmlFor="client">Client Name *</Label>
                   <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => handleChange('endDate', e.target.value)}
+                    id="client"
+                    value={formData.client}
+                    onChange={(e) => handleChange('client', e.target.value)}
+                    placeholder="Enter client name"
                     required
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">Status *</Label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(value: ProjectStatus) => handleChange('status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projectStatuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="requiredSkills">Required Skills (comma-separated) *</Label>
+                  <Input
+                    id="requiredSkills"
+                    value={formData.requiredSkills}
+                    onChange={(e) => handleChange('requiredSkills', e.target.value)}
+                    placeholder="e.g., Strategy, Finance, Technology"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="chanceToClose">Chance to Close (%)</Label>
-                <Input
-                  id="chanceToClose"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.chanceToClose}
-                  onChange={(e) => handleChange('chanceToClose', e.target.value)}
-                  disabled={formData.status !== 'Discussions'}
-                  required
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date *</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => handleChange('startDate', e.target.value)}
+                      required
+                    />
+                  </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label>Team Size</Label>
-                  <div className="grid grid-cols-3 gap-4 mt-2">
-                    <div>
-                      <Label className="text-sm">Junior</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={formData.teamSize.junior}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          teamSize: {
-                            ...prev.teamSize,
-                            junior: parseFloat(e.target.value)
-                          }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm">Manager</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={formData.teamSize.manager}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          teamSize: {
-                            ...prev.teamSize,
-                            manager: parseFloat(e.target.value)
-                          }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm">Partner</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={formData.teamSize.partner}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          teamSize: {
-                            ...prev.teamSize,
-                            partner: parseFloat(e.target.value)
-                          }
-                        }))}
-                      />
+                  <div className="space-y-2">
+                    <Label htmlFor="endDate">End Date *</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => handleChange('endDate', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select 
+                    value={formData.status} 
+                    onValueChange={(value: ProjectStatus) => handleChange('status', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectStatuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="chanceToClose">Chance to Close (%)</Label>
+                  <Input
+                    id="chanceToClose"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.chanceToClose}
+                    onChange={(e) => handleChange('chanceToClose', e.target.value)}
+                    disabled={formData.status !== 'Discussions'}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label>Team Size</Label>
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      <div>
+                        <Label className="text-sm">Junior</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={formData.teamSize.junior}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            teamSize: {
+                              ...prev.teamSize,
+                              junior: parseFloat(e.target.value)
+                            }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Manager</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={formData.teamSize.manager}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            teamSize: {
+                              ...prev.teamSize,
+                              manager: parseFloat(e.target.value)
+                            }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Partner</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={formData.teamSize.partner}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            teamSize: {
+                              ...prev.teamSize,
+                              partner: parseFloat(e.target.value)
+                            }
+                          }))}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div className="max-h-[60vh] overflow-y-auto pr-2">
+            </form>
+          ) : (
+            <div className="space-y-4">
               <ConsultantSuggestions
                 consultants={consultants}
                 projectRequirements={{
@@ -336,10 +369,11 @@ export function AddProjectModal({
                 }}
                 onAssign={handleConsultantAssign}
                 allProjects={allProjects}
+                projectId={createdProjectId!}
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <DialogFooter className="flex items-center justify-between">
           <div className="flex-1 flex items-center justify-center">
@@ -356,15 +390,13 @@ export function AddProjectModal({
                 <Button type="button" variant="outline" onClick={handleClose}>
                   Cancel
                 </Button>
-                <Button type="submit" form="new-project-form">Next</Button>
+                <Button type="submit" form="new-project-form">Create Project</Button>
               </>
             ) : (
               <>
-                <Button type="button" variant="outline" onClick={handleBack}>
-                  Back
-                </Button>
-                <Button onClick={handleFinalSubmit}>
-                  Create Project
+               
+                <Button onClick={handleClose}>
+                  Done
                 </Button>
               </>
             )}
