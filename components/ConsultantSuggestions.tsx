@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Check, X } from "lucide-react"
+import { Label } from "@/components/ui/label"
 
 interface ConsultantSuggestionProps {
   consultant: Consultant;
@@ -12,7 +16,8 @@ interface ConsultantSuggestionProps {
   skillsMissing: string[];
   isAvailable: boolean;
   isAssigned: boolean;
-  onToggleAssign: (consultantId: string, assigned: boolean) => void;
+  percentage?: number;
+  onToggleAssign: (consultantId: string, assigned: boolean, percentage?: number) => void;
 }
 
 interface ConsultantSuggestionsProps {
@@ -28,9 +33,30 @@ interface ConsultantSuggestionsProps {
 }
 
 function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign }: ConsultantSuggestionProps) {
+  const [isEditingPercentage, setIsEditingPercentage] = useState(false);
+  const [tempPercentage, setTempPercentage] = useState(100);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAssignment = async (assigned: boolean, percentage?: number) => {
+    setIsLoading(true);
+    try {
+      await onToggleAssign(consultant._id, assigned, percentage);
+    } finally {
+      setIsLoading(false);
+      setIsEditingPercentage(false);
+    }
+  };
+
   return (
-    <div className={`border rounded-lg p-4 space-y-3 ${isAssigned ? 'opacity-50' : ''}`}>
-      <div className="flex items-center justify-between">
+    <div className="relative border rounded-lg p-4 space-y-3">
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      )}
+
+      <div className={`relative ${isAssigned ? 'opacity-50' : ''}`}>
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={consultant.picture} alt={consultant.name} />
@@ -40,47 +66,86 @@ function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAs
             <p className="text-sm text-muted-foreground capitalize">{consultant.level}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={isAssigned}
-            onCheckedChange={(checked) => onToggleAssign(consultant._id, checked as boolean)}
-            disabled={!isAvailable}
-          />
-          <Badge variant={isAvailable ? "win" : "destructive"}>
-            {isAvailable ? "Available" : "Unavailable"}
-          </Badge>
-        </div>
-      </div>
 
-      <div className="space-y-2">
-        <div>
-          <p className="text-sm font-medium">Match Score: {matchScore}%</p>
-          <Progress value={matchScore} className="h-2" />
-        </div>
-
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Matching Skills:</p>
-          <div className="flex flex-wrap gap-1">
-            {skillsMatch.map(skill => (
-              <Badge key={skill} variant="secondary" className="bg-green-50 text-green-700">
-                {skill}
-              </Badge>
-            ))}
+        {!isEditingPercentage ? (
+          <div className="flex items-center gap-2 mt-3">
+            <Checkbox
+              checked={isAssigned}
+              onCheckedChange={(checked) => {
+                if (checked && !isAssigned) {
+                  setIsEditingPercentage(true);
+                } else {
+                  handleAssignment(false);
+                }
+              }}
+              disabled={(!isAvailable && !isAssigned) || isLoading}
+            />
+            <Label htmlFor={`assign-${consultant._id}`} className="text-sm text-muted-foreground">
+              Assign to project
+            </Label>
+            <Badge variant={isAvailable ? "win" : "destructive"} className="ml-auto">
+              {isAvailable ? "Available" : "Unavailable"}
+            </Badge>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-2 mt-3">
+            <div className="flex items-center gap-2">
+              <Label htmlFor={`percentage-${consultant._id}`} className="text-sm">
+                Assignment Percentage:
+              </Label>
+              <Input
+                id={`percentage-${consultant._id}`}
+                type="number"
+                min="0"
+                max="100"
+                value={tempPercentage}
+                onChange={(e) => setTempPercentage(parseInt(e.target.value) || 0)}
+                className="w-24 h-8"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-green-600"
+                onClick={() => handleAssignment(true, tempPercentage)}
+                disabled={isLoading}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Confirm
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600"
+                onClick={() => setIsEditingPercentage(false)}
+                disabled={isLoading}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
 
-        {/*skillsMissing.length > 0 && (
+        <div className="space-y-2 mt-3">
+          <div>
+            <p className="text-sm font-medium">Match Score: {matchScore}%</p>
+            <Progress value={matchScore} className="h-2" />
+          </div>
+
           <div className="space-y-1">
-            <p className="text-sm font-medium">Missing Skills:</p>
+            <p className="text-sm font-medium">Matching Skills:</p>
             <div className="flex flex-wrap gap-1">
-              {skillsMissing.map(skill => (
-                <Badge key={skill} variant="secondary" className="bg-red-50 text-red-700">
+              {skillsMatch.map(skill => (
+                <Badge key={skill} variant="secondary" className="bg-green-50 text-green-700">
                   {skill}
                 </Badge>
               ))}
             </div>
           </div>
-        )*/}
+        </div>
       </div>
     </div>
   );
@@ -95,7 +160,7 @@ export default function ConsultantSuggestions({
   // Track assigned consultants locally
   const [assignedConsultants, setAssignedConsultants] = useState<string[]>([])
 
-  const handleToggleAssign = async (consultantId: string, assigned: boolean) => {
+  const handleToggleAssign = async (consultantId: string, assigned: boolean, percentage: number = 100) => {
     if (!projectId) {
       console.error('Project ID is undefined')
       return
@@ -111,7 +176,7 @@ export default function ConsultantSuggestions({
           },
           body: JSON.stringify({ 
             consultantId,
-            percentage: 100
+            percentage
           }),
         })
 
