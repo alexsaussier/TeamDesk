@@ -59,9 +59,9 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
   return (
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto h-[calc(100vh-12rem)]">
+        <div className="flex gap-4 overflow-x-auto min-h-[calc(100vh-6rem)] pb-8">
           {columns.map(column => (
-            <div key={column} className="flex-1 min-w-[300px] flex flex-col h-full">
+            <div key={column} className="flex-1 min-w-[300px] flex flex-col min-h-[calc(100vh-6rem)]">
               <h3 className={`font-semibold mb-3 ${columnHeaderColors[column]} text-lg`}>{column}</h3>
               <Droppable droppableId={column}>
                 {(provided) => (

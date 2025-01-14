@@ -64,6 +64,34 @@ const getProjectCellStyle = (project: Project, month: string, months: string[]):
   return ''
 }
 
+// Add this new function to group projects by rows based on overlapping dates
+const groupProjectsByRows = (projects: Project[]): Project[][] => {
+  if (!projects.length) return [];
+  
+  const rows: Project[][] = [];
+  const sortedProjects = [...projects].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+
+  sortedProjects.forEach(project => {
+    // Find the first row where the project can fit
+    const rowIndex = rows.findIndex(row => {
+      const lastProject = row[row.length - 1];
+      return new Date(lastProject.endDate) < new Date(project.startDate);
+    });
+
+    if (rowIndex === -1) {
+      // Create new row if project overlaps with all existing rows
+      rows.push([project]);
+    } else {
+      // Add to existing row if no overlap
+      rows[rowIndex].push(project);
+    }
+  });
+
+  return rows;
+}
+
 export default function ConsultantProjectTimeline({ consultant, projects }: ConsultantProjectTimelineProps) {
   const getConsultantProjects = () => {
     if (!consultant || !projects.length) return []
@@ -75,6 +103,7 @@ export default function ConsultantProjectTimeline({ consultant, projects }: Cons
   }
 
   const consultantProjects = getConsultantProjects()
+  const projectRows = groupProjectsByRows(consultantProjects)
   const months = getProjectMonths()
 
   return (
@@ -97,53 +126,71 @@ export default function ConsultantProjectTimeline({ consultant, projects }: Cons
               ))}
             </TableRow>
           </TableHeader>
+          
           <TableBody>
-            <TableRow>
-              <TableCell className="font-medium w-[200px] min-w-[200px]">
-                Projects
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline">{consultantProjects.length} assignments</Badge>
-                </div>
-              </TableCell>
-              {months.map((month) => (
+            {projectRows.map((rowProjects, rowIndex) => (
+              <TableRow 
+                key={rowIndex} 
+                className="border-b-0 hover:bg-transparent"
+              >
                 <TableCell 
-                  key={month}
-                  className="text-center p-0 w-[80px] min-w-[80px]"
+                  className={cn(
+                    "font-medium w-[200px] min-w-[200px]",
+                    rowIndex === 0 ? "align-middle border-b-0" : "border-t-0"
+                  )}
                 >
-                  {consultantProjects.map(project => (
-                    isProjectActiveInMonth(project, month) && (
-                      <div 
-                        key={project.id}
-                        className={cn(
-                          "w-full h-8 bg-sky-100 mb-1 last:mb-0 flex items-center",
-                          getProjectCellStyle(project, month, months)
-                        )}
-                        style={{
-                          position: 'relative',
-                          overflow: 'visible'
-                        }}
-                      >
-                        {month === months.find(m => isProjectActiveInMonth(project, m)) && (
-                          <div 
-                            className="absolute left-2 text-xs text-black whitespace-nowrap z-10"
-                            style={{
-                              maxWidth: `${80 * months.filter(m => 
-                                isProjectActiveInMonth(project, m)
-                              ).length - 16}px`
-                            }}
-                          >
-                            {project.name}
-                            {project.client && (
-                              <span className="opacity-75"> • {project.client}</span>
-                            )}
-                          </div>
-                        )}
+                  {rowIndex === 0 && (
+                    <>
+                      Projects
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline">{consultantProjects.length} assignments</Badge>
                       </div>
-                    )
-                  ))}
+                    </>
+                  )}
                 </TableCell>
-              ))}
-            </TableRow>
+                {months.map((month) => (
+                  <TableCell 
+                    key={month}
+                    className={cn(
+                      "text-center p-0 w-[80px] min-w-[80px]",
+                      rowIndex === 0 ? "border-b-0" : "border-t-0"
+                    )}
+                  >
+                    {rowProjects.map(project => (
+                      isProjectActiveInMonth(project, month) && (
+                        <div 
+                          key={project.id}
+                          className={cn(
+                            "w-full h-8 bg-sky-100 mb-1 last:mb-0 flex items-center",
+                            getProjectCellStyle(project, month, months)
+                          )}
+                          style={{
+                            position: 'relative',
+                            overflow: 'visible'
+                          }}
+                        >
+                          {month === months.find(m => isProjectActiveInMonth(project, m)) && (
+                            <div 
+                              className="absolute left-2 text-xs text-black whitespace-nowrap z-10"
+                              style={{
+                                maxWidth: `${80 * months.filter(m => 
+                                  isProjectActiveInMonth(project, m)
+                                ).length - 16}px`
+                              }}
+                            >
+                              {project.name}
+                              {project.client && (
+                                <span className="opacity-75"> • {project.client}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    ))}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
 
