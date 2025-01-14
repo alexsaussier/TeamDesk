@@ -264,7 +264,10 @@ export function ProjectDetailsModal({
                               ) : (
                                 <>
                                   <div className="w-[100px] h-9 bg-background flex items-center px-3 rounded-md border">
-                                    {localProject.chanceToClose ?? 1}%
+                                    {localProject.status === 'Discussions' 
+                                      ? `${localProject.chanceToClose ?? 1}%`
+                                      : '100%'
+                                    }
                                   </div>
                                   {localProject.status === 'Discussions' && (
                                     <Button

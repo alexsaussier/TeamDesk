@@ -8,11 +8,13 @@ import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
 import { useProjectDelete } from '@/hooks/useProjectDelete'
+import { Spinner } from "@/components/ui/spinner"
 
 export default function ProjectDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const { isOpen, openModal, closeModal } = useProjectModal()
   const { deleteProject: deleteProjectAction } = useProjectDelete(
     (projectId) => setProjects(prev => prev.filter(p => p.id !== projectId))
@@ -26,22 +28,23 @@ export default function ProjectDashboard() {
 
     const fetchData = async () => {
       try {
+        setIsLoading(true)
         // Fetch projects
         const projectsResponse = await fetch('/api/projects')
         if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
         const projectsData = await projectsResponse.json()
-        console.log('Fetched projects:', projectsData)
 
         // Fetch consultants
         const consultantsResponse = await fetch('/api/workforce')
         if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
         const consultantsData = await consultantsResponse.json()
-        console.log('Fetched consultants:', consultantsData)
 
         setProjects(projectsData)
         setConsultants(consultantsData)
       } catch (error) {
         console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -165,6 +168,29 @@ export default function ProjectDashboard() {
     }
   }
 
+  const updateChanceToClose = async (projectId: string, chanceToClose: number) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/chance-to-close`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chanceToClose })
+      })
+
+      if (!response.ok) throw new Error('Failed to update chance to close')
+      
+      // Update the projects state in the parent component
+      setProjects(prevProjects =>
+        prevProjects.map(project =>
+          project.id === projectId
+            ? { ...project, chanceToClose }
+            : project
+        )
+      )
+    } catch (error) {
+      console.error('Error updating chance to close:', error)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -174,23 +200,36 @@ export default function ProjectDashboard() {
           label="Add Project" 
         />
       </div>
-      <ProjectKanban 
-        projects={projects} 
-        consultants={consultants} 
-        onAssign={assignConsultant}
-        onUnassign={unassignConsultant}
-        onUpdateStatus={updateProjectStatus}
-        onDelete={async (projectId) => {
-          await deleteProjectAction(projectId)
-        }}
-      />
-      <AddProjectModal
-        isOpen={isOpen}
-        onClose={closeModal}
-        onAdd={handleAddProject}
-        consultants={consultants}
-        allProjects={projects}
-      />
+
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <Spinner className="h-8 w-8" />
+              <p className="text-sm text-gray-600">Loading projects...</p>
+            </div>
+          </div>
+        )}
+        
+        <ProjectKanban 
+          projects={projects} 
+          consultants={consultants} 
+          onAssign={assignConsultant}
+          onUnassign={unassignConsultant}
+          onUpdateStatus={updateProjectStatus}
+          onDelete={async (projectId) => {
+            await deleteProjectAction(projectId)
+          }}
+          onUpdateChanceToClose={updateChanceToClose}
+        />
+        <AddProjectModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          onAdd={handleAddProject}
+          consultants={consultants}
+          allProjects={projects}
+        />
+      </div>
     </div>
   )
 }

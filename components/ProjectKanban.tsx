@@ -14,6 +14,7 @@ interface ProjectKanbanProps {
   onUnassign: (consultantId: string, projectId: string) => Promise<void>
   onUpdateStatus: (projectId: string, newStatus: ProjectStatus) => Promise<void>
   onDelete: (projectId: string) => Promise<void>
+  onUpdateChanceToClose: (projectId: string, chanceToClose: number) => Promise<void>
 }
 
 const columns: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
@@ -32,7 +33,7 @@ const columnHeaderColors = {
   'Completed': 'text-slate-600'
 }
 
-export default function ProjectKanban({ projects, consultants, onAssign, onUnassign, onUpdateStatus, onDelete }: ProjectKanbanProps): JSX.Element {
+export default function ProjectKanban({ projects, consultants, onAssign, onUnassign, onUpdateStatus, onDelete, onUpdateChanceToClose }: ProjectKanbanProps): JSX.Element {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null)
 
@@ -52,21 +53,6 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
       // You might want to show an error toast here
     } finally {
       setUpdatingProjectId(null)
-    }
-  }
-
-  const updateChanceToClose = async (projectId: string, chanceToClose: number) => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/chance-to-close`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chanceToClose })
-      })
-  
-      if (!response.ok) throw new Error('Failed to update chance to close')
-      
-    } catch (error) {
-      console.error('Error updating chance to close:', error)
     }
   }
 
@@ -192,7 +178,7 @@ export default function ProjectKanban({ projects, consultants, onAssign, onUnass
         onAssign={onAssign}
         onUnassign={onUnassign}
         onUpdateStatus={onUpdateStatus}
-        onUpdateChanceToClose={updateChanceToClose}
+        onUpdateChanceToClose={onUpdateChanceToClose}
         onDelete={onDelete}
         columns={columns}
       />

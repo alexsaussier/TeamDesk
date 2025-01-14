@@ -8,11 +8,13 @@ import { useSession } from 'next-auth/react'
 import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
 import { useProjectDelete } from '@/hooks/useProjectDelete'
+import { Spinner } from "@/components/ui/spinner"
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const { isOpen, openModal, closeModal } = useProjectModal()
   const { deleteProject } = useProjectDelete(
     (projectId) => {
@@ -29,6 +31,7 @@ export default function TimelineDashboard() {
 
     const fetchData = async () => {
       try {
+        setIsLoading(true)
         // Fetch projects and consultants in parallel
         const [projectsResponse, consultantsResponse] = await Promise.all([
           fetch('/api/projects'),
@@ -45,6 +48,8 @@ export default function TimelineDashboard() {
         setConsultants(consultantsData)
       } catch (error) {
         console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -112,29 +117,40 @@ export default function TimelineDashboard() {
           label="Add Project" 
         />
       </div>      
+      
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <Spinner className="h-8 w-8" />
+              <p className="text-sm text-gray-600">Loading projects...</p>
+            </div>
+          </div>
+        )}
         
-      <Timeline 
-        projects={projects} 
-        consultants={consultants}
-        columns={['Discussions', 'Sold', 'Started', 'Completed']}
-        onDelete={async (projectId) => {
-          await deleteProject(projectId)
-        }}
-        onUnassign={unassignConsultant}
-      />
-      <div className="flex justify-start">
-        <GradientButton 
-          onClick={() => openModal()} 
-          label="Add Project" 
+        <Timeline 
+          projects={projects} 
+          consultants={consultants}
+          columns={['Discussions', 'Sold', 'Started', 'Completed']}
+          onDelete={async (projectId) => {
+            await deleteProject(projectId)
+          }}
+          onUnassign={unassignConsultant}
+        />
+        <div className="flex justify-start mt-4">
+          <GradientButton 
+            onClick={() => openModal()} 
+            label="Add Project" 
+          />
+        </div>
+        <AddProjectModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          onAdd={handleAddProject}
+          consultants={consultants}
+          allProjects={projects}
         />
       </div>
-      <AddProjectModal
-        isOpen={isOpen}
-        onClose={closeModal}
-        onAdd={handleAddProject}
-        consultants={consultants}
-        allProjects={projects}
-      />
     </div>
   )
 }
