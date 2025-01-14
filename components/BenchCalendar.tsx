@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/hover-card"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { getCurrentAssignment, getNextAssignment } from '@/lib/consultantUtils'
-import { addDays, format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
