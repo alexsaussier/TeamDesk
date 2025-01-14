@@ -32,7 +32,6 @@ export function AddProjectModal({
 }: AddProjectModalProps) {
   const { data: session } = useSession()
   const [step, setStep] = useState(1)
-  const [selectedConsultants, setSelectedConsultants] = useState<string[]>([])
   const [formData, setFormData] = useState({
     name: '',
     client: '',
@@ -145,8 +144,6 @@ export function AddProjectModal({
     if (!createdProjectId) return
 
     try {
-      setSelectedConsultants(prev => [...prev, consultantId])
-      
       const response = await fetch(`/api/projects/${createdProjectId}/assign`, {
         method: 'POST',
         headers: {
@@ -163,13 +160,11 @@ export function AddProjectModal({
       }
     } catch (error) {
       console.error('Error assigning consultant:', error)
-      setSelectedConsultants(prev => prev.filter(id => id !== consultantId))
     }
   }
 
   const handleClose = () => {
     setStep(1)
-    setSelectedConsultants([])
     setCreatedProjectId(null)
     setFormData({
       name: '',
@@ -367,7 +362,6 @@ export function AddProjectModal({
                     .filter(Boolean),
                   teamSize: formData.teamSize
                 }}
-                onAssign={handleConsultantAssign}
                 allProjects={allProjects}
                 projectId={createdProjectId!}
               />

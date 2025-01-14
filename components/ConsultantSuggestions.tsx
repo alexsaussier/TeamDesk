@@ -23,7 +23,6 @@ interface ConsultantSuggestionsProps {
     requiredSkills: string[];
     teamSize: TeamSize;
   };
-  onAssign: (consultantId: string) => void;
   allProjects: Project[];
   projectId: string;
 }
@@ -97,7 +96,6 @@ function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAs
 export default function ConsultantSuggestions({ 
   consultants, 
   projectRequirements, 
-  onAssign,
   allProjects,
   projectId 
 }: ConsultantSuggestionsProps) {
@@ -211,13 +209,7 @@ export default function ConsultantSuggestions({
     groupedSuggestions[level].sort((a, b) => b.matchScore - a.matchScore);
   });
 
-  const assignmentCounts = Object.entries(projectRequirements.teamSize).reduce((acc, [level, needed]) => {
-    acc[level] = {
-      assigned: 0,
-      needed
-    };
-    return acc;
-  }, {} as AssignmentCounts);
+  
 
   return (
     <div className="space-y-6">
