@@ -4,6 +4,7 @@ import { Consultant, Project } from '@/types'
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState, useMemo } from 'react'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 interface UtilizationHistoricalChartProps {
   consultants: Consultant[]
@@ -45,7 +46,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
       const dataIndex = metrics.lastTwelveMonths.length - (months + 1) + index
       
       return {
-        month: date.toLocaleString('default', { month: 'short' }),
+        date: date.toISOString().split('T')[0],
         utilization: metrics.lastTwelveMonths[dataIndex] || 0,
         target: metrics.ytd.target
       }
@@ -55,11 +56,11 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Historical View</CardTitle>
-          <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+          <CardTitle className="text-lg">Historical View</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by level" />
               </SelectTrigger>
               <SelectContent>
@@ -73,7 +74,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
             </Select>
 
             <Select value={historicalPeriod} onValueChange={(value: HistoricalPeriod) => setHistoricalPeriod(value)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Time period" />
               </SelectTrigger>
               <SelectContent>
@@ -86,29 +87,59 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px]">
+        <div className="h-[300px] sm:h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={historicalData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis 
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="utilization" 
-                stroke="#2563eb" 
-                strokeWidth={2}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="target" 
-                stroke="#dc2626" 
-                strokeDasharray="3 3"
-              />
-            </LineChart>
+            <ChartContainer
+              config={{
+                utilization: {
+                  label: "Utilization",
+                  color: "#2563eb",
+                },
+                target: {
+                  label: "Target",
+                  color: "#dc2626",
+                },
+              }}
+            >
+              <LineChart 
+                data={historicalData}
+                margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date"
+                  tickFormatter={(value) => {
+                    const date = new Date(value)
+                    return date.toLocaleString('default', { 
+                      month: window.innerWidth < 640 ? 'narrow' : 'short' 
+                    })
+                  }}
+                  tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }}
+                />
+                <YAxis 
+                  domain={[0, 100]}
+                  tickFormatter={(value) => `${value}%`}
+                  tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }}
+                  width={35}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="utilization" 
+                  stroke="#2563eb" 
+                  strokeWidth={2}
+                  name="Utilization"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="target" 
+                  stroke="#dc2626" 
+                  strokeDasharray="3 3"
+                  name="Target"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ChartContainer>
           </ResponsiveContainer>
         </div>
       </CardContent>

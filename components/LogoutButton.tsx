@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { signOut } from "next-auth/react"
 
-export default function LogoutButton() {
+interface LogoutButtonProps {
+  onClick?: () => void;
+}
+
+export default function LogoutButton({ onClick }: LogoutButtonProps) {
   const handleLogout = async () => {
     await signOut({ 
       callbackUrl: '/' // Redirects to home page after signing out

@@ -47,9 +47,9 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 px-4">
       <h1 className="text-4xl font-bold">Sign In</h1>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-6 w-full max-w-md" onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"

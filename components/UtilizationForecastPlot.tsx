@@ -130,14 +130,14 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
   )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-      <Card className="lg:col-span-3 border-blue-100">
+    <div className="space-y-4">
+      <Card className="border-blue-100">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Next {forecastPeriod} Months Forecast</CardTitle>
-            <div className="flex gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <CardTitle className="text-lg">Next {forecastPeriod} Months</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,7 +151,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
               </Select>
 
               <Select value={forecastPeriod} onValueChange={(value: ForecastPeriod) => setForecastPeriod(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Forecast period" />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,81 +164,88 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer
-            config={{
-              officialUtilization: {
-                label: "Official Utilization",
-                color: "#2563eb",
-              },
-              expectedUtilization: {
-                label: "Expected Utilization",
-                color: "#93c5fd",
-              },
-              target: {
-                label: "Target",
-                color: "#dc2626",
-              },
-            }}
-            className="h-[400px]"
-          >
+          <div className="h-[300px] sm:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
-                data={utilizationData} 
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              <ChartContainer
+                config={{
+                  officialUtilization: {
+                    label: "Official Utilization",
+                    color: "#2563eb",
+                  },
+                  expectedUtilization: {
+                    label: "Expected Utilization",
+                    color: "#93c5fd",
+                  },
+                  target: {
+                    label: "Target",
+                    color: "#dc2626",
+                  },
+                }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(value) => {
-                    const date = new Date(value)
-                    return date.toLocaleString('default', { month: 'short' })
-                  }}
-                />
-                <YAxis 
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="officialUtilization" 
-                  stroke="#2563eb"
-                  name="Official Utilization" 
-                  strokeWidth={2}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="expectedUtilization" 
-                  stroke="#93c5fd"
-                  strokeDasharray="5 5"
-                  strokeOpacity={0.5}
-                  name="Expected Utilization" 
-                  strokeWidth={2}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="target" 
-                  stroke="#dc2626" 
-                  strokeDasharray="3 3"
-                  name="Target"
-                  strokeWidth={2}
-                />
-              </LineChart>
+                <LineChart 
+                  data={utilizationData} 
+                  margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(value) => {
+                      const date = new Date(value)
+                      return date.toLocaleString('default', { 
+                        month: window.innerWidth < 640 ? 'narrow' : 'short' 
+                      })
+                    }}
+                    tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }}
+                  />
+                  <YAxis 
+                    domain={[0, 100]}
+                    tickFormatter={(value) => `${value}%`}
+                    tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }}
+                    width={35}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="officialUtilization" 
+                    stroke="#2563eb"
+                    name="Official Utilization" 
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="expectedUtilization" 
+                    stroke="#93c5fd"
+                    strokeDasharray="5 5"
+                    strokeOpacity={0.5}
+                    name="Expected Utilization" 
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="target" 
+                    stroke="#dc2626" 
+                    strokeDasharray="3 3"
+                    name="Target"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ChartContainer>
             </ResponsiveContainer>
-          </ChartContainer>
+          </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
+      {/* Info Cards - Now always shown below the chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-blue-50/50 border-blue-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-md flex items-center gap-2 text-blue-700">
+            <CardTitle className="text-sm md:text-md flex items-center gap-2 text-blue-700">
               <div className="w-3 h-3 rounded-lg bg-blue-600" />
               Official Utilization
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-blue-900">
+            <p className="text-xs md:text-sm text-blue-900">
               Percentage of team members assigned to confirmed projects 
               (status: &quot;Started&quot;). 
             </p>
@@ -247,13 +254,13 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
 
         <Card className="bg-blue-50/50 border-blue-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-md flex items-center gap-2 text-blue-600">
+            <CardTitle className="text-sm md:text-md flex items-center gap-2 text-blue-600">
               <div className="w-3 h-3 rounded-full bg-blue-400" />
               Expected Utilization
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-blue-800">
+            <p className="text-xs md:text-sm text-blue-800">
               Includes both confirmed projects and potential upcoming work 
               (status: &quot;Discussions&quot;, &quot;Sold&quot;, or &quot;Started&quot;). 
             </p>
