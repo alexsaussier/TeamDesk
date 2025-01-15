@@ -156,15 +156,19 @@ export default function ProjectDashboard() {
       }
 
       const data = await response.json()
-      console.log("Added a new project: ", data)
       const addedProject: Project = {
         ...data,
-        id: data.id || data._id, // Convert _id to id if needed
+        id: data.id || data._id,
       }
-      setProjects([...projects, addedProject])
-      closeModal()
+      
+      // Update local state
+      setProjects(prev => [...prev, addedProject])
+      
+      // Return the created project for the modal
+      return addedProject
     } catch (error) {
       console.error('Error adding project:', error)
+      throw error // Re-throw to let modal handle the error
     }
   }
 

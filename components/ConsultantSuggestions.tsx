@@ -16,6 +16,7 @@ interface ConsultantSuggestionProps {
   skillsMissing: string[];
   isAvailable: boolean;
   isAssigned: boolean;
+  availabilityPercentage: number;
   percentage?: number;
   onToggleAssign: (consultantId: string, assigned: boolean, percentage?: number) => void;
 }
@@ -32,7 +33,7 @@ interface ConsultantSuggestionsProps {
   projectId: string;
 }
 
-function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign }: ConsultantSuggestionProps) {
+function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign, availabilityPercentage }: ConsultantSuggestionProps) {
   const [isEditingPercentage, setIsEditingPercentage] = useState(false);
   const [tempPercentage, setTempPercentage] = useState(100);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,8 +84,8 @@ function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAs
             <Label htmlFor={`assign-${consultant._id}`} className="text-sm text-muted-foreground">
               Assign to project
             </Label>
-            <Badge variant={isAvailable ? "win" : "destructive"} className="ml-auto">
-              {isAvailable ? "Available" : "Unavailable"}
+            <Badge variant={isAvailable ? "secondary" : "destructive"} className="ml-auto">
+              {isAvailable ? `${availabilityPercentage}% Available` : "0% available"}
             </Badge>
           </div>
         ) : (
@@ -211,26 +212,36 @@ export default function ConsultantSuggestions({
   }
 
   const calculateMatchScore = (consultant: Consultant): ConsultantSuggestionProps => {
-    // Check availability
-    const isAvailable = !consultant.assignments.some(assignment => {
+    // Check availability and calculate percentage
+    let availabilityPercentage = 100;
+    const today = new Date();
+    
+    consultant.assignments.forEach(assignment => {
       const project = allProjects.find(p => p.id === assignment.projectId);
-      if (!project) return false;
+      if (!project) return;
       
       const projectStart = new Date(project.startDate);
       const projectEnd = new Date(project.endDate);
-      const newStart = new Date(projectRequirements.startDate);
-      const newEnd = new Date(projectRequirements.endDate);
       
-      return (newStart <= projectEnd && newEnd >= projectStart);
+      if (projectStart <= today && projectEnd >= today) {
+        availabilityPercentage -= assignment.percentage;
+      }
     });
 
-    // Calculate skills match
+    // Rest of the existing availability check
+    const isAvailable = availabilityPercentage > 0;
+
+    // Calculate skills match (case insensitive)
     const skillsMatch = consultant.skills.filter(skill => 
-      projectRequirements.requiredSkills.includes(skill)
+      projectRequirements.requiredSkills.some(
+        reqSkill => reqSkill.toLowerCase() === skill.toLowerCase()
+      )
     );
     
     const skillsMissing = projectRequirements.requiredSkills.filter(
-      skill => !consultant.skills.includes(skill)
+      reqSkill => !consultant.skills.some(
+        skill => skill.toLowerCase() === reqSkill.toLowerCase()
+      )
     );
 
     // Calculate match score (weighted)
@@ -244,6 +255,7 @@ export default function ConsultantSuggestions({
       skillsMatch,
       skillsMissing,
       isAvailable,
+      availabilityPercentage: Math.max(0, availabilityPercentage),
       isAssigned: assignedConsultants.includes(consultant._id),
       onToggleAssign: handleToggleAssign
     };
@@ -293,6 +305,7 @@ export default function ConsultantSuggestions({
                   {...suggestion}
                   isAssigned={assignedConsultants.includes(suggestion.consultant._id)}
                   onToggleAssign={handleToggleAssign}
+                  availabilityPercentage={suggestion.availabilityPercentage}
                 />
               ))}
               {(!groupedSuggestions[level] || groupedSuggestions[level].length === 0) && (

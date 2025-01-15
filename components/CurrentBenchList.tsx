@@ -27,7 +27,7 @@ export default function CurrentBenchList({ consultants, projects }: CurrentBench
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Currently Available Consultants</span>
+          <span>Currently Available Workforce</span>
           <Select value={levelFilter} onValueChange={setLevelFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Filter by level" />

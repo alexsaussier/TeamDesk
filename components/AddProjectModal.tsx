@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => void
+  onAdd: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => Promise<Project>
   onEdit?: (project: Project) => void
   consultants: Consultant[]
   allProjects: Project[]
@@ -117,21 +117,8 @@ export function AddProjectModal({
     }
 
     try {
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProject)
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create project')
-      }
-
-      const createdProject = await response.json()
-      setCreatedProjectId(createdProject._id)
-      onAdd(createdProject)
+      const createdProject = await onAdd(newProject)
+      setCreatedProjectId(createdProject.id)
       setStep(2)
     } catch (error) {
       console.error("Error creating project: ", error)
