@@ -2,7 +2,7 @@ import { Consultant, Project } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ConsultantBenchCardProps {
@@ -33,63 +33,66 @@ export default function ConsultantBenchCard({
       className="hover:shadow-md transition-shadow cursor-pointer bg-sky-50 border-sky-100"
       onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
     >
-      <CardContent className="pt-6">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-12 w-12">
+      <CardContent className="pt-6 space-y-4">
+        {/* Header: Avatar + Name/Level */}
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12 shrink-0">
             <AvatarImage src={consultant.picture} alt={consultant.name} />
           </Avatar>
-          
-          <div className="space-y-2 flex-1">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold">{consultant.name}</h3>
-                <p className="text-sm text-muted-foreground capitalize">
-                  {consultant.level}
-                </p>
-              </div>
-              {availabilityPercentage !== undefined ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {availabilityPercentage}% Available
-                </Badge>
-              ) : (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {currentAvailability}% → {futureAvailability}%
-                  <span className="ml-1 text-xs">(+{availabilityChange}%)</span>
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-1">
-              {consultant.skills.slice(0, 3).map(skill => (
-                <Badge key={skill} variant="secondary">
-                  {skill}
-                </Badge>
-              ))}
-              {consultant.skills.length > 3 && (
-                <Badge variant="outline">
-                  +{consultant.skills.length - 3}
-                </Badge>
-              )}
-            </div>
-
-            <div className="space-y-1 pt-2">
-              {availableFrom && (
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Available from {availableFrom.toLocaleDateString()}</span>
-                </div>
-              )}
-              
-              {nextAssignment && (
-                <div className="text-sm text-muted-foreground">
-                  Next project: {nextAssignment.name} 
-                  <span className="text-xs">
-                    (starts {new Date(nextAssignment.startDate).toLocaleDateString()})
-                  </span>
-                </div>
-              )}
-            </div>
+          <div>
+            <h3 className="font-semibold leading-tight">{consultant.name}</h3>
+            <p className="text-sm text-muted-foreground capitalize">{consultant.level}</p>
           </div>
+        </div>
+
+        {/* Availability Badge */}
+        <div>
+          {availabilityPercentage !== undefined ? (
+            <Badge variant="secondary" className="bg-green-100 text-green-800 w-full justify-center text-center py-1">
+              {availabilityPercentage}% Available
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="bg-green-100 text-green-800 w-full justify-center text-center py-1">
+              {currentAvailability}% → {futureAvailability}%
+              <span className="ml-1 text-xs">(+{availabilityChange}%)</span>
+            </Badge>
+          )}
+        </div>
+
+        {/* Skills */}
+        <div className="flex flex-wrap gap-1">
+          {consultant.skills.slice(0, 3).map(skill => (
+            <Badge key={skill} variant="secondary" className="text-xs">
+              {skill}
+            </Badge>
+          ))}
+          {consultant.skills.length > 3 && (
+            <Badge variant="outline" className="text-xs">
+              +{consultant.skills.length - 3}
+            </Badge>
+          )}
+        </div>
+
+        {/* Dates Information */}
+        <div className="space-y-1 text-sm border-t border-sky-200 pt-3">
+          {availableFrom && (
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span>Available from {availableFrom.toLocaleDateString()}</span>
+            </div>
+          )}
+          
+          {nextAssignment && (
+            <div className="flex items-center gap-2">
+              <ArrowRightIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span>
+                Next: {nextAssignment.name}
+                <span className="text-xs ml-1 text-muted-foreground">
+                  (starts {new Date(nextAssignment.startDate).toLocaleDateString()})
+                </span>
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

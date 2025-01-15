@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/hover-card"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Briefcase, Sofa } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getConsultantAvailabilityAtDate, getNextAssignment } from '@/lib/consultantUtils'
 
 interface BenchCalendarProps {
   consultants: Consultant[]
@@ -50,60 +51,42 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
         nextAssignment: Project | null;
         type: 'starting' | 'ending';
       }> = [];
-      const sortedAssignments = projects
-        .filter(project => 
-          consultant.assignments.some(a => a.projectId === project.id)
-        )
-        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
 
-      // Process each assignment to find transitions
-      sortedAssignments.forEach((assignment, index) => {
-        const nextAssignment = sortedAssignments[index + 1]
-        const prevAssignment = sortedAssignments[index - 1]
+      // Get all assignment end dates that result in availability changes
+      consultant.assignments.forEach(assignment => {
+        const project = projects.find(p => p.id === assignment.projectId)
+        if (!project) return
 
-        // Check if coming onto bench (ending current assignment)
-        if (nextAssignment) {
-          const gapDuration = new Date(nextAssignment.startDate).getTime() - new Date(assignment.endDate).getTime()
-          const gapDays = gapDuration / (1000 * 60 * 60 * 24)
-          
-          if (gapDays >= 7) {
-            transitions.push({
-              date: new Date(assignment.endDate),
-              consultant,
-              nextAssignment,
-              type: 'ending' as const
-            })
-          }
-        } else {
-          // Last assignment - always show coming onto bench
+        const endDate = new Date(project.endDate)
+        const dayBefore = new Date(endDate.getTime() - 24 * 60 * 60 * 1000)
+        const dayAfter = new Date(endDate.getTime() + 24 * 60 * 60 * 1000)
+
+        const availabilityBefore = getConsultantAvailabilityAtDate(consultant, projects, dayBefore)
+        const availabilityAfter = getConsultantAvailabilityAtDate(consultant, projects, dayAfter)
+
+        if (availabilityAfter > availabilityBefore) {
           transitions.push({
-            date: new Date(assignment.endDate),
+            date: endDate,
             consultant,
-            nextAssignment: null,
-            type: 'ending' as const
+            nextAssignment: getNextAssignment(consultant, projects),
+            type: 'ending'
           })
         }
 
-        // Check if coming off bench (starting this assignment)
-        if (prevAssignment) {
-          const gapDuration = new Date(assignment.startDate).getTime() - new Date(prevAssignment.endDate).getTime()
-          const gapDays = gapDuration / (1000 * 60 * 60 * 24)
-          
-          if (gapDays >= 7) {
-            transitions.push({
-              date: new Date(assignment.startDate),
-              consultant,
-              nextAssignment: assignment,
-              type: 'starting' as const
-            })
-          }
-        } else {
-          // First assignment - always show coming off bench
+        // Also check project start dates
+        const startDate = new Date(project.startDate)
+        const startDayBefore = new Date(startDate.getTime() - 24 * 60 * 60 * 1000)
+        const startDayAfter = new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
+
+        const availabilityBeforeStart = getConsultantAvailabilityAtDate(consultant, projects, startDayBefore)
+        const availabilityAfterStart = getConsultantAvailabilityAtDate(consultant, projects, startDayAfter)
+
+        if (availabilityBeforeStart > availabilityAfterStart) {
           transitions.push({
-            date: new Date(assignment.startDate),
+            date: startDate,
             consultant,
-            nextAssignment: assignment,
-            type: 'starting' as const
+            nextAssignment: project,
+            type: 'starting'
           })
         }
       })
@@ -154,7 +137,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
             <Button variant="outline" size="icon" onClick={previousMonth}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-muted-foreground min-w-[120px] text-center">
+            <span className="text-muted-foreground text-lg w-[160px] text-center">
               {format(currentMonth, 'MMMM yyyy')}
             </span>
             <Button variant="outline" size="icon" onClick={nextMonth}>
@@ -169,7 +152,7 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3 rounded-md bg-red-100 border border-red-500" />
-            <span>Coming on bench</span>
+            <span>Ending Project</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3 rounded-md bg-amber-100 border border-amber-500" />
@@ -212,14 +195,18 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                         ${hasConsultantsStarting && !hasConsultantsEnding ? 'bg-green-200 hover:bg-green-300' : ''}
                         ${!hasConsultantsStarting && hasConsultantsEnding ? 'bg-red-200 hover:bg-red-300' : ''}
                         ${hasConsultantsStarting && hasConsultantsEnding ? 'bg-amber-200 hover:bg-amber-300' : ''}
-                        
                         ${isToday(benchDate.date) ? 'ring-2 ring-sky-300 rounded-full' : ''}
                       `}
                     >
+                      {hasConsultantsStarting && (
+                        <Briefcase className="absolute top-2 left-2 h-4 w-4 text-green-800" />
+                      )}
+                      {hasConsultantsEnding && (
+                        <Sofa className="absolute top-2 left-2 h-4 w-4 text-red-800" />
+                      )}
                       <span className="text-sm">
                         {format(benchDate.date, 'd')}
                       </span>
-                      
                     </div>
                   </HoverCardTrigger>
                   <HoverCardContent className="w-80">
@@ -231,25 +218,36 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                           </p>
                           {benchDate.consultants
                             .filter(c => c.type === 'ending')
-                            .map(({ consultant, nextAssignment }) => (
-                              <div
-                                key={`ending-${consultant._id}`}
-                                className="flex items-center gap-2"
-                              >
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={consultant.picture} />
-                                </Avatar>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{consultant.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {nextAssignment 
-                                      ? `Next project starts ${format(new Date(nextAssignment.startDate), 'MMM d')}`
-                                      : 'No next project scheduled'
-                                    }
-                                  </p>
+                            .map(({ consultant, nextAssignment }) => {
+                              const dayBefore = new Date(benchDate.date.getTime() - 24 * 60 * 60 * 1000)
+                              const dayAfter = new Date(benchDate.date.getTime() + 24 * 60 * 60 * 1000)
+                              const availabilityBefore = getConsultantAvailabilityAtDate(consultant, projects, dayBefore)
+                              const availabilityAfter = getConsultantAvailabilityAtDate(consultant, projects, dayAfter)
+                              const delta = availabilityAfter - availabilityBefore
+
+                              return (
+                                <div
+                                  key={`ending-${consultant._id}`}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={consultant.picture} />
+                                  </Avatar>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium">
+                                      {consultant.name}
+                                      <span className="ml-2 text-xs text-red-600">Avail.: +{delta}%</span>
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {nextAssignment 
+                                        ? `Next project starts ${format(new Date(nextAssignment.startDate), 'MMM d')}`
+                                        : 'No next project scheduled'
+                                      }
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                         </div>
                       )}
                       
@@ -260,22 +258,33 @@ export default function BenchCalendar({ consultants, projects }: BenchCalendarPr
                           </p>
                           {benchDate.consultants
                             .filter(c => c.type === 'starting')
-                            .map(({ consultant, nextAssignment }) => (
-                              <div
-                                key={`starting-${consultant._id}`}
-                                className="flex items-center gap-2"
-                              >
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={consultant.picture} />
-                                </Avatar>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{consultant.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Starting: {nextAssignment?.name}
-                                  </p>
+                            .map(({ consultant, nextAssignment }) => {
+                              const dayBefore = new Date(benchDate.date.getTime() - 24 * 60 * 60 * 1000)
+                              const dayAfter = new Date(benchDate.date.getTime() + 24 * 60 * 60 * 1000)
+                              const availabilityBefore = getConsultantAvailabilityAtDate(consultant, projects, dayBefore)
+                              const availabilityAfter = getConsultantAvailabilityAtDate(consultant, projects, dayAfter)
+                              const delta = availabilityAfter - availabilityBefore
+
+                              return (
+                                <div
+                                  key={`starting-${consultant._id}`}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={consultant.picture} />
+                                  </Avatar>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium">
+                                      {consultant.name}
+                                      <span className="ml-2 text-xs text-green-600">Avail.: {delta}%</span>
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Starting: {nextAssignment?.name}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                         </div>
                       )}
                     </div>
