@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ConsultantBenchCard from '@/components/ConsultantBenchCard'
-import { getCurrentAssignment, getNextAssignment, getConsultantAvailability } from '@/lib/consultantUtils'
+import { getNextAssignment, getConsultantAvailability } from '@/lib/consultantUtils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface CurrentBenchListProps {
