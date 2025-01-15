@@ -56,7 +56,7 @@ export default function TimelineDashboard() {
     fetchData()
   }, [session, status])
 
-  const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
+  const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>): Promise<Project> => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -73,8 +73,10 @@ export default function TimelineDashboard() {
       }
       setProjects([...projects, addedProject])
       closeModal()
+      return addedProject  // Return the added project
     } catch (error) {
       console.error('Error adding project:', error)
+      throw error  // Re-throw the error to be handled by the caller
     }
   }
 
