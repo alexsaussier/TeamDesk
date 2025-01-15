@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Consultant, Project } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ConsultantBenchCard from '@/components/ConsultantBenchCard'
-import { getCurrentAssignment, getNextAssignment } from '@/lib/consultantUtils'
+import { getCurrentAssignment, getNextAssignment, getConsultantAvailability } from '@/lib/consultantUtils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface CurrentBenchListProps {
@@ -13,47 +13,47 @@ interface CurrentBenchListProps {
 export default function CurrentBenchList({ consultants, projects }: CurrentBenchListProps) {
   const [levelFilter, setLevelFilter] = useState<string>("all")
 
-  const benchConsultants = consultants.filter(consultant => {
-    const currentAssignment = getCurrentAssignment(consultant, projects)
+  const availableConsultants = consultants.filter(consultant => {
+    const availabilityPercentage = getConsultantAvailability(consultant, projects)
     const matchesLevel = levelFilter === "all" || consultant.level === levelFilter
-    return !currentAssignment && matchesLevel
-  })
+    return availabilityPercentage > 0 && matchesLevel
+  }).map(consultant => ({
+    consultant,
+    availabilityPercentage: getConsultantAvailability(consultant, projects),
+    nextAssignment: getNextAssignment(consultant, projects)
+  }))
 
   return (
-    <Card className="">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Current Availabilities</span>
-          <div className="flex items-center gap-4">
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Filter by level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="junior">Junior</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="partner">Partner</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-muted-foreground text-sm">
-              {benchConsultants.length} consultant{benchConsultants.length !== 1 ? 's' : ''}
-            </span>
-          </div>
+          <span>Currently Available Consultants</span>
+          <Select value={levelFilter} onValueChange={setLevelFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Filter by level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Levels</SelectItem>
+              <SelectItem value="junior">Junior</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="partner">Partner</SelectItem>
+            </SelectContent>
+          </Select>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {benchConsultants.length === 0 ? (
+        {availableConsultants.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
-            No consultants currently on bench
+            No consultants currently available
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {benchConsultants.map(consultant => (
+            {availableConsultants.map(({ consultant, availabilityPercentage, nextAssignment }) => (
               <ConsultantBenchCard
                 key={consultant._id}
                 consultant={consultant}
-                nextAssignment={getNextAssignment(consultant, projects)}
+                availabilityPercentage={availabilityPercentage}
+                nextAssignment={nextAssignment}
               />
             ))}
           </div>

@@ -9,12 +9,22 @@ interface ConsultantBenchCardProps {
   consultant: Consultant
   availableFrom?: Date
   nextAssignment?: Project | null
+  // For current bench list
+  availabilityPercentage?: number
+  // For upcoming bench list
+  currentAvailability?: number
+  futureAvailability?: number
+  availabilityChange?: number
 }
 
 export default function ConsultantBenchCard({ 
   consultant, 
   availableFrom, 
-  nextAssignment 
+  nextAssignment,
+  availabilityPercentage,
+  currentAvailability,
+  futureAvailability,
+  availabilityChange 
 }: ConsultantBenchCardProps) {
   const router = useRouter()
 
@@ -30,11 +40,23 @@ export default function ConsultantBenchCard({
           </Avatar>
           
           <div className="space-y-2 flex-1">
-            <div>
-              <h3 className="font-semibold">{consultant.name}</h3>
-              <p className="text-sm text-muted-foreground capitalize">
-                {consultant.level}
-              </p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-semibold">{consultant.name}</h3>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {consultant.level}
+                </p>
+              </div>
+              {availabilityPercentage !== undefined ? (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  {availabilityPercentage}% Available
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  {currentAvailability}% → {futureAvailability}%
+                  <span className="ml-1 text-xs">(+{availabilityChange}%)</span>
+                </Badge>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-1">
@@ -65,12 +87,6 @@ export default function ConsultantBenchCard({
                     (starts {new Date(nextAssignment.startDate).toLocaleDateString()})
                   </span>
                 </div>
-              )}
-              
-              {!availableFrom && !nextAssignment && (
-                <Badge variant="destructive">
-                  No upcoming assignments
-                </Badge>
               )}
             </div>
           </div>

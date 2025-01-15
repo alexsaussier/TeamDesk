@@ -49,6 +49,7 @@ export function ProjectDetailsModal({
   const [tempChanceToClose, setTempChanceToClose] = useState<number | null>(null)
   const [isEditingPercentage, setIsEditingPercentage] = useState<Record<string, boolean>>({})
   const [tempPercentage, setTempPercentage] = useState<Record<string, number | null>>({})
+  const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     setLocalProject(project)
@@ -154,7 +155,7 @@ export function ProjectDetailsModal({
 
   const handleUpdateAssignment = async (consultantId: string, percentage: number) => {
     try {
-      setIsAssigning(true)
+      setIsUpdatingPercentage(prev => ({ ...prev, [consultantId]: true }))
       const response = await fetch(`/api/projects/${localProject.id}/update-assignment`, {
         method: 'PATCH',
         headers: {
@@ -182,7 +183,9 @@ export function ProjectDetailsModal({
     } catch (error) {
       console.error('Error updating assignment percentage:', error)
     } finally {
-      setIsAssigning(false)
+      setIsUpdatingPercentage(prev => ({ ...prev, [consultantId]: false }))
+      setIsEditingPercentage(prev => ({ ...prev, [consultantId]: false }))
+      setTempPercentage(prev => ({ ...prev, [consultantId]: null }))
     }
   }
 
@@ -430,7 +433,12 @@ export function ProjectDetailsModal({
                                     className="h-8"
                                   />
                                 ) : (
-                                  <span className="text-sm">{consultant.percentage}%</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm">{consultant.percentage}%</span>
+                                    {isUpdatingPercentage?.[consultant._id || consultant.id] && (
+                                      <Spinner className="h-4 w-4" />
+                                    )}
+                                  </div>
                                 )}
                               </div>
                               {isEditingPercentage?.[consultant._id || consultant.id] ? (
