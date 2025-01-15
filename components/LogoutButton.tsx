@@ -10,8 +10,9 @@ interface LogoutButtonProps {
 
 export default function LogoutButton({ onClick }: LogoutButtonProps) {
   const handleLogout = async () => {
+    if (onClick) onClick()
     await signOut({ 
-      callbackUrl: '/' // Redirects to home page after signing out
+      callbackUrl: '/' 
     })
   }
 
