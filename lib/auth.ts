@@ -36,6 +36,11 @@ export const authOptions = {
             throw new Error('Invalid password')
           }
   
+          // Update lastLogin timestamp
+          await User.findByIdAndUpdate(user._id, {
+            lastLogin: new Date()
+          })
+  
           return {
             id: user._id.toString(),
             email: user.email,
