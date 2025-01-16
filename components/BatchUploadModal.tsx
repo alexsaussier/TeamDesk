@@ -11,7 +11,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { read, utils } from 'xlsx'
 
 interface BatchUploadModalProps {
   isOpen: boolean

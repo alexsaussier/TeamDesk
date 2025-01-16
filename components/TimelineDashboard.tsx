@@ -167,8 +167,6 @@ export default function TimelineDashboard() {
         onClose={() => setIsBatchUploadOpen(false)}
         onSuccess={() => {
           setIsBatchUploadOpen(false)
-          // Refresh data
-          fetchData()
         }}
       />
     </div>

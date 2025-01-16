@@ -251,8 +251,6 @@ export default function ProjectDashboard() {
         onClose={() => setIsBatchUploadOpen(false)}
         onSuccess={() => {
           setIsBatchUploadOpen(false)
-          // Refresh your data here
-          fetchData()
         }}
       />
     </div>

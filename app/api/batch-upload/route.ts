@@ -65,10 +65,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       return NextResponse.json({ 
         error: 'Invalid file format. Please ensure your file has the correct headers and is a valid CSV or Excel file.',
-        details: error?.message || 'Unknown error'
+        details: err?.message || 'Unknown error'
       }, { status: 400 })
     }
 
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
         if (!record.name) {
           errors.push({ row: index + 2, field: 'name', message: 'Name is required' })
         }
-        if (!['junior', 'manager', 'partner'].includes(record.level?.toLowerCase())) {
+        if (!record.level || !['junior', 'manager', 'partner'].includes(record.level.toLowerCase())) {
           errors.push({ row: index + 2, field: 'level', message: 'Level must be junior, manager, or partner' })
         }
         if (!record.skills) {
