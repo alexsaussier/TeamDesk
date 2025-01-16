@@ -9,6 +9,9 @@ import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
 import { useProjectDelete } from '@/hooks/useProjectDelete'
 import { Spinner } from "@/components/ui/spinner"
+import { BatchUploadModal } from './BatchUploadModal'
+import { PlusCircle, Upload } from "lucide-react"
+
 
 export default function ProjectDashboard() {
   const { data: session, status } = useSession()
@@ -19,10 +22,9 @@ export default function ProjectDashboard() {
   const { deleteProject: deleteProjectAction } = useProjectDelete(
     (projectId) => setProjects(prev => prev.filter(p => p.id !== projectId))
   )
+  const [isBatchUploadOpen, setIsBatchUploadOpen] = useState(false)
 
   useEffect(() => {
-    console.log('Session status:', status)
-    console.log('Session data:', session)
     
     if (status !== 'authenticated') return
 
@@ -199,10 +201,19 @@ export default function ProjectDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Project Kanban</h2>
-        <GradientButton 
-          onClick={() => openModal()} 
-          label="Add Project" 
-        />
+        <div className="flex gap-2">
+          <GradientButton 
+            onClick={() => openModal()} 
+            label="Add Project"
+            icon={PlusCircle}
+          />
+          <GradientButton 
+            variant="gray"
+            onClick={() => setIsBatchUploadOpen(true)} 
+            label="Batch Upload"
+            icon={Upload}
+          />
+        </div>
       </div>
 
       <div className="relative">
@@ -234,6 +245,16 @@ export default function ProjectDashboard() {
           allProjects={projects}
         />
       </div>
+
+      <BatchUploadModal
+        isOpen={isBatchUploadOpen}
+        onClose={() => setIsBatchUploadOpen(false)}
+        onSuccess={() => {
+          setIsBatchUploadOpen(false)
+          // Refresh your data here
+          fetchData()
+        }}
+      />
     </div>
   )
 }

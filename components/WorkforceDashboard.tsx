@@ -7,6 +7,8 @@ import AddConsultantModal from './AddConsultantModal'
 import SearchBar from './SearchBar'
 import { GradientButton } from "@/components/GradientButton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Upload } from 'lucide-react'
+import { BatchUploadModal } from './BatchUploadModal'
 
 export default function WorkforceDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -14,6 +16,7 @@ export default function WorkforceDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [levelFilter, setLevelFilter] = useState<string>("all")
   const [isLoading, setIsLoading] = useState(true)
+  const [isBatchUploadOpen, setIsBatchUploadOpen] = useState(false)
 
   const fetchConsultants = async () => {
     try {
@@ -73,10 +76,18 @@ export default function WorkforceDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Workforce</h1>
-        <GradientButton 
-          onClick={() => setIsModalOpen(true)}
-          label="Add Consultant"
-        />
+        <div className="flex gap-2">
+          <GradientButton 
+            onClick={() => setIsModalOpen(true)}
+            label="Add Consultant"
+          />
+          <GradientButton 
+            onClick={() => setIsBatchUploadOpen(true)}
+            label="Batch Upload"
+            icon={Upload}
+            variant="gray"
+          />
+        </div>
       </div>
 
       <div className="flex gap-4">
@@ -114,6 +125,15 @@ export default function WorkforceDashboard() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddConsultant}
+      />
+
+      <BatchUploadModal
+        isOpen={isBatchUploadOpen}
+        onClose={() => setIsBatchUploadOpen(false)}
+        onSuccess={() => {
+          setIsBatchUploadOpen(false)
+          fetchConsultants()
+        }}
       />
     </div>
   )

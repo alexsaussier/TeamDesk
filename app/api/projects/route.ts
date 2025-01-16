@@ -66,7 +66,6 @@ export async function GET() {
         select: 'name skills picture level'
       })
 
-    console.log('Fetched projects and the assigned consultants:', projects[0].assignedConsultants)
 
     // Necessary to update to object, some fields to string and assignedConsultants.
     const transformedProjects = projects.map(project => ({

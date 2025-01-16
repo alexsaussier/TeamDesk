@@ -9,6 +9,8 @@ import { useProjectModal } from '@/hooks/useProjectModal'
 import { GradientButton } from '@/components/GradientButton'
 import { useProjectDelete } from '@/hooks/useProjectDelete'
 import { Spinner } from "@/components/ui/spinner"
+import { BatchUploadModal } from './BatchUploadModal'
+import { Upload } from 'lucide-react'
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
@@ -22,10 +24,9 @@ export default function TimelineDashboard() {
       console.log('Project deleted:', projectId)
     }
   )
+  const [isBatchUploadOpen, setIsBatchUploadOpen] = useState(false)
 
   useEffect(() => {
-    console.log('Session status:', status)
-    console.log('Session data:', session)
     
     if (status !== 'authenticated') return
 
@@ -114,10 +115,18 @@ export default function TimelineDashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Project Timeline</h2>
-        <GradientButton 
-          onClick={() => openModal()} 
-          label="Add Project" 
-        />
+        <div className="flex gap-2">
+          <GradientButton 
+            onClick={() => openModal()} 
+            label="Add Project" 
+          />
+          <GradientButton 
+            onClick={() => setIsBatchUploadOpen(true)}
+            label="Batch Upload"
+            icon={Upload}
+            variant="gray"
+          />
+        </div>
       </div>      
       
       <div className="relative">
@@ -153,6 +162,15 @@ export default function TimelineDashboard() {
           allProjects={projects}
         />
       </div>
+      <BatchUploadModal
+        isOpen={isBatchUploadOpen}
+        onClose={() => setIsBatchUploadOpen(false)}
+        onSuccess={() => {
+          setIsBatchUploadOpen(false)
+          // Refresh data
+          fetchData()
+        }}
+      />
     </div>
   )
 }
