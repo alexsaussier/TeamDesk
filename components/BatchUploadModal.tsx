@@ -25,7 +25,7 @@ interface ValidationError {
 }
 
 const csvFormats = {
-  consultants: "name,level,skills\nJohn Doe,manager,\"javascript,react,nodejs\"",
+  consultants: "name,level,skills,salary\nJohn Doe,manager,\"javascript,react,nodejs\",75",
   projects: "name,client,requiredSkills,startDate,endDate,teamSize.junior,teamSize.manager,teamSize.partner,status,chanceToClose\nProject Alpha,Client Co,\"react,nodejs\",2024-04-01,2024-08-31,2,1,0.5,Discussions,80"
 }
 

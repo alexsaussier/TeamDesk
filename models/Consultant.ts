@@ -13,6 +13,12 @@ const ConsultantSchema = new mongoose.Schema({
     required: true,
     default: 'junior'
   },
+  salary: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0
+  },
   skills: [String],
   assignments: [{
     projectId: { type: String, required: true },

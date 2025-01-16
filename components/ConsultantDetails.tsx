@@ -6,11 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Calendar, Briefcase, TrendingUp, Users } from 'lucide-react'
+import { ArrowLeft, Calendar, Briefcase, TrendingUp, Users, Pencil } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import ConsultantUtilizationChart from '@/components/ConsultantUtilizationChart'
 import ConsultantProjectTimeline from '@/components/ConsultantProjectTimeline'
 import ConsultantProjectHistory from '@/components/ConsultantProjectHistory'
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
@@ -24,7 +27,6 @@ const getCurrentProject = (consultant: Consultant | null, projects: Project[]): 
   
   // Debug logs
   console.log("Consultant assignments:", consultant.assignments)
-  console.log("Available projects:", projects.map(p => ({ id: p.id, name: p.name })))
   
   return projects.find(project => {
     if (!project?.id) return false
@@ -32,7 +34,6 @@ const getCurrentProject = (consultant: Consultant | null, projects: Project[]): 
     const matchingAssignment = consultant.assignments.find(assignment => {
       if (!assignment?.projectId) return false
       
-      console.log("Project and assignment id comparison:", project.id, assignment.projectId)
       // Try different comparison methods
       const matches = [
         project.id === assignment.projectId,
@@ -40,14 +41,6 @@ const getCurrentProject = (consultant: Consultant | null, projects: Project[]): 
         String(project.id) === String(assignment.projectId)
       ].some(Boolean)
       
-      if (matches) {
-        console.log("Found matching project:", project.name)
-        console.log("Project dates:", {
-          start: project.startDate,
-          end: project.endDate,
-          today: today
-        })
-      }
       
       return matches
     })
@@ -113,8 +106,46 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
   return Math.round((assignedDays / totalDays) * 100)
 }
 
-export default function ConsultantDetails({ consultant, projects }: ConsultantDetailsProps) {
+export default function ConsultantDetails({ consultant: initialConsultant, projects }: ConsultantDetailsProps) {
   const router = useRouter()
+  const [isEditingRate, setIsEditingRate] = useState(false)
+  const [salary, setsalary] = useState(initialConsultant.salary)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [consultant, setConsultant] = useState(initialConsultant)
+
+  const handleUpdateRate = async () => {
+    try {
+      setIsUpdating(true)
+      const response = await fetch(`/api/workforce/${consultant._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ salary }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update salary')
+      }
+
+      // Get the updated consultant data
+      const updatedConsultant = await response.json()
+      
+      // Update local state with new salary
+      setConsultant(prev => ({
+        ...prev,
+        salary: updatedConsultant.salary
+      }))
+      
+      setIsEditingRate(false)
+    } catch (error) {
+      console.error('Error updating salary:', error)
+      // Optionally reset to original salary on error
+      setsalary(consultant.salary)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -133,17 +164,65 @@ export default function ConsultantDetails({ consultant, projects }: ConsultantDe
       {/* Consultant Profile Card */}
       <Card className="bg-white">
         <CardContent className="pt-6">
-          <div className="flex items-start gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={consultant?.picture} alt={consultant?.name} />
-            </Avatar>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-6">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={consultant?.picture} alt={consultant?.name} />
+              </Avatar>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold">{consultant?.name}</h1>
+                <div className="text-muted-foreground capitalize">Level: {consultant?.level}</div>
+                <div className="flex flex-wrap gap-2">
+                  Skills: {consultant?.skills.map(skill => (
+                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">{consultant?.name}</h1>
-              <div className="text-muted-foreground capitalize">Level: {consultant?.level}</div>
-              <div className="flex flex-wrap gap-2">
-                Skills: {consultant?.skills.map(skill => (
-                  <Badge key={skill} variant="secondary">{skill}</Badge>
-                ))}
+              <Label>Salary</Label>
+              <div className="flex items-center gap-2">
+                {isEditingRate ? (
+                  <>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={salary}
+                      onChange={(e) => setsalary(Number(e.target.value))}
+                      className="w-32"
+                    />
+                    <Button 
+                      onClick={handleUpdateRate} 
+                      disabled={isUpdating}
+                    >
+                      Save
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => {
+                        setIsEditingRate(false)
+                        setsalary(consultant.salary)
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">
+                      $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setIsEditingRate(true)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

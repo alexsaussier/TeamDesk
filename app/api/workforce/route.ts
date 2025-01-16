@@ -42,15 +42,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, skills, picture, level } = body
+    const { name, skills, picture, level, salary } = body
 
     const newConsultant = new Consultant({
       organizationId: session.user.organizationId,
       name,
       skills,
       picture: picture || 'https://www.gravatar.com/avatar/?d=mp',
-      level: level || 'junior', // Use provided level or default to 'junior'
-      assignments: [], // Start with no assignments
+      level: level || 'junior',
+      salary: salary || 0,
+      assignments: [],
       createdBy: session.user.id
     })
 

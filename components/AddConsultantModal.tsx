@@ -16,20 +16,26 @@ interface AddConsultantModalProps {
 }
 
 export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsultantModalProps) {
-  const [name, setName] = useState('')
-  const [skills, setSkills] = useState('')
-  const [picture, setPicture] = useState('')
-  const [level, setLevel] = useState<ConsultantLevel>('junior')
+  const [formData, setFormData] = useState({
+    name: '',
+    level: 'junior' as ConsultantLevel,
+    skills: '',
+    salary: 0,
+    picture: ''
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setName('')
-      setSkills('')
-      setPicture('')
-      setLevel('junior')
+      setFormData({
+        name: '',
+        level: 'junior' as ConsultantLevel,
+        skills: '',
+        salary: 0,
+        picture: ''
+      })
       setError(null)
     }
   }, [isOpen])
@@ -39,11 +45,12 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
     if (isSubmitting) return
     setError(null)
     
-    const formData = {
-      name,
-      skills: skills.split(',').map(skill => skill.trim()),
-      picture: picture || 'https://www.gravatar.com/avatar/?d=mp',
-      level
+    const submitData = {
+      name: formData.name,
+      skills: formData.skills.split(',').map(skill => skill.trim()),
+      picture: formData.picture || 'https://www.gravatar.com/avatar/?d=mp',
+      level: formData.level,
+      salary: formData.salary
     }
 
     try {
@@ -53,7 +60,7 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
       const data = await response.json()
@@ -83,14 +90,20 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                name: e.target.value
+              }))}
               required
             />
           </div>
           <div>
             <Label htmlFor="level">Level</Label>
-            <Select value={level} onValueChange={(value: ConsultantLevel) => setLevel(value)}>
+            <Select value={formData.level} onValueChange={(value: ConsultantLevel) => setFormData(prev => ({
+              ...prev,
+              level: value
+            }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select level" />
               </SelectTrigger>
@@ -105,9 +118,25 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
             <Label htmlFor="skills">Skills (comma-separated)</Label>
             <Input
               id="skills"
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
+              value={formData.skills}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                skills: e.target.value
+              }))}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="salary">Salary ($)</Label>
+            <Input
+              id="salary"
+              type="number"
+              min="0"
+              value={formData.salary}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                salary: Number(e.target.value)
+              }))}
             />
           </div>
           <div>
@@ -115,8 +144,11 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
             <Input
               id="picture"
               type="url"
-              value={picture}
-              onChange={(e) => setPicture(e.target.value)}
+              value={formData.picture}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                picture: e.target.value
+              }))}
               placeholder="https://example.com/avatar.jpg"
             />
           </div>

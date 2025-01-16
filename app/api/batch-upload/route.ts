@@ -27,11 +27,12 @@ interface UploadRecord {
   'teamSize.partner'?: string;
   status?: string;
   chanceToClose?: string;
+  salary?: string;
   [key: string]: string | undefined;
 }
 
 const requiredHeaders = {
-  consultants: ['name', 'level', 'skills'],
+  consultants: ['name', 'level', 'skills', 'salary'],
   projects: ['name', 'client', 'requiredSkills', 'startDate', 'endDate', 'teamSize.junior', 'teamSize.manager', 'teamSize.partner', 'status', 'chanceToClose']
 }
 
@@ -108,6 +109,9 @@ export async function POST(request: NextRequest) {
         if (!record.skills) {
           errors.push({ row: index + 2, field: 'skills', message: 'Skills are required' })
         }
+        if (!record.salary || isNaN(parseFloat(record.salary)) || parseFloat(record.salary) < 0) {
+          errors.push({ row: index + 2, field: 'salary', message: 'Salary must be a positive number' })
+        }
       })
     }
 
@@ -153,6 +157,7 @@ export async function POST(request: NextRequest) {
         name: record.name,
         level: record.level?.toLowerCase(),
         skills: record.skills?.split(',').map(s => s.trim()),
+        salary: parseFloat(record.salary || '0'),
         assignments: [],
         picture: 'https://www.gravatar.com/avatar/?d=mp',
         createdBy: new mongoose.Types.ObjectId(session.user.id)

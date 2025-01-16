@@ -11,6 +11,7 @@ export interface Consultant {
   organizationId: string;
   name: string;
   level: ConsultantLevel;
+  salary: number;
   skills: string[];
   assignments: ConsultantAssignment[];
   picture: string;
