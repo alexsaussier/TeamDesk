@@ -161,8 +161,8 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
               className="bg-sky-50 border-sky-100 cursor-pointer hover:shadow-md transition-shadow relative"
               onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
             >
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex justify-between items-center text-base sm:text-lg">
                   <div className="flex flex-col">
                     <span>{consultant.name}</span>
                     <span className="text-sm font-normal text-gray-500 capitalize">
@@ -208,7 +208,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                 </CardTitle>
                 <Badge 
                   variant="secondary"
-                  className="inline-flex items-center"
+                  className="inline-flex items-center text-xs"
                 >
                   <span className="text-gray-500 text-xs mr-1">Utilization</span>
                   <span className="text-gray-300 mx-2">|</span>
@@ -223,43 +223,43 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   </span>
                 </Badge>
               </CardHeader>
-              <CardContent className="pb-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Skills:</h4>
-                    <div className="flex flex-wrap gap-1 mt-1">
+              <CardContent className="pb-4 sm:pb-6 px-4 sm:px-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-1">
+                    <h4 className="text-xs sm:text-sm font-medium text-gray-500">Skills:</h4>
+                    <div className="flex flex-wrap gap-1">
                       {consultant.skills.map(skill => (
-                        <Badge key={skill} variant="outline">{skill}</Badge>
+                        <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-white p-3 space-y-3">
+                  <div className="rounded-lg bg-white p-2 sm:p-3 space-y-1 sm:space-y-2">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">Current Project</h4>
+                      <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Current Project</h4>
                       {currentAssignment ? (
-                        <div className="space-y-1 ml-3">
-                          <p className="font-medium text-gray-900">{currentAssignment.name}</p>
-                          <p className="text-sm text-gray-500 flex items-center gap-2">
-                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                        <div className="space-y-0.5 sm:space-y-1 ml-2 sm:ml-3">
+                          <p className="text-sm font-medium text-gray-900">{currentAssignment.name}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 sm:gap-2">
+                            <span className="inline-block w-1.5 sm:w-2 h-1.5 sm:h-2 bg-green-500 rounded-full"></span>
                             Ends {new Date(currentAssignment.endDate).toLocaleDateString()}
                           </p>
                         </div>
                       ) : (
-                        <div className="mx-20">
+                        <div className="mx-12 sm:mx-20">
                           <div className="h-0.5 bg-red-200 bg-gradient-to-r from-transparent via-red-300 to-transparent" />
                         </div>
                       )}
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">Future Assignments</h4>
+                      <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Future Assignments</h4>
                       {futureAssignments.length > 0 ? (
-                        <div className="space-y-2 ml-3">
+                        <div className="space-y-1 sm:space-y-2 ml-2 sm:ml-3">
                           {futureAssignments.map(project => (
-                            <div key={project.id} className="flex items-center gap-2">
-                              <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <div key={project.id} className="flex items-center gap-1 sm:gap-2">
+                              <span className="inline-block w-1.5 sm:w-2 h-1.5 sm:h-2 bg-blue-500 rounded-full"></span>
                               <div>
-                                <p className="font-medium text-gray-900">{project.name}</p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm font-medium text-gray-900">{project.name}</p>
+                                <p className="text-xs sm:text-sm text-gray-500">
                                   Starts {new Date(project.startDate).toLocaleDateString()}
                                 </p>
                               </div>
@@ -267,7 +267,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                           ))}
                         </div>
                       ) : (
-                        <div className="mx-20">
+                        <div className="mx-12 sm:mx-20">
                           <div className="h-0.5 bg-red-200 bg-gradient-to-r from-transparent via-red-300 to-transparent" />
                         </div>
                       )}

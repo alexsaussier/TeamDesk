@@ -28,12 +28,13 @@ export function GradientButton({
     <Button
       className={cn(
         "bg-gradient-to-r text-white transition-all duration-200 shadow-md hover:shadow-lg",
+        "text-[10px] sm:text-sm px-1.5 sm:px-4 py-0.5 sm:py-2",
         gradientStyles[variant],
         className
       )}
       {...props}
     >
-      <Icon className="mr-2 h-4 w-4" />
+      <Icon className="mr-1 sm:mr-2 h-2.5 w-2.5 sm:h-4 sm:w-4" />
       {label}
     </Button>
   )
