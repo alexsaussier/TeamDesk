@@ -14,6 +14,22 @@ interface ValidationError {
   message: string;
 }
 
+interface UploadRecord {
+  name: string;
+  level?: string;
+  skills?: string;
+  client?: string;
+  requiredSkills?: string;
+  startDate?: string;
+  endDate?: string;
+  'teamSize.junior'?: string;
+  'teamSize.manager'?: string;
+  'teamSize.partner'?: string;
+  status?: string;
+  chanceToClose?: string;
+  [key: string]: string | undefined;
+}
+
 const requiredHeaders = {
   consultants: ['name', 'level', 'skills'],
   projects: ['name', 'client', 'requiredSkills', 'startDate', 'endDate', 'teamSize.junior', 'teamSize.manager', 'teamSize.partner', 'status', 'chanceToClose']
@@ -36,7 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    let records: any[]
+    let records: UploadRecord[] = []
     
     try {
       if (file.name.endsWith('.csv')) {
@@ -109,9 +125,18 @@ export async function POST(request: NextRequest) {
         if (!record.endDate || !Date.parse(record.endDate)) {
           errors.push({ row: index + 2, field: 'endDate', message: 'Invalid end date format' })
         }
-        if (!['Discussions', 'Sold', 'Started', 'Completed'].includes(record.status)) {
+
+        // Normalize the status to match the expected format 
+        const normalizedStatus = record.status?.trim()
+          ?.toLowerCase()
+          ?.replace(/^\w/, (c: string) => c.toUpperCase())
+
+        if (!record.status || !['Discussions', 'Sold', 'Started', 'Completed'].includes(normalizedStatus!)) {
           errors.push({ row: index + 2, field: 'status', message: 'Status must be Discussions, Sold, Started, or Completed' })
         }
+
+        // Use normalizedStatus when creating the project
+        record.status = normalizedStatus
       })
     }
 
@@ -123,11 +148,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (type === 'consultants') {
-      const consultants = records.map((record: any) => ({
+      const consultants = records.map((record: UploadRecord) => ({
         organizationId: new mongoose.Types.ObjectId(session.user.organizationId),
         name: record.name,
-        level: record.level.toLowerCase(),
-        skills: record.skills.split(',').map((s: string) => s.trim()),
+        level: record.level?.toLowerCase(),
+        skills: record.skills?.split(',').map(s => s.trim()),
         assignments: [],
         picture: 'https://www.gravatar.com/avatar/?d=mp',
         createdBy: new mongoose.Types.ObjectId(session.user.id)
@@ -138,20 +163,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (type === 'projects') {
-      const projects = records.map((record: any) => ({
+      const projects = records.map((record: UploadRecord) => ({
         organizationId: session.user.organizationId,
         name: record.name,
         client: record.client,
-        requiredSkills: record.requiredSkills.split(',').map((s: string) => s.trim()),
+        requiredSkills: record.requiredSkills?.split(',').map(s => s.trim()),
         startDate: record.startDate,
         endDate: record.endDate,
         teamSize: {
-          junior: parseFloat(record['teamSize.junior']),
-          manager: parseFloat(record['teamSize.manager']),
-          partner: parseFloat(record['teamSize.partner'])
+          junior: parseFloat(record['teamSize.junior'] || '0'),
+          manager: parseFloat(record['teamSize.manager'] || '0'),
+          partner: parseFloat(record['teamSize.partner'] || '0')
         },
         status: record.status,
-        chanceToClose: parseInt(record.chanceToClose),
+        chanceToClose: parseInt(record.chanceToClose || '100'),
         assignedConsultants: [],
         updatedBy: session.user.id
       }))
@@ -161,11 +186,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Batch upload error:', error)
     return NextResponse.json({ 
       error: 'Upload failed',
-      details: error?.message || 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 } 

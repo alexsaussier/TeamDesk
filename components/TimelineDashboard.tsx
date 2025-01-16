@@ -26,37 +26,37 @@ export default function TimelineDashboard() {
   )
   const [isBatchUploadOpen, setIsBatchUploadOpen] = useState(false)
 
-  useEffect(() => {
-    
-    if (status !== 'authenticated') return
+  const fetchData = async () => {
+    try {
+      setIsLoading(true)
+      const [projectsResponse, consultantsResponse] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/workforce')
+      ])
 
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        // Fetch projects and consultants in parallel
-        const [projectsResponse, consultantsResponse] = await Promise.all([
-          fetch('/api/projects'),
-          fetch('/api/workforce')
-        ])
+      if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
+      if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
 
-        if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
-        if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
+      const [projectsData, consultantsData] = await Promise.all([
+        projectsResponse.json(),
+        consultantsResponse.json()
+      ])
 
-        const projectsData = await projectsResponse.json()
-        const consultantsData = await consultantsResponse.json()
-
-        setProjects(projectsData)
-        setConsultants(consultantsData)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setIsLoading(false)
-      }
+      setProjects(projectsData)
+      setConsultants(consultantsData)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
+    if (status !== 'authenticated') return
     fetchData()
   }, [session, status])
 
+  
   const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>): Promise<Project> => {
     try {
       const response = await fetch('/api/projects', {
@@ -167,6 +167,8 @@ export default function TimelineDashboard() {
         onClose={() => setIsBatchUploadOpen(false)}
         onSuccess={() => {
           setIsBatchUploadOpen(false)
+          fetchData()
+
         }}
       />
     </div>

@@ -24,32 +24,32 @@ export default function ProjectDashboard() {
   )
   const [isBatchUploadOpen, setIsBatchUploadOpen] = useState(false)
 
-  useEffect(() => {
-    
-    if (status !== 'authenticated') return
+  const fetchData = async () => {
+    try {
+      setIsLoading(true)
+      const [projectsResponse, consultantsResponse] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/workforce')
+      ])
+      if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
+      if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
 
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        // Fetch projects
-        const projectsResponse = await fetch('/api/projects')
-        if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
-        const projectsData = await projectsResponse.json()
+      const [projectsData, consultantsData] = await Promise.all([
+        projectsResponse.json(),
+        consultantsResponse.json()
+      ])
 
-        // Fetch consultants
-        const consultantsResponse = await fetch('/api/workforce')
-        if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
-        const consultantsData = await consultantsResponse.json()
-
-        setProjects(projectsData)
-        setConsultants(consultantsData)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setIsLoading(false)
-      }
+      setProjects(projectsData)
+      setConsultants(consultantsData)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
+    if (status !== 'authenticated') return
     fetchData()
   }, [session, status])
 
@@ -251,6 +251,7 @@ export default function ProjectDashboard() {
         onClose={() => setIsBatchUploadOpen(false)}
         onSuccess={() => {
           setIsBatchUploadOpen(false)
+          fetchData()
         }}
       />
     </div>
