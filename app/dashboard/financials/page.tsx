@@ -5,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { calculateFinancialMetrics, type FinancialMetrics } from '@/utils/financialMetrics'
 import { Consultant, Project } from '@/types'
 import { DollarSign, TrendingUp, Users, ArrowUpIcon, ArrowDownIcon, Calculator, BarChart2 } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { UtilizationRanking } from '@/components/UtilizationRanking'
+
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead } from "@/components/ui/table"
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
+import { SalaryMetricCard } from "@/components/SalaryMetricCard"
 
 export default function FinancialsDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -125,85 +124,41 @@ export default function FinancialsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-blue-500 text-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Highest Salary</CardTitle>
-                <ArrowUpIcon className="h-4 w-4 text-white" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold">
-                    ${Intl.NumberFormat('en-US').format(filteredMetrics.highestSalary.amount)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {filteredMetrics.highestSalary.consultant.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Level: {filteredMetrics.highestSalary.consultant.level}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <SalaryMetricCard
+              title="Highest Salary"
+              amount={filteredMetrics.highestSalary.amount}
+              icon={ArrowUpIcon}
+              iconColor="text-blue-800"
+              consultantName={filteredMetrics.highestSalary.consultant.name}
+              consultantLevel={filteredMetrics.highestSalary.consultant.level}
+            />
 
-            <Card className="bg-blue-500 text-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Salary</CardTitle>
-                <Calculator className="h-4 w-4 text-blue-200" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold">
-                    ${Intl.NumberFormat('en-US').format(Math.round(filteredMetrics.averageSalary))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    -
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Based on {filteredConsultants.length} workers ({selectedLevel === 'all' ? 'All levels' : `${selectedLevel}`})
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <SalaryMetricCard
+              title="Average Salary"
+              amount={filteredMetrics.averageSalary}
+              icon={Calculator}
+              iconColor="text-blue-800"
+              workerCount={filteredConsultants.length}
+              selectedLevel={selectedLevel}
+            />
 
-            <Card className="bg-blue-500 text-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Median Salary</CardTitle>
-                <BarChart2 className="h-4 w-4 text-blue-200" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold">
-                    ${Intl.NumberFormat('en-US').format(Math.round(filteredMetrics.medianSalary))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    -
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                  Based on {filteredConsultants.length} workers ({selectedLevel === 'all' ? 'All levels' : `${selectedLevel}`})
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <SalaryMetricCard
+              title="Median Salary"
+              amount={filteredMetrics.medianSalary}
+              icon={BarChart2}
+              iconColor="text-blue-800"
+              workerCount={filteredConsultants.length}
+              selectedLevel={selectedLevel}
+            />
 
-            <Card className="bg-blue-500 text-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Lowest Salary</CardTitle>
-                <ArrowDownIcon className="h-4 w-4 text-white" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold">
-                    ${Intl.NumberFormat('en-US').format(filteredMetrics.lowestSalary.amount)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {filteredMetrics.lowestSalary.consultant.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Level: {filteredMetrics.lowestSalary.consultant.level}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <SalaryMetricCard
+              title="Lowest Salary"
+              amount={filteredMetrics.lowestSalary.amount}
+              icon={ArrowDownIcon}
+              iconColor="text-blue-800"
+              consultantName={filteredMetrics.lowestSalary.consultant.name}
+              consultantLevel={filteredMetrics.lowestSalary.consultant.level}
+            />
           </div>
         </CardContent>
       </Card>
