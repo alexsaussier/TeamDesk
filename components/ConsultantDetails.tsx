@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Calendar, Briefcase, TrendingUp, Users, Pencil } from 'lucide-react'
+import { ArrowLeft, Calendar, Briefcase, TrendingUp, Users, Pencil, Eye, EyeOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import ConsultantUtilizationChart from '@/components/ConsultantUtilizationChart'
 import ConsultantProjectTimeline from '@/components/ConsultantProjectTimeline'
@@ -112,6 +112,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
   const [salary, setsalary] = useState(initialConsultant.salary)
   const [isUpdating, setIsUpdating] = useState(false)
   const [consultant, setConsultant] = useState(initialConsultant)
+  const [showSalary, setShowSalary] = useState(false)
 
   const handleUpdateRate = async () => {
     try {
@@ -164,13 +165,13 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
       {/* Consultant Profile Card */}
       <Card className="bg-white">
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex items-start gap-6">
-              <Avatar className="h-24 w-24">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                 <AvatarImage src={consultant?.picture} alt={consultant?.name} />
               </Avatar>
               <div className="space-y-2">
-                <h1 className="text-2xl font-bold">{consultant?.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold">{consultant?.name}</h1>
                 <div className="text-muted-foreground capitalize">Level: {consultant?.level}</div>
                 <div className="flex flex-wrap gap-2">
                   Skills: {consultant?.skills.map(skill => (
@@ -180,7 +181,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 w-full sm:w-auto">
               <Label>Salary</Label>
               <div className="flex items-center gap-2">
                 {isEditingRate ? (
@@ -210,17 +211,35 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                   </>
                 ) : (
                   <>
-                    <span className="text-lg">
-                      $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setIsEditingRate(true)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      {showSalary ? (
+                        <span className="text-base sm:text-lg">
+                          $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
+                        </span>
+                      ) : (
+                        <span className="text-base sm:text-lg">$ •••••••</span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setShowSalary(!showSalary)}
+                      >
+                        {showSalary ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setIsEditingRate(true)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>

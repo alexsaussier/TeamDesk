@@ -15,6 +15,17 @@ interface UtilizationPeriods {
   averageLastYear: number
 }
 
+// Add new interface for level utilization
+interface LevelUtilization {
+  level: string
+  averageUtilization: number
+  consultantCount: number
+  consultants: {
+    name: string
+    utilization: number
+  }[]
+}
+
 export const calculatePeriodUtilization = (
   consultants: Consultant[],
   projects: Project[],
@@ -125,4 +136,47 @@ export const calculateUtilizationMetrics = (
     lastTwelveMonths,
     averageLastYear
   }
+}
+
+// Add new export for ranking calculation
+export const calculateUtilizationRanking = (
+  consultants: Consultant[],
+  projects: Project[]
+): LevelUtilization[] => {
+  // Group consultants by level
+  const levelGroups = consultants.reduce((acc, consultant) => {
+    if (!acc[consultant.level]) {
+      acc[consultant.level] = []
+    }
+    acc[consultant.level].push(consultant)
+    return acc
+  }, {} as Record<string, Consultant[]>)
+
+  // Calculate utilization for each level
+  const levelUtilizations = Object.entries(levelGroups).map(([level, consultantGroup]) => {
+    // Calculate individual consultant utilizations using existing metrics function
+    const consultantUtilizations = consultantGroup.map(consultant => {
+      const metrics = calculateUtilizationMetrics([consultant], projects)
+      return {
+        name: consultant.name,
+        utilization: metrics.averageLastYear
+      }
+    }).sort((a, b) => b.utilization - a.utilization) // Sort by utilization descending
+
+    // Calculate average utilization for the level
+    const averageUtilization = consultantUtilizations.reduce(
+      (sum, curr) => sum + curr.utilization, 
+      0
+    ) / consultantUtilizations.length
+
+    return {
+      level,
+      averageUtilization,
+      consultantCount: consultantGroup.length,
+      consultants: consultantUtilizations
+    }
+  })
+
+  // Sort levels by average utilization
+  return levelUtilizations.sort((a, b) => b.averageUtilization - a.averageUtilization)
 } 
