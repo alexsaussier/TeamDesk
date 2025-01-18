@@ -23,7 +23,7 @@ export function SalaryMetricCard({
   selectedLevel
 }: SalaryMetricCardProps) {
   return (
-    <Card className="bg-white text-blue-800">
+    <Card className="bg-white text-blue-800 shadow-md border-2 border-blue-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className={`h-4 w-4 ${iconColor}`} />

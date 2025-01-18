@@ -32,7 +32,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <Card 
-        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-gradient-to-l from-blue-500 to-blue-800 text-white hover:shadow-lg hover:-translate-y-1 hover:translate-x-1 cursor-pointer"
         onClick={() => router.push('/dashboard/workforce')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -46,7 +46,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
 
       <Card 
-        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-gradient-to-l from-blue-500 to-blue-800 text-white hover:shadow-lg hover:-translate-y-1 hover:translate-x-1 cursor-pointer"
         onClick={() => router.push('/dashboard/bench')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -65,7 +65,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
       
       <Card 
-        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-gradient-to-l from-blue-500 to-blue-800 text-white hover:shadow-lg hover:-translate-y-1 hover:translate-x-1 cursor-pointer"
         onClick={() => router.push('/dashboard/projects')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
@@ -79,7 +79,7 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
       </Card>
       
       <Card 
-        className="flex flex-col transition-all duration-200 bg-sky-50 hover:shadow-md hover:border-gray-300 cursor-pointer"
+        className="flex flex-col transition-all duration-200 bg-gradient-to-l from-blue-500 to-blue-800 text-white hover:shadow-lg hover:-translate-y-1 hover:translate-x-1 cursor-pointer"
         onClick={() => router.push('/dashboard/timeline')}
       >
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">

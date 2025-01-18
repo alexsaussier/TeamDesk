@@ -102,7 +102,7 @@ export function UtilizationMetrics({ consultants, projects }: UtilizationMetrics
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {periods.map((period) => (
-          <Card key={period.id} className="transition-all duration-200 bg-gray-50 border-2 border-sky-100 hover:shadow-md">
+          <Card key={period.id} className="transition-all duration-200 bg-gray-50 border-2 border-blue-800 text-blue-800 hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-md font-medium h-[40px]">{period.label}</CardTitle>
             </CardHeader>
