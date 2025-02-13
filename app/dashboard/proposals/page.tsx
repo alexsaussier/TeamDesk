@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, Wand2 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ProposalPage() {
@@ -69,7 +69,13 @@ export default function ProposalPage() {
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">AI Proposal Generator</h1>
+          <h1 className="text-3xl font-bold">Proposals (Beta Version)</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
+            Generate proposals with AI
+          </h3>
+          <Wand2 className="w-4 h-4 text-purple-500" />
         </div>
 
         <Card className="bg-gray-50">
@@ -82,7 +88,7 @@ export default function ProposalPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="rfp">Upload RFP PDF Document</Label>
+                <Label htmlFor="rfp">Upload a RFP document (pdf format). Our tool will read the RFP and generate a tailored proposal.</Label>
                 <div className="flex gap-4">
                   <input
                     id="rfp"

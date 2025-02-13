@@ -3,9 +3,10 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
-import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp } from "lucide-react"
+import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import { Badge } from "@/components/ui/badge"
 
 // Reusable icon mapping with types
 
@@ -17,6 +18,10 @@ interface NavSection {
     href: string
     label: string
     icon: React.ComponentType<{ className?: string }>
+    badge?: {
+      text: string
+      className?: string
+    }
   }[]
 }
 
@@ -34,6 +39,14 @@ const navSections: NavSection[] = [
         href: "/dashboard/projects",
         label: "Project Kanban",
         icon: Kanban
+      },
+      {
+        href: "/dashboard/proposals",
+        label: "Proposals",
+        icon: FileText,
+        badge: {
+          text: "AI"
+        }
       }
     ]
   },
@@ -162,6 +175,12 @@ export default function Navbar() {
                       <Link href={item.href} className="flex items-center">
                         <item.icon className="mr-2 h-4 w-4" />
                         {item.label}
+                        {item.badge && (
+                          <Badge variant="ai" className="ml-2">
+                            {item.badge.text}
+                            <Wand2 className="w-3 h-3 ml-1 text-purple-500" />
+                          </Badge>
+                        )}
                       </Link>
                     </Button>
                   ))}
