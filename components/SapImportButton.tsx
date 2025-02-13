@@ -50,10 +50,11 @@ export function SAPImportButton({ onImportComplete }: { onImportComplete: () => 
       const data = await response.json()
       setPreviewData(data)
       setStep('preview')
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : 'Failed to fetch preview data'
       toast({
         title: 'Preview Failed',
-        description: 'Failed to fetch preview data',
+        description: error,
         variant: 'destructive'
       })
     }
@@ -81,10 +82,11 @@ export function SAPImportButton({ onImportComplete }: { onImportComplete: () => 
         description: `Imported ${data.consultantsImported} consultants and ${data.projectsImported} projects`
       })
       onImportComplete()
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : 'Failed to import data from SAP'
       toast({
         title: 'Import Failed',
-        description: 'Failed to import data from SAP',
+        description: error,
         variant: 'destructive'
       })
     } finally {

@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import pdfParse from "pdf-parse";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export async function POST(request: Request) {
+  console.log('API Route Hit:', request.url);
+  console.log('Method:', request.method);
   try {
     console.log('API URL:', new URL(request.url).pathname);
 

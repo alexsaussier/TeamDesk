@@ -32,16 +32,11 @@ export default function ProposalPage() {
     try {
       const formData = new FormData();
       formData.append("rfp", file);
-      console.log('File:', file);
-      console.log('FormData:', formData);
-      console.log('Sending request to /api/proposals with formdata');
+      console.log('Sending request from FE to /api/proposals with formdata');
 
       const response = await fetch("/api/proposals", {
         method: "POST",
         body: formData,
-        headers: {
-          'Accept': 'text/event-stream',
-        },
       });
 
       console.log('Response:', response);
@@ -73,6 +68,8 @@ export default function ProposalPage() {
       setIsLoading(false);
     }
   };
+
+  console.log('Request URL:', window.location.origin + '/api/proposals');
 
   return (
     <div className="min-h-screen bg-white p-6">
