@@ -69,8 +69,6 @@ export default function ProposalPage() {
     }
   };
 
-  console.log('Request URL:', window.location.origin + '/api/proposals');
-
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-5xl mx-auto space-y-6">
