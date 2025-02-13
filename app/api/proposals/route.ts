@@ -53,11 +53,11 @@ export async function POST(request: Request) {
 
     if (!openaiResponse.ok || !openaiResponse.body) {
       const errorMessage = await openaiResponse.text();
-      return new Response(errorMessage, { status: 500 });
+      return new NextResponse(errorMessage, { status: 500 });
     }
 
     // Return the streaming response
-    return new Response(openaiResponse.body, {
+    return new NextResponse(openaiResponse.body, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -66,6 +66,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error in proposal API:', error);
-    return new Response('Failed to process file', { status: 500 });
+    return new NextResponse('Failed to process file', { status: 500 });
   }
 }
