@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, FileText } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
 
 export default function ProposalPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -39,12 +40,23 @@ export default function ProposalPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setDraft(data.text);
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No reader available');
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        setDraft(prev => prev + text);
+      }
     } catch (error) {
       console.error(error);
       setDraft('Error: Failed to process the file. Please try again.');
@@ -109,8 +121,20 @@ export default function ProposalPage() {
           <CardContent>
             <div className="relative min-h-[300px] rounded-lg border bg-white p-4 overflow-auto">
               {draft ? (
-                <div className="text-sm break-words whitespace-pre-wrap font-mono">
-                  {draft}
+                <div className="prose prose-sm max-w-none [&>*]:mb-4 [&>h1]:mt-8 [&>h2]:mt-6 [&>h3]:mt-4">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-4">{children}</p>,
+                      h1: ({ children }) => <h1 className="mt-8 mb-4">{children}</h1>,
+                      h2: ({ children }) => <h2 className="mt-6 mb-4">{children}</h2>,
+                      h3: ({ children }) => <h3 className="mt-4 mb-3">{children}</h3>,
+                      ul: ({ children }) => <ul className="mb-4 list-disc pl-6">{children}</ul>,
+                      ol: ({ children }) => <ol className="mb-4 list-decimal pl-6">{children}</ol>,
+                      li: ({ children }) => <li className="mb-1">{children}</li>,
+                    }}
+                  >
+                    {draft}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
