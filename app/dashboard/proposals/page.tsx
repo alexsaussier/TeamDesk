@@ -30,10 +30,6 @@ export default function ProposalPage() {
     setIsLoading(true);
 
     try {
-      // Read the file first to verify content
-      const fileContent = await file.text();
-      console.log('File content preview:', fileContent.substring(0, 100)); // Log first 100 chars for debugging
-
       const formData = new FormData();
       formData.append("rfp", file);
 
@@ -42,48 +38,13 @@ export default function ProposalPage() {
         body: formData,
       });
 
-      if (response.status === 404) {
-        throw new Error('API route not found. Please check server configuration.');
-      }
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API Error: ${errorText}`);
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body');
-      }
-
-      const decoder = new TextDecoder();
-
-      // we are receiving a stream of data, so we need to buffer it
-      let buffer = '';
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        
-        // Append new data to buffer
-        buffer += decoder.decode(value, { stream: true });
-        
-        // Process complete lines from buffer
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const json = JSON.parse(line.slice(6)); // Remove 'data: ' prefix
-              const content = json.choices?.[0]?.delta?.content || '';
-              setDraft(prev => prev + content);
-            } catch (e) {
-              console.warn('Failed to parse SSE line:', line);
-            }
-          }
-        }
-      }
+      const data = await response.json();
+      setDraft(data.text);
     } catch (error) {
       console.error(error);
       setDraft('Error: Failed to process the file. Please try again.');
