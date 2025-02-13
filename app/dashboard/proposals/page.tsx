@@ -30,16 +30,17 @@ export default function ProposalPage() {
     setIsLoading(true);
 
     try {
+      // Read the file first to verify content
+      const fileContent = await file.text();
+      console.log('File content preview:', fileContent.substring(0, 100)); // Log first 100 chars for debugging
+
       const formData = new FormData();
       formData.append("rfp", file);
-      console.log('Sending request from FE to /api/proposals with formdata');
 
       const response = await fetch("/api/proposals", {
         method: "POST",
         body: formData,
       });
-
-      console.log('Response:', response);
 
       if (response.status === 404) {
         throw new Error('API route not found. Please check server configuration.');
@@ -56,10 +57,32 @@ export default function ProposalPage() {
       }
 
       const decoder = new TextDecoder();
+
+      // we are receiving a stream of data, so we need to buffer it
+      let buffer = '';
+
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        setDraft(prev => prev + decoder.decode(value, { stream: true }));
+        
+        // Append new data to buffer
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Process complete lines from buffer
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const json = JSON.parse(line.slice(6)); // Remove 'data: ' prefix
+              const content = json.choices?.[0]?.delta?.content || '';
+              setDraft(prev => prev + content);
+            } catch (e) {
+              console.warn('Failed to parse SSE line:', line);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error(error);
@@ -91,8 +114,8 @@ export default function ProposalPage() {
                   <input
                     id="rfp"
                     type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
+                    accept=".pdf"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
                     className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium"
                   />
                   <Button 

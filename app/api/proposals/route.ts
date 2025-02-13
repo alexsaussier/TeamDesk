@@ -1,44 +1,31 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse";
-
-export const config = {
-  runtime: 'edge',
-  api: {
-    bodyParser: false,
-  },
-};
+import PDFParser from 'pdf-parse';
 
 export async function POST(request: Request) {
-  console.log('API Route Hit:', request.url);
-  console.log('Method:', request.method);
+ 
   try {
-    console.log('API URL:', new URL(request.url).pathname);
-
-    // Add size check
-    const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) { // 10MB limit
-      return new Response('File too large', { status: 413 });
-    }
-
-    console.log('Received request to /api/proposals')
     const formData = await request.formData();
-    console.log('FormData received:', formData.get("rfp"))
     const file = formData.get('rfp') as File;
-
+    
     if (!file) {
       return new Response('No file provided', { status: 400 });
     }
 
-    // Convert File to Buffer directly
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Convert File to Buffer for pdf-parse
+    const buffer = Buffer.from(await file.arrayBuffer());
     
+    // Parse PDF
     try {
-      const pdfData = await pdfParse(buffer);
+      const pdfData = await PDFParser(buffer);
+      const text = pdfData.text;
       
-      // Create prompt and continue with OpenAI call  - SW1V 3QX
-      const prompt = `Draft a detailed response proposal for the following RFP:\n\n${pdfData.text}`;
-      
+      // Basic validation of the extracted text
+      if (!text || text.trim().length === 0) {
+        return new Response('Could not extract text from PDF', { status: 400 });
+      }
+
+      console.log("Extracted PDF content preview:", text.substring(0, 300));
+
       // Request a streamed completion from OpenAI
       const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -47,25 +34,41 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
+          model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
-              content:
-                "You are an AI tool that drafts proposal responses based on provided RFPs. Provide a clear, detailed and well-structured draft proposal response.",
+              content: "You are an AI tool that drafts proposal responses based on provided RFPs. Provide a clear, detailed and well-structured draft proposal response.",
             },
-            { role: "user", content: prompt },
+            { 
+              role: "user", 
+              content: `Please analyze this RFP content and draft a response:\n\n${text}` 
+            },
           ],
           stream: true,
         }),
       });
 
-      if (!openaiResponse.ok || !openaiResponse.body) {
-        const errorMessage = await openaiResponse.text();
-        return new NextResponse(errorMessage, { status: 500 });
+      if (!openaiResponse.ok) {
+        const errorData = await openaiResponse.json().catch(() => null);
+        console.error('OpenAI API Error:', {
+          status: openaiResponse.status,
+          statusText: openaiResponse.statusText,
+          error: errorData
+        });
+        return new Response(
+          `OpenAI API error: ${openaiResponse.status} ${openaiResponse.statusText}${
+            errorData ? `\n${JSON.stringify(errorData, null, 2)}` : ''
+          }`,
+          { status: openaiResponse.status }
+        );
       }
 
-      // Return the streaming response
+      if (!openaiResponse.body) {
+        console.error('OpenAI API returned no response body');
+        return new Response('No response from OpenAI API', { status: 500 });
+      }
+
       return new NextResponse(openaiResponse.body, {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -73,12 +76,12 @@ export async function POST(request: Request) {
           'Connection': 'keep-alive',
         },
       });
-    } catch (error) {
-      console.error('Error in proposal API:', error);
-      return new NextResponse('Failed to process file', { status: 500 });
+    } catch (pdfError) {
+      console.error('PDF parsing error:', pdfError);
+      return new Response('Failed to parse PDF file', { status: 400 });
     }
   } catch (error) {
-    console.error('Error in proposal API:', error);
+    console.error('Error:', error);
     return new NextResponse('Failed to process file', { status: 500 });
   }
 }
