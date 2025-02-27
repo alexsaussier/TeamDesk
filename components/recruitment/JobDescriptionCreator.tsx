@@ -25,6 +25,9 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
   // For voice recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -65,6 +68,107 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
     }
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        await processAudio(audioBlob);
+        
+        // Stop all tracks to release the microphone
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      // Start recording
+      mediaRecorder.start();
+      setIsRecording(true);
+      
+      // Start timer
+      let seconds = 0;
+      timerRef.current = setInterval(() => {
+        seconds += 1;
+        setRecordingDuration(seconds);
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      toast({
+        title: "Error",
+        description: "Failed to access microphone. Please check your permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      // Clear timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  };
+
+  const processAudio = async (audioBlob: Blob) => {
+    try {
+      setIsGenerating(true);
+      
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.wav');
+      
+      const response = await fetch("/api/recruitment/generate-jd", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process audio");
+      }
+
+      const data = await response.json();
+      
+      // Set the transcribed text as the prompt
+      setPrompt(data.transcription || "");
+      
+      // If description was generated, set it
+      if (data.description) {
+        setGeneratedDescription(data.description);
+        setIsEditing(true);
+      }
+    } catch (error) {
+      console.error("Error processing audio:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process voice input. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+      setRecordingDuration(0);
+    }
+  };
+
+  // Format recording duration as MM:SS
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setGeneratedDescription(e.target.value);
   };
@@ -99,30 +203,77 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
                 variant={inputMethod === "voice" ? "default" : "outline"}
                 onClick={() => setInputMethod("voice")}
                 className="flex-1"
-                disabled
               >
                 <Mic className="mr-2 h-4 w-4" />
-                Voice Input (Coming Soon)
+                Voice Input
               </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Describe the job position</Label>
-              <Textarea
-                id="prompt"
-                placeholder="Example: We need a senior software engineer with 5+ years of experience in React and Node.js. The role involves leading a team of 3 developers..."
-                className="min-h-[150px]"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-              <p className="text-sm text-muted-foreground">
-                Include details like job title, required skills, experience level, responsibilities, and any specific requirements.
-              </p>
-            </div>
+            {inputMethod === "chat" ? (
+              <div className="space-y-2">
+                <Label htmlFor="prompt">Describe the job position</Label>
+                <Textarea
+                  id="prompt"
+                  placeholder="Example: We need a senior software engineer with 5+ years of experience in React and Node.js. The role involves leading a team of 3 developers..."
+                  className="min-h-[150px]"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Include details like job title, required skills, experience level, responsibilities, and any specific requirements.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg">
+                  {isRecording ? (
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                        <Mic className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="text-xl font-mono">{formatDuration(recordingDuration)}</div>
+                      <Button 
+                        variant="destructive" 
+                        onClick={stopRecording}
+                        className="mt-2"
+                      >
+                        Stop Recording
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-4">
+                      <Button 
+                        onClick={startRecording} 
+                        className="w-16 h-16 rounded-full"
+                      >
+                        <Mic className="h-8 w-8" />
+                      </Button>
+                      <p className="text-center text-muted-foreground">
+                        Click to start recording your job description
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {prompt && (
+                  <div className="space-y-2">
+                    <Label>Transcribed Text</Label>
+                    <Textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      You can edit the transcribed text before generating the job description.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !prompt.trim()}
               className="w-full"
             >
               {isGenerating ? (

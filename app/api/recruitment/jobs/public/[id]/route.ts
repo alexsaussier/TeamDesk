@@ -12,9 +12,9 @@ export async function GET(
     
     const jobId = params.id;
     
-    // Find the job by its public link ID (not MongoDB ID)
+    // Find the job by its ID
     const job = await Job.findOne({
-      publicLink: { $regex: new RegExp(jobId, 'i') },
+      publicLink: { $regex: `/jobs/${jobId}$` },
       status: JobStatus.Published
     }).select('title department location jobDescription salaryMin salaryMax visaSponsorship');
     

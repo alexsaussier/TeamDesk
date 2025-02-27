@@ -161,7 +161,11 @@ export default function JobApplicationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="prose max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: job.jobDescription.replace(/\n/g, '<br/>') }} />
+            {job.description ? (
+              <div dangerouslySetInnerHTML={{ __html: job.description.replace(/\n/g, '<br/>') }} />
+            ) : (
+              <p>No job description available.</p>
+            )}
           </CardContent>
         </Card>
 

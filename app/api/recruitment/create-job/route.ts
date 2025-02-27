@@ -85,7 +85,8 @@ export async function POST(request: Request) {
     } = body;
 
     // Generate a unique public link
-    const publicLink = `${process.env.NEXT_PUBLIC_APP_URL}/jobs/${generateUniqueId()}`;
+    const uniqueId = generateUniqueId();
+    const publicLink = `/jobs/${uniqueId}`;
 
     const newJob = new Job({
       organizationId,

@@ -4,6 +4,15 @@ import { Job } from '@/models/Job';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
+/**
+ * API route handler for managing individual job postings
+ * Provides endpoints to:
+ * - GET: Retrieve job details including candidate statistics
+ * - Handles authentication and organization-specific access
+ * - Calculates candidate counts by status (new, shortlisted, interviewing, etc.)
+ * - PATCH: Update job status 
+ * - DELETE: Delete job
+ */
 
 export async function GET(
   request: Request,

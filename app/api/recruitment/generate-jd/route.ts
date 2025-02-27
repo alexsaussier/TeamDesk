@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     // Check if the request is multipart form data (audio) or JSON (text)
     const contentType = request.headers.get('content-type') || '';
     let input = '';
-    let method = 'text';
+    let transcription = '';
 
     if (contentType.includes('multipart/form-data')) {
       // Handle audio input
@@ -44,20 +44,19 @@ export async function POST(request: Request) {
         { type: audioFile.type, lastModified: Date.now() }
       );
       
-      const transcription = await openai.audio.transcriptions.create({
+      const whisperResponse = await openai.audio.transcriptions.create({
         file: audioFileObj,
         model: 'whisper-1',
       });
       
-      input = transcription.text;
-      method = 'audio';
+      transcription = whisperResponse.text;
+      input = transcription;
       
       console.log('Transcribed audio input:', input);
     } else {
       // Handle text input
       const body = await request.json();
       input = body.input;
-      method = body.method || 'text';
       
       if (!input) {
         return NextResponse.json(
@@ -96,7 +95,10 @@ export async function POST(request: Request) {
 
     const description = completion.choices[0].message.content;
 
-    return NextResponse.json({ description });
+    return NextResponse.json({ 
+      description,
+      transcription: contentType.includes('multipart/form-data') ? transcription : undefined
+    });
   } catch (error) {
     console.error('Error generating job description:', error);
     return NextResponse.json(

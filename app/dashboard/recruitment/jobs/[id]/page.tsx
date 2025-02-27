@@ -78,7 +78,7 @@ export default function JobDetailPage() {
             {job.status}
           </Badge>
           <Button variant="outline" asChild>
-            <a href={job.publicLink} target="_blank" rel="noopener noreferrer">
+            <a href={`${process.env.NEXT_PUBLIC_APP_URL || ''}${job.publicLink}`} target="_blank" rel="noopener noreferrer">
               View Public Link
             </a>
           </Button>
