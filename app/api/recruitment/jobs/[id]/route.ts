@@ -14,10 +14,8 @@ import mongoose from 'mongoose';
  * - DELETE: Delete job
  */
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
 
@@ -84,10 +82,8 @@ export async function GET(
 }
 
 // Update job status
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
 
@@ -132,10 +128,8 @@ export async function PATCH(
 }
 
 // Add this DELETE method to your existing file
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
 

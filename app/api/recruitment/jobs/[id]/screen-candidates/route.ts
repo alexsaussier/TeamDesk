@@ -104,7 +104,7 @@ export async function POST(
     }
     console.log("request received: starting to screen candidates.");
 
-    const jobId = await params.id;
+    const jobId = params.id;
 
     // Find the job
     const job = await Job.findOne({

@@ -19,6 +19,8 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [isScreening, setIsScreening] = useState(false);
+  const [isTestingS3, setIsTestingS3] = useState(false);
+  const [s3TestResult, setS3TestResult] = useState<any>(null);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -51,9 +53,9 @@ export default function JobDetailPage() {
         throw new Error("Job data not available");
       }
       
-      console.log("Sending request to screen candidates");
-      const response = await fetch(`/api/recruitment/jobs/${job._id}/screen-candidates`, {
-        method: 'POST',                
+      console.log("Sending request to alternative screen candidates endpoint");
+      const response = await fetch(`/api/recruitment/jobs/${job._id}/screen-candidates-alt`, {
+        method: 'POST',
       });
       
       if (!response.ok) {
@@ -64,13 +66,13 @@ export default function JobDetailPage() {
       
       toast({
         title: "Success",
-        description: `Screened ${data.screenedCount} candidates.`,
+        description: data.message || `Screened ${data.screenedCount} candidates.`,
       });
       
       // Refresh job data to get updated scores
       const jobResponse = await fetch(`/api/recruitment/jobs/${job._id}`);
       if (jobResponse.ok) {
-        const updatedJob = await response.json();
+        const updatedJob = await jobResponse.json();
         setJob(updatedJob);
       }
     } catch (error) {
@@ -82,6 +84,68 @@ export default function JobDetailPage() {
       });
     } finally {
       setIsScreening(false);
+    }
+  };
+
+  const handleTestS3Retrieval = async () => {
+    setIsTestingS3(true);
+    setS3TestResult(null);
+    
+    try {
+      if (!job) {
+        throw new Error("Job data not available");
+      }
+      
+      // Find the first candidate with a resume URL
+      const candidateWithResume = job.candidates.find(
+        (candidate: any) => candidate.resumeUrl && candidate.resumeUrl.startsWith('s3://')
+      );
+      
+      if (!candidateWithResume) {
+        toast({
+          title: "No S3 Resume Found",
+          description: "Could not find a candidate with an S3 resume URL to test.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Testing S3 retrieval with URL:", candidateWithResume.resumeUrl);
+      
+      const response = await fetch('/api/test/s3-retrieval', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          s3Url: candidateWithResume.resumeUrl
+        }),
+      });
+      
+      const data = await response.json();
+      setS3TestResult(data);
+      
+      if (data.success) {
+        toast({
+          title: "S3 Test Successful",
+          description: `Retrieved ${data.bufferSize} bytes${data.pdfText ? ' and parsed PDF' : ''}`,
+        });
+      } else {
+        toast({
+          title: "S3 Test Failed",
+          description: data.error || "Unknown error",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error testing S3 retrieval:", error);
+      toast({
+        title: "Error",
+        description: "Failed to test S3 retrieval. See console for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingS3(false);
     }
   };
 
@@ -250,7 +314,24 @@ export default function JobDetailPage() {
         </TabsContent>
         
         <TabsContent value="candidates">
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-end gap-2">
+            <Button 
+              onClick={handleTestS3Retrieval} 
+              disabled={isTestingS3}
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+            >
+              {isTestingS3 ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing S3...
+                </>
+              ) : (
+                <>
+                  Test S3 Retrieval
+                </>
+              )}
+            </Button>
             <Button 
               onClick={handleScreenCandidates} 
               disabled={isScreening}
@@ -269,6 +350,16 @@ export default function JobDetailPage() {
               )}
             </Button>
           </div>
+          
+          {s3TestResult && (
+            <div className="mb-4 p-4 border rounded-md bg-gray-50">
+              <h3 className="font-medium mb-2">S3 Test Result</h3>
+              <pre className="text-xs overflow-auto max-h-40 p-2 bg-gray-100 rounded">
+                {JSON.stringify(s3TestResult, null, 2)}
+              </pre>
+            </div>
+          )}
+          
           <CandidateManagement jobId={jobId} />
         </TabsContent>
         

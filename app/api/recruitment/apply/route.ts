@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const resumeBuffer = Buffer.from(await resume.arrayBuffer());
     const fileExtension = resume.name.split('.').pop();
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-    const s3Key = `resumes/${jobId}/${uniqueFileName}`;
+    const s3Key = `resourcing-app/applicant-resumes/${jobId}/${uniqueFileName}`;
     
     await s3Client.send(new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME,

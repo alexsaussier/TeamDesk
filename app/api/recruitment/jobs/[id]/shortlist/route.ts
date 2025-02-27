@@ -6,10 +6,8 @@ import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { CandidateStatus } from '@/models/Job';
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
 

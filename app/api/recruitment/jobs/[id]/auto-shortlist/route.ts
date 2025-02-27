@@ -6,10 +6,24 @@ import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { CandidateStatus } from '@/models/Job';
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+/**
+ * Auto-shortlist route - Automatically shortlists top candidates based on their scores
+ * 
+ * This API endpoint:
+ * 1. Authenticates the user and verifies job access
+ * 2. Filters for candidates with 'New' status
+ * 3. Sorts candidates by their screening scores
+ * 4. Takes the top N candidates (based on job.shortlistCount)
+ * 5. Updates their status to 'Shortlisted'
+ * 
+ * The number of candidates shortlisted is the minimum between:
+ * - The job's configured shortlistCount (default: 5)
+ * - The total number of new candidates available
+ */
+
+
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
 

@@ -3,14 +3,12 @@ import { connectDB } from '@/lib/mongodb';
 import { Job } from '@/models/Job';
 import { JobStatus } from '@/models/Job';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await connectDB();
     
-    const jobId = await params.id;
+    const jobId = params.id;
     
     // Find the job by its ID
     const job = await Job.findOne({
