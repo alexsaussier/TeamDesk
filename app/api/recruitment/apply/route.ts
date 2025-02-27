@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Job } from '@/models/Job';
-import mongoose from 'mongoose';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai';
-import { writeFile } from 'fs/promises';
-import path from 'path';
-import { mkdir } from 'fs/promises';
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -25,44 +31,44 @@ export async function POST(request: Request) {
     const visaRequired = formData.get('visaRequired') === 'true';
     const availableFrom = formData.get('availableFrom') as string;
     const resume = formData.get('resume') as File;
-
+    
+    // Validate required fields
     if (!jobId || !name || !email || !resume) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-
-    // Find the job by public link instead of direct ID
-    const job = await Job.findOne({
-      publicLink: { $regex: `/jobs/${jobId}$` }
-    });
     
+    // Find the job
+    const job = await Job.findById(jobId);
     if (!job) {
       return NextResponse.json(
         { error: 'Job not found' },
         { status: 404 }
       );
     }
-
-    // Save the resume file
+    
+    // Upload resume to S3
     const resumeBuffer = Buffer.from(await resume.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), 'uploads', 'resumes', job._id.toString());
+    const fileExtension = resume.name.split('.').pop();
+    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+    const s3Key = `resumes/${jobId}/${uniqueFileName}`;
     
-    // Create directory if it doesn't exist
-    await mkdir(uploadDir, { recursive: true });
+    await s3Client.send(new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: s3Key,
+      Body: resumeBuffer,
+      ContentType: resume.type,
+    }));
     
-    const fileName = `${Date.now()}-${resume.name}`;
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, resumeBuffer);
+    // Store S3 URL in database
+    const resumeUrl = `s3://${process.env.AWS_S3_BUCKET_NAME}/${s3Key}`;
     
-    // Store the relative path
-    const resumeUrl = `/uploads/resumes/${job._id.toString()}/${fileName}`;
-
     // Parse resume with OpenAI
     let score = 0;
     try {
-      // Convert resume to text (simplified - in production you'd use a proper parser)
+      // Convert resume to text
       const resumeText = resumeBuffer.toString('utf-8');
       
       // Score the resume against the job description
@@ -105,7 +111,7 @@ export async function POST(request: Request) {
       email,
       phone,
       coverLetter,
-      resumeUrl,
+      resumeUrl,  // This now contains the S3 URL
       status: 'New',
       currentRound: 0,
       score,

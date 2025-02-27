@@ -18,7 +18,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const jobId = params.id;
+    const jobId = await params.id;
 
     // Find the job
     const job = await Job.findOne({

@@ -5,6 +5,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 
+/**
+ * API route handler for managing job listings
+ * Provides endpoints to:
+ * - GET: Retrieve job listings with candidate statistics
+ * - Handles authentication and organization-specific access
+ * - Calculates candidate counts by status (new, shortlisted, interviewing, etc.)
+**/
+
 export async function GET(request: Request) {
   try {
     await connectDB();

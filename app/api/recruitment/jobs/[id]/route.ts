@@ -26,7 +26,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const jobId = params.id;
+    const jobId = await params.id;
     const organizationId = session.user.organizationId;
 
     const job = await Job.findOne({
@@ -96,7 +96,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const jobId = params.id;
+    const jobId = await params.id;
     const organizationId = session.user.organizationId;
     const { status } = await request.json();
 
@@ -144,7 +144,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const jobId = params.id;
+    const jobId = await params.id;
     const organizationId = session.user.organizationId;
 
     const result = await Job.deleteOne({

@@ -7,8 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Loader2, Users, Mail, Calendar, DollarSign, Globe, Building } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -19,6 +18,7 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [isScreening, setIsScreening] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -43,6 +43,42 @@ export default function JobDetailPage() {
 
     fetchJob();
   }, [jobId, toast]);
+
+  const handleScreenCandidates = async () => {
+    setIsScreening(true);
+    try {
+      const response = await fetch(`/api/recruitment/jobs/${jobId}/screen-candidates`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to screen candidates");
+      }
+      
+      const data = await response.json();
+      
+      toast({
+        title: "Success",
+        description: `Screened ${data.screenedCount} candidates.`,
+      });
+      
+      // Refresh job data to get updated scores
+      const jobResponse = await fetch(`/api/recruitment/jobs/${jobId}`);
+      if (jobResponse.ok) {
+        const updatedJob = await jobResponse.json();
+        setJob(updatedJob);
+      }
+    } catch (error) {
+      console.error("Error screening candidates:", error);
+      toast({
+        title: "Error",
+        description: "Failed to screen candidates. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScreening(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -209,6 +245,25 @@ export default function JobDetailPage() {
         </TabsContent>
         
         <TabsContent value="candidates">
+          <div className="mb-4 flex justify-end">
+            <Button 
+              onClick={handleScreenCandidates} 
+              disabled={isScreening}
+              className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
+            >
+              {isScreening ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Screening Candidates...
+                </>
+              ) : (
+                <>
+                  <Brain className="mr-2 h-4 w-4" />
+                  Screen Candidates
+                </>
+              )}
+            </Button>
+          </div>
           <CandidateManagement jobId={jobId} />
         </TabsContent>
         

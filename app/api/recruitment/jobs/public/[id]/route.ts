@@ -10,7 +10,7 @@ export async function GET(
   try {
     await connectDB();
     
-    const jobId = params.id;
+    const jobId = await params.id;
     
     // Find the job by its ID
     const job = await Job.findOne({
