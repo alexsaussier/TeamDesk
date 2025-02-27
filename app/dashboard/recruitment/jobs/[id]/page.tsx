@@ -47,8 +47,13 @@ export default function JobDetailPage() {
   const handleScreenCandidates = async () => {
     setIsScreening(true);
     try {
-      const response = await fetch(`/api/recruitment/jobs/${jobId}/screen-candidates`, {
-        method: 'POST',
+      if (!job) {
+        throw new Error("Job data not available");
+      }
+      
+      console.log("Sending request to screen candidates");
+      const response = await fetch(`/api/recruitment/jobs/${job._id}/screen-candidates`, {
+        method: 'POST',                
       });
       
       if (!response.ok) {
@@ -63,9 +68,9 @@ export default function JobDetailPage() {
       });
       
       // Refresh job data to get updated scores
-      const jobResponse = await fetch(`/api/recruitment/jobs/${jobId}`);
+      const jobResponse = await fetch(`/api/recruitment/jobs/${job._id}`);
       if (jobResponse.ok) {
-        const updatedJob = await jobResponse.json();
+        const updatedJob = await response.json();
         setJob(updatedJob);
       }
     } catch (error) {

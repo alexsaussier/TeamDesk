@@ -9,6 +9,27 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import pdfParse from 'pdf-parse';
 
+/*
+ * API Route: POST /api/recruitment/jobs/[id]/screen-candidates
+ * 
+ * This route handles the automated screening of candidates for a specific job posting.
+ * It processes each candidate's resume stored in S3, evaluates them against the job requirements
+ * using OpenAI's GPT model, and updates their screening scores in the database.
+ * 
+ * The screening process:
+ * 1. Retrieves the job and its candidates from the database
+ * 2. For each candidate's resume:
+ *    - Downloads the PDF from S3
+ *    - Extracts text content
+ *    - Sends to OpenAI for evaluation against job requirements
+ *    - Updates candidate's score in database
+ * 
+ * Authentication: Requires a valid session
+ * Permissions: Only accessible to users with access to the job
+ */
+
+console.log("screen-candidates route loaded");
+
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
   credentials: {
@@ -81,6 +102,7 @@ export async function POST(
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    console.log("request received: starting to screen candidates.");
 
     const jobId = await params.id;
 
