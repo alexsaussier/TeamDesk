@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import OpenAI from 'openai';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
+import pdfParse from 'pdf-parse';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -39,18 +40,34 @@ async function getS3Object(s3Url: string): Promise<string> {
   
   const response = await s3Client.send(command);
   
-  // Convert the readable stream to a string
+  // Convert the readable stream to a buffer
   if (!response.Body) {
     throw new Error('Empty response body');
   }
   
   const stream = response.Body as Readable;
-  return new Promise((resolve, reject) => {
+  const buffer = await new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
     stream.on('error', reject);
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
   });
+  
+  // Check if it's a PDF and extract text
+  if (key.toLowerCase().endsWith('.pdf')) {
+    try {
+      // Use pdf-parse to extract text from the PDF buffer
+      const data = await pdfParse(buffer);
+      return data.text;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      // Fall back to treating as text if PDF extraction fails
+      return buffer.toString('utf-8');
+    }
+  }
+  
+  // For non-PDF files, return as UTF-8 string
+  return buffer.toString('utf-8');
 }
 
 export async function POST(
@@ -124,7 +141,7 @@ export async function POST(
 
         // Score the resume against the job description
         const completion = await openai.chat.completions.create({
-          model: 'gpt-4o',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'system',
@@ -145,7 +162,6 @@ export async function POST(
         });
 
         const scoreText = completion.choices[0].message.content?.trim();
-        console.log(`Raw score for candidate ${candidate._id}: "${scoreText}"`);
         
         const score = parseInt(scoreText || '0', 10);
         

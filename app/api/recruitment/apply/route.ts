@@ -41,7 +41,9 @@ export async function POST(request: Request) {
     }
     
     // Find the job
-    const job = await Job.findById(jobId);
+    const job = await Job.findOne({
+      publicLink: { $regex: `/jobs/${jobId}$` }
+    });
     if (!job) {
       return NextResponse.json(
         { error: 'Job not found' },
@@ -73,7 +75,7 @@ export async function POST(request: Request) {
       
       // Score the resume against the job description
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
