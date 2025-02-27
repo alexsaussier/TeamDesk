@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
-import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2 } from "lucide-react"
+import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2, Briefcase } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -74,6 +74,22 @@ const navSections: NavSection[] = [
         href: "/dashboard/financials",
         label: "Financial Metrics",
         icon: TrendingUp
+      }
+    ]
+  },
+  {
+    icon: Briefcase,
+    label: "Recruitment",
+    items: [
+      {
+        href: "/dashboard/recruitment",
+        label: "Overview",
+        icon: Briefcase
+      },
+      {
+        href: "/dashboard/recruitment/jobs",
+        label: "Jobs",
+        icon: Briefcase
       }
     ]
   }

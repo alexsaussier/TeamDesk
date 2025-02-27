@@ -75,5 +75,73 @@ export const getNextStartingProject = (projects: Project[]): Project | null => {
       new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     )[0] || null;
 };
+
+export enum CandidateStatus {
+  New = 'New',
+  Shortlisted = 'Shortlisted',
+  Interviewing = 'Interviewing',
+  Rejected = 'Rejected',
+  Offered = 'Offered',
+  Hired = 'Hired'
+}
+
+export interface Candidate {
+  _id?: string;
+  name: string;
+  email: string;
+  resumeUrl?: string;
+  status: CandidateStatus;
+  currentRound: number;
+  score?: number;
+  notes?: string;
+  salaryExpectation?: number;
+  visaRequired?: boolean;
+  availableFrom?: string;
+  interviewFeedback?: InterviewFeedback[];
+}
+
+export interface InterviewFeedback {
+  roundIndex: number;
+  interviewerEmail: string;
+  decision: 'Go' | 'No Go' | 'Pending';
+  comments?: string;
+  submittedAt: string;
+}
+
+export interface InterviewRound {
+  _id?: string;
+  name: string;
+  interviewers: string[];
+}
+
+export interface Job {
+  _id: string;
+  organizationId: string;
+  createdBy: string;
+  title: string;
+  department: string;
+  location: string;
+  jobDescription: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  visaSponsorship: boolean;
+  shortlistCount: number;
+  additionalInstructions?: string;
+  interviewRounds: InterviewRound[];
+  publicLink: string;
+  status: 'Draft' | 'Published' | 'Closed';
+  candidates: Candidate[];
+  createdAt: string;
+  updatedAt: string;
+  candidateCounts?: {
+    total: number;
+    new: number;
+    shortlisted: number;
+    interviewing: number;
+    rejected: number;
+    offered: number;
+    hired: number;
+  };
+}
   
   
