@@ -33,8 +33,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find the job
-    const job = await Job.findById(new mongoose.Types.ObjectId(jobId));
+    // Find the job by public link instead of direct ID
+    const job = await Job.findOne({
+      publicLink: { $regex: `/jobs/${jobId}$` }
+    });
+    
     if (!job) {
       return NextResponse.json(
         { error: 'Job not found' },
@@ -44,7 +47,7 @@ export async function POST(request: Request) {
 
     // Save the resume file
     const resumeBuffer = Buffer.from(await resume.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), 'uploads', 'resumes', jobId);
+    const uploadDir = path.join(process.cwd(), 'uploads', 'resumes', job._id.toString());
     
     // Create directory if it doesn't exist
     await mkdir(uploadDir, { recursive: true });
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
     await writeFile(filePath, resumeBuffer);
     
     // Store the relative path
-    const resumeUrl = `/uploads/resumes/${jobId}/${fileName}`;
+    const resumeUrl = `/uploads/resumes/${job._id.toString()}/${fileName}`;
 
     // Parse resume with OpenAI
     let score = 0;
