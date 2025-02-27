@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Sparkles, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 interface JobSettingsFormProps {
   jobDescription: string;
@@ -27,94 +29,143 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
+  // Extract information from job description
+  const extractJobInfo = (description: string) => {
+    const info = {
+      title: "",
+      department: "",
+      location: "",
+    };
+
+    // Try to extract job title
+    const titleMatch = description.match(/Job Title:?\s*([^\n]+)/i) || 
+                      description.match(/^#\s*([^\n]+)/m) ||
+                      description.match(/^(.+?)(?:\n|$)/);
+    if (titleMatch && titleMatch[1]) {
+      info.title = titleMatch[1].trim();
+    }
+
+    // Try to extract department
+    const departmentMatch = description.match(/Department:?\s*([^\n]+)/i) ||
+                           description.match(/About the Company:?\s*([^\n]+)/i);
+    if (departmentMatch && departmentMatch[1]) {
+      info.department = departmentMatch[1].trim();
+    }
+
+    // Try to extract location
+    const locationMatch = description.match(/Location:?\s*([^\n]+)/i) ||
+                         description.match(/(?:Position|Job) Location:?\s*([^\n]+)/i);
+    if (locationMatch && locationMatch[1]) {
+      info.location = locationMatch[1].trim();
+    }
+
+    return info;
+  };
+
+  const extractedInfo = extractJobInfo(jobDescription);
+
+  // Initialize form data with extracted information
   const [formData, setFormData] = useState({
-    title: "",
-    department: "",
-    location: "",
+    title: extractedInfo.title,
+    department: extractedInfo.department,
+    location: extractedInfo.location,
     salaryMin: "",
     salaryMax: "",
     visaSponsorship: false,
     shortlistCount: "5",
     additionalInstructions: "",
     interviewRounds: [
-      { id: "1", name: "Initial Screening", interviewers: [""] }
-    ] as InterviewRound[]
+      { 
+        name: "Initial Screening", 
+        description: "Basic qualification check and cultural fit assessment",
+        interviewers: [""] 
+      },
+      { 
+        name: "Technical Interview", 
+        description: "In-depth technical skills evaluation",
+        interviewers: [""] 
+      },
+      { 
+        name: "Final Interview", 
+        description: "Meeting with the hiring manager and team",
+        interviewers: [""] 
+      }
+    ]
   });
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleRoundChange = (index: number, field: string, value: string) => {
+    setFormData(prev => {
+      const updatedRounds = [...prev.interviewRounds];
+      updatedRounds[index] = { ...updatedRounds[index], [field]: value };
+      return { ...prev, interviewRounds: updatedRounds };
+    });
+  };
+
+  const handleInterviewerChange = (roundIndex: number, interviewerIndex: number, value: string) => {
+    setFormData(prev => {
+      const updatedRounds = [...prev.interviewRounds];
+      const updatedInterviewers = [...updatedRounds[roundIndex].interviewers];
+      updatedInterviewers[interviewerIndex] = value;
+      updatedRounds[roundIndex].interviewers = updatedInterviewers;
+      return { ...prev, interviewRounds: updatedRounds };
+    });
+  };
+
+  const addInterviewer = (roundIndex: number) => {
+    setFormData(prev => {
+      const updatedRounds = [...prev.interviewRounds];
+      updatedRounds[roundIndex].interviewers.push("");
+      return { ...prev, interviewRounds: updatedRounds };
+    });
+  };
+
+  const removeInterviewer = (roundIndex: number, interviewerIndex: number) => {
+    setFormData(prev => {
+      const updatedRounds = [...prev.interviewRounds];
+      updatedRounds[roundIndex].interviewers = updatedRounds[roundIndex].interviewers.filter(
+        (_, i) => i !== interviewerIndex
+      );
+      return { ...prev, interviewRounds: updatedRounds };
+    });
   };
 
   const addInterviewRound = () => {
-    const newRound = {
-      id: Date.now().toString(),
-      name: `Round ${formData.interviewRounds.length + 1}`,
-      interviewers: [""]
-    };
-    
     setFormData(prev => ({
       ...prev,
-      interviewRounds: [...prev.interviewRounds, newRound]
+      interviewRounds: [
+        ...prev.interviewRounds,
+        {
+          name: `Interview Round ${prev.interviewRounds.length + 1}`,
+          description: "",
+          interviewers: [""]
+        }
+      ]
     }));
   };
 
-  const removeInterviewRound = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interviewRounds: prev.interviewRounds.filter(round => round.id !== id)
-    }));
-  };
+  const removeInterviewRound = (roundIndex: number) => {
+    if (formData.interviewRounds.length <= 1) {
+      toast({
+        title: "Cannot remove",
+        description: "You must have at least one interview round.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const updateRoundName = (id: string, name: string) => {
     setFormData(prev => ({
       ...prev,
-      interviewRounds: prev.interviewRounds.map(round => 
-        round.id === id ? { ...round, name } : round
-      )
-    }));
-  };
-
-  const addInterviewer = (roundId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interviewRounds: prev.interviewRounds.map(round => 
-        round.id === roundId 
-          ? { ...round, interviewers: [...round.interviewers, ""] } 
-          : round
-      )
-    }));
-  };
-
-  const removeInterviewer = (roundId: string, index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      interviewRounds: prev.interviewRounds.map(round => 
-        round.id === roundId 
-          ? { 
-              ...round, 
-              interviewers: round.interviewers.filter((_, i) => i !== index) 
-            } 
-          : round
-      )
-    }));
-  };
-
-  const updateInterviewer = (roundId: string, index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interviewRounds: prev.interviewRounds.map(round => 
-        round.id === roundId 
-          ? { 
-              ...round, 
-              interviewers: round.interviewers.map((interviewer, i) => 
-                i === index ? value : interviewer
-              ) 
-            } 
-          : round
-      )
+      interviewRounds: prev.interviewRounds.filter((_, i) => i !== roundIndex)
     }));
   };
 
@@ -129,6 +180,15 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
       return;
     }
 
+    // Clean up empty interviewers
+    const cleanedFormData = {
+      ...formData,
+      interviewRounds: formData.interviewRounds.map(round => ({
+        ...round,
+        interviewers: round.interviewers.filter(email => email.trim() !== "")
+      }))
+    };
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/recruitment/create-job", {
@@ -137,11 +197,11 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          ...cleanedFormData,
           jobDescription,
-          salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : null,
-          salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : null,
-          shortlistCount: parseInt(formData.shortlistCount),
+          salaryMin: cleanedFormData.salaryMin ? parseInt(cleanedFormData.salaryMin) : null,
+          salaryMax: cleanedFormData.salaryMax ? parseInt(cleanedFormData.salaryMax) : null,
+          shortlistCount: parseInt(cleanedFormData.shortlistCount),
         }),
       });
 
@@ -172,183 +232,221 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
       <CardHeader>
         <CardTitle>Job Settings</CardTitle>
         <CardDescription>
-          Configure the details and interview process for this position
+          Configure the details and requirements for this job posting
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Basic Information</h3>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Job Title *</Label>
-              <Input 
-                id="title" 
-                value={formData.title} 
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="e.g., Senior Software Engineer"
+              <Input
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="e.g. Senior Software Engineer"
                 required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="department">Department *</Label>
-              <Input 
-                id="department" 
-                value={formData.department} 
-                onChange={(e) => handleInputChange("department", e.target.value)}
-                placeholder="e.g., Engineering"
+              <Input
+                id="department"
+                name="department"
+                value={formData.department}
+                onChange={handleInputChange}
+                placeholder="e.g. Engineering"
                 required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="location">Location *</Label>
-              <Input 
-                id="location" 
-                value={formData.location} 
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                placeholder="e.g., New York, NY (Remote)"
+              <Input
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="e.g. New York, NY (Remote)"
                 required
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-2">
-                <Label htmlFor="salaryMin">Salary Min ($)</Label>
-                <Input 
-                  id="salaryMin" 
-                  type="number"
-                  value={formData.salaryMin} 
-                  onChange={(e) => handleInputChange("salaryMin", e.target.value)}
-                  placeholder="e.g., 80000"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="salaryMax">Salary Max ($)</Label>
-                <Input 
-                  id="salaryMax" 
-                  type="number"
-                  value={formData.salaryMax} 
-                  onChange={(e) => handleInputChange("salaryMax", e.target.value)}
-                  placeholder="e.g., 120000"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="shortlistCount">Shortlist Count</Label>
+              <Input
+                id="shortlistCount"
+                name="shortlistCount"
+                type="number"
+                min="1"
+                max="20"
+                value={formData.shortlistCount}
+                onChange={handleInputChange}
+                placeholder="5"
+              />
+              <p className="text-xs text-muted-foreground">
+                Number of candidates to shortlist for interviews
+              </p>
             </div>
           </div>
-          
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Compensation</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="salaryMin">Minimum Salary (USD)</Label>
+              <Input
+                id="salaryMin"
+                name="salaryMin"
+                type="number"
+                min="0"
+                step="1000"
+                value={formData.salaryMin}
+                onChange={handleInputChange}
+                placeholder="e.g. 80000"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="salaryMax">Maximum Salary (USD)</Label>
+              <Input
+                id="salaryMax"
+                name="salaryMax"
+                type="number"
+                min="0"
+                step="1000"
+                value={formData.salaryMax}
+                onChange={handleInputChange}
+                placeholder="e.g. 120000"
+              />
+            </div>
+          </div>
           <div className="flex items-center space-x-2">
-            <Switch 
-              id="visaSponsorship" 
+            <Checkbox
+              id="visaSponsorship"
+              name="visaSponsorship"
               checked={formData.visaSponsorship}
-              onCheckedChange={(checked) => handleInputChange("visaSponsorship", checked)}
+              onCheckedChange={(checked) => 
+                setFormData(prev => ({ ...prev, visaSponsorship: checked === true }))
+              }
             />
-            <Label htmlFor="visaSponsorship">Offer visa sponsorship</Label>
+            <Label htmlFor="visaSponsorship">Visa sponsorship available</Label>
           </div>
         </div>
-        
+
+        <Separator />
+
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Candidate Selection</h3>
-          
-          <div className="space-y-2">
-            <Label htmlFor="shortlistCount">Number of candidates to shortlist</Label>
-            <Select 
-              value={formData.shortlistCount} 
-              onValueChange={(value) => handleInputChange("shortlistCount", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select number of candidates" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3">3 candidates</SelectItem>
-                <SelectItem value="5">5 candidates</SelectItem>
-                <SelectItem value="10">10 candidates</SelectItem>
-                <SelectItem value="15">15 candidates</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="additionalInstructions">Additional Instructions</Label>
-            <Textarea 
-              id="additionalInstructions" 
-              value={formData.additionalInstructions} 
-              onChange={(e) => handleInputChange("additionalInstructions", e.target.value)}
-              placeholder="e.g., Prioritize candidates with startup experience, be flexible with salary for exceptional candidates"
-              className="min-h-[100px]"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">Interview Process</h3>
             <Button 
+              type="button" 
               variant="outline" 
-              size="sm" 
               onClick={addInterviewRound}
-              className="flex items-center"
+              className="h-8"
             >
               <Plus className="h-4 w-4 mr-1" /> Add Round
             </Button>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Define the interview rounds for this position
+          </p>
           
-          <div className="space-y-6">
-            {formData.interviewRounds.map((round, roundIndex) => (
-              <Card key={round.id} className="border border-muted">
-                <CardHeader className="py-4 px-6">
-                  <div className="flex items-center justify-between">
-                    <Input
-                      value={round.name}
-                      onChange={(e) => updateRoundName(round.id, e.target.value)}
-                      className="font-medium border-none p-0 h-auto text-lg focus-visible:ring-0"
-                    />
-                    {formData.interviewRounds.length > 1 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeInterviewRound(round.id)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="py-2 px-6 space-y-4">
+          {formData.interviewRounds.map((round, roundIndex) => (
+            <div key={roundIndex} className="space-y-2 p-4 border rounded-md">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">Round {roundIndex + 1}</h4>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => removeInterviewRound(roundIndex)}
+                  className="h-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Remove
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`round-${roundIndex}-name`}>Round Name</Label>
+                <Input
+                  id={`round-${roundIndex}-name`}
+                  value={round.name}
+                  onChange={(e) => handleRoundChange(roundIndex, 'name', e.target.value)}
+                  placeholder="e.g. Technical Interview"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`round-${roundIndex}-description`}>Description</Label>
+                <Textarea
+                  id={`round-${roundIndex}-description`}
+                  value={round.description}
+                  onChange={(e) => handleRoundChange(roundIndex, 'description', e.target.value)}
+                  placeholder="Describe what this round will assess"
+                  rows={2}
+                />
+              </div>
+              
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between items-center">
                   <Label>Interviewers</Label>
-                  {round.interviewers.map((interviewer, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Input
-                        value={interviewer}
-                        onChange={(e) => updateInterviewer(round.id, index, e.target.value)}
-                        placeholder="Interviewer name or email"
-                        className="flex-1"
-                      />
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeInterviewer(round.id, index)}
-                        disabled={round.interviewers.length === 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
                   <Button 
+                    type="button" 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => addInterviewer(round.id)}
-                    className="mt-2"
+                    onClick={() => addInterviewer(roundIndex)}
+                    className="h-8"
                   >
                     <Plus className="h-4 w-4 mr-1" /> Add Interviewer
                   </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+                
+                {round.interviewers.map((interviewer, interviewerIndex) => (
+                  <div key={interviewerIndex} className="flex items-center gap-2">
+                    <Input
+                      type="email"
+                      value={interviewer}
+                      onChange={(e) => handleInterviewerChange(roundIndex, interviewerIndex, e.target.value)}
+                      placeholder="Interviewer email"
+                      className="flex-1"
+                    />
+                    {round.interviewers.length > 1 && (
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => removeInterviewer(roundIndex, interviewerIndex)}
+                        className="h-8 w-8"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  Email addresses to notify when candidates are ready for this interview round
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-2">
+          <Label htmlFor="additionalInstructions">AI Screening Instructions</Label>
+          <Textarea
+            id="additionalInstructions"
+            name="additionalInstructions"
+            value={formData.additionalInstructions}
+            onChange={handleInputChange}
+            placeholder="Special instructions for the AI resume screener (e.g., 'Prioritize candidates with MBAs', 'Focus on Python experience')"
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground">
+            These instructions will guide the AI when screening resumes. They won't be visible to candidates.
+          </p>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">

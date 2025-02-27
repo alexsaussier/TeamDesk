@@ -1,18 +1,82 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { PlusCircle, FileText, Settings, Users, MessageSquare, Mic } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { PlusCircle, FileText, Settings, Users, MessageSquare, Mic, Search, Calendar, Building, Globe, Loader2, Trash2 } from "lucide-react"
 import JobDescriptionCreator from "@/components/recruitment/JobDescriptionCreator"
 import JobSettingsForm from "@/components/recruitment/JobSettingsForm"
+import { useToast } from "@/hooks/use-toast";
+import { Job } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function RecruitmentDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isCreatingJob, setIsCreatingJob] = useState(false)
   const [currentStep, setCurrentStep] = useState<"description" | "settings">("description")
   const [jobDescription, setJobDescription] = useState<string | null>(null)
+  
+  // Jobs listing state
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [jobsActiveTab, setJobsActiveTab] = useState("all");
+  const { toast } = useToast();
+  
+  // Delete job state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [toast]);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/recruitment/jobs");
+      if (!response.ok) {
+        throw new Error("Failed to fetch jobs");
+      }
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load jobs. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter jobs based on search query and active tab
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = 
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (jobsActiveTab === "all") {
+      return matchesSearch;
+    }
+    
+    return matchesSearch && job.status.toLowerCase() === jobsActiveTab;
+  });
 
   const handleStartJobCreation = () => {
     setIsCreatingJob(true)
@@ -26,11 +90,12 @@ export default function RecruitmentDashboard() {
   }
 
   const handleJobSettingsComplete = () => {
-    // Reset the creation flow and go back to overview
+    // Reset the creation flow and go back to jobs tab
     setIsCreatingJob(false)
     setJobDescription(null)
-    setActiveTab("overview")
+    setActiveTab("jobs")
     // In a real implementation, we would save the job and refresh the jobs list
+    fetchJobs();
   }
 
   const handleCancel = () => {
@@ -38,6 +103,47 @@ export default function RecruitmentDashboard() {
     setJobDescription(null)
     setActiveTab("overview")
   }
+
+  const handleDeleteClick = (e: React.MouseEvent, job: Job) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setJobToDelete(job);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!jobToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/recruitment/jobs/${jobToDelete._id}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to delete job");
+      }
+      
+      // Remove the job from the state
+      setJobs(jobs.filter(job => job._id !== jobToDelete._id));
+      
+      toast({
+        title: "Success",
+        description: `"${jobToDelete.title}" has been deleted.`,
+      });
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete job. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setJobToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -57,8 +163,8 @@ export default function RecruitmentDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="jobs">Jobs</TabsTrigger>
           <TabsTrigger value="create" disabled={!isCreatingJob}>Create Job</TabsTrigger>
-          <TabsTrigger value="active">Active Jobs</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
@@ -69,7 +175,7 @@ export default function RecruitmentDashboard() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">{jobs.length}</div>
               </CardContent>
             </Card>
             <Card>
@@ -78,7 +184,9 @@ export default function RecruitmentDashboard() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">
+                  {jobs.reduce((total, job) => total + (job.candidateCounts?.total || 0), 0)}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -87,7 +195,9 @@ export default function RecruitmentDashboard() {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">
+                  {jobs.reduce((total, job) => total + (job.candidateCounts?.interviewing || 0), 0)}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -115,6 +225,108 @@ export default function RecruitmentDashboard() {
           </Card>
         </TabsContent>
         
+        <TabsContent value="jobs" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search jobs..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <Tabs value={jobsActiveTab} onValueChange={setJobsActiveTab}>
+            <TabsList>
+              <TabsTrigger value="all">All Jobs</TabsTrigger>
+              <TabsTrigger value="published">Published</TabsTrigger>
+              <TabsTrigger value="draft">Draft</TabsTrigger>
+              <TabsTrigger value="closed">Closed</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value={jobsActiveTab} className="mt-6">
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredJobs.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No jobs found.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredJobs.map((job) => (
+                    <div key={job._id} className="relative group">
+                      <Link href={`/dashboard/recruitment/jobs/${job._id}`}>
+                        <Card className="h-full cursor-pointer hover:shadow-md transition-shadow">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-lg">{job.title}</CardTitle>
+                              <Badge className={
+                                job.status === 'Published' ? 'bg-green-100 text-green-800' :
+                                job.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }>
+                                {job.status}
+                              </Badge>
+                            </div>
+                            <CardDescription className="flex items-center gap-1">
+                              <Building className="h-3 w-3" />
+                              {job.department}
+                              <span className="mx-1">•</span>
+                              <Globe className="h-3 w-3" />
+                              {job.location}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <div className="flex justify-between text-sm">
+                                <div className="flex items-center gap-1">
+                                  <Users className="h-4 w-4 text-muted-foreground" />
+                                  <span>{job.candidateCounts?.total || 0} candidates</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  <span>{new Date(job.createdAt).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                                <div>
+                                  <div className="font-medium">{job.candidateCounts?.new || 0}</div>
+                                  <div className="text-xs text-muted-foreground">New</div>
+                                </div>
+                                <div>
+                                  <div className="font-medium">{job.candidateCounts?.shortlisted || 0}</div>
+                                  <div className="text-xs text-muted-foreground">Shortlisted</div>
+                                </div>
+                                <div>
+                                  <div className="font-medium">{job.candidateCounts?.interviewing || 0}</div>
+                                  <div className="text-xs text-muted-foreground">Interviewing</div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleDeleteClick(e, job)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+        
         <TabsContent value="create" className="space-y-4">
           {currentStep === "description" && (
             <JobDescriptionCreator onComplete={handleJobDescriptionComplete} onCancel={handleCancel} />
@@ -128,23 +340,42 @@ export default function RecruitmentDashboard() {
             />
           )}
         </TabsContent>
-        
-        <TabsContent value="active" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Jobs</CardTitle>
-              <CardDescription>
-                Manage your ongoing recruitment processes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                No active jobs found. Create a new job to get started.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Job</DialogTitle>
+            <DialogDescription>
+              This will permanently delete the job "{jobToDelete?.title}". This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              variant="destructive"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Job"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

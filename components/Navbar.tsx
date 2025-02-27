@@ -83,14 +83,10 @@ const navSections: NavSection[] = [
     items: [
       {
         href: "/dashboard/recruitment",
-        label: "Overview",
+        label: "AI Recruiter",
         icon: Briefcase
       },
-      {
-        href: "/dashboard/recruitment/jobs",
-        label: "Jobs",
-        icon: Briefcase
-      }
+      
     ]
   }
 ]

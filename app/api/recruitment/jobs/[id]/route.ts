@@ -120,4 +120,42 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+// Add this DELETE method to your existing file
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const jobId = params.id;
+    const organizationId = session.user.organizationId;
+
+    const result = await Job.deleteOne({
+      _id: new mongoose.Types.ObjectId(jobId),
+      organizationId: new mongoose.Types.ObjectId(organizationId)
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Job not found or you do not have permission to delete it' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting job:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete job' },
+      { status: 500 }
+    );
+  }
 } 

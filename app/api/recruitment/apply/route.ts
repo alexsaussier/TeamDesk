@@ -71,6 +71,9 @@ export async function POST(request: Request) {
             content: `You are an expert recruiter who evaluates resumes against job descriptions.
             Score the candidate's resume from 0-100 based on how well it matches the job requirements.
             Consider skills, experience, education, and overall fit.
+            
+            ${job.additionalInstructions ? `IMPORTANT SCREENING INSTRUCTIONS: ${job.additionalInstructions}` : ''}
+            
             Return only a number from 0-100 representing the score.`
           },
           {

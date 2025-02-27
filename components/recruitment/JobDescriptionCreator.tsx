@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Mic, FileText, Loader2 } from "lucide-react";
+import { MessageSquare, Mic, FileText, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 interface JobDescriptionCreatorProps {
   onComplete: (description: string) => void;
@@ -15,34 +16,34 @@ interface JobDescriptionCreatorProps {
 
 export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescriptionCreatorProps) {
   const [inputMethod, setInputMethod] = useState<"chat" | "voice">("chat");
-  const [chatInput, setChatInput] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [generatedDescription, setGeneratedDescription] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedDescription, setGeneratedDescription] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   
   // For voice recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const handleChatSubmit = async () => {
-    if (!chatInput.trim()) {
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
       toast({
         title: "Input required",
-        description: "Please enter some details about the job position.",
+        description: "Please provide details about the job to generate a description.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsLoading(true);
+    setIsGenerating(true);
     try {
       const response = await fetch("/api/recruitment/generate-jd", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input: chatInput, method: "text" }),
+        body: JSON.stringify({ input: prompt }),
       });
 
       if (!response.ok) {
@@ -51,6 +52,7 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
 
       const data = await response.json();
       setGeneratedDescription(data.description);
+      setIsEditing(true);
     } catch (error) {
       console.error("Error generating job description:", error);
       toast({
@@ -59,92 +61,16 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        await processAudioInput(audioBlob);
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      
-      toast({
-        title: "Recording started",
-        description: "Speak clearly about the job position you want to create.",
-      });
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      toast({
-        title: "Microphone Error",
-        description: "Could not access your microphone. Please check permissions.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
-      // Stop all audio tracks
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-    }
-  };
-
-  const processAudioInput = async (audioBlob: Blob) => {
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("audio", audioBlob);
-
-      const response = await fetch("/api/recruitment/generate-jd", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process audio input");
-      }
-
-      const data = await response.json();
-      setGeneratedDescription(data.description);
-    } catch (error) {
-      console.error("Error processing audio:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process audio. Please try again or use text input.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEditDescription = () => {
-    // Allow editing the generated description
-    setChatInput(generatedDescription || "");
-    setGeneratedDescription(null);
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setGeneratedDescription(e.target.value);
   };
 
   const handleComplete = () => {
-    if (generatedDescription) {
+    if (generatedDescription.trim()) {
       onComplete(generatedDescription);
     }
   };
@@ -154,83 +80,78 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
       <CardHeader>
         <CardTitle>Create Job Description</CardTitle>
         <CardDescription>
-          Describe the job position you're hiring for, and our AI will generate a professional job description.
+          Use AI to generate a professional job description or create one manually
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!generatedDescription ? (
-          <Tabs value={inputMethod} onValueChange={(value) => setInputMethod(value as "chat" | "voice")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="chat" className="flex items-center">
+        {!isEditing ? (
+          <>
+            <div className="flex space-x-2">
+              <Button
+                variant={inputMethod === "chat" ? "default" : "outline"}
+                onClick={() => setInputMethod("chat")}
+                className="flex-1"
+              >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Text Input
-              </TabsTrigger>
-              <TabsTrigger value="voice" className="flex items-center">
-                <Mic className="mr-2 h-4 w-4" />
-                Voice Input
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="chat" className="space-y-4 pt-4">
-              <Textarea
-                placeholder="Describe the job position (e.g., 'We need a senior software engineer with 5+ years of experience in React and Node.js, who will work on our e-commerce platform...')"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                className="min-h-[200px]"
-              />
-              <Button 
-                onClick={handleChatSubmit} 
-                disabled={isLoading || !chatInput.trim()}
-                className="w-full"
+              </Button>
+              <Button
+                variant={inputMethod === "voice" ? "default" : "outline"}
+                onClick={() => setInputMethod("voice")}
+                className="flex-1"
+                disabled
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generate Job Description
-                  </>
-                )}
+                <Mic className="mr-2 h-4 w-4" />
+                Voice Input (Coming Soon)
               </Button>
-            </TabsContent>
-            <TabsContent value="voice" className="space-y-4 pt-4">
-              <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-md">
-                <Button
-                  variant={isRecording ? "destructive" : "default"}
-                  size="lg"
-                  className="rounded-full p-8"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isLoading}
-                >
-                  <Mic className={`h-8 w-8 ${isRecording ? 'animate-pulse' : ''}`} />
-                </Button>
-                <p className="mt-4 text-center text-sm text-muted-foreground">
-                  {isRecording 
-                    ? "Recording... Click to stop" 
-                    : "Click to start recording your job description"}
-                </p>
-              </div>
-              {isLoading && (
-                <div className="flex justify-center items-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  <span>Processing your audio...</span>
-                </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prompt">Describe the job position</Label>
+              <Textarea
+                id="prompt"
+                placeholder="Example: We need a senior software engineer with 5+ years of experience in React and Node.js. The role involves leading a team of 3 developers..."
+                className="min-h-[150px]"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Include details like job title, required skills, experience level, responsibilities, and any specific requirements.
+              </p>
+            </div>
+
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="w-full"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Job Description
+                </>
               )}
-            </TabsContent>
-          </Tabs>
+            </Button>
+          </>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Generated Job Description</h3>
-              <Button variant="outline" size="sm" onClick={handleEditDescription}>
-                Edit
-              </Button>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="description">Job Description</Label>
+              <p className="text-sm text-muted-foreground">
+                Edit as needed before continuing
+              </p>
             </div>
-            <div className="p-4 border rounded-md bg-muted/50 whitespace-pre-wrap">
-              {generatedDescription}
-            </div>
+            <Textarea
+              id="description"
+              className="min-h-[400px] font-mono text-sm"
+              value={generatedDescription}
+              onChange={handleDescriptionChange}
+            />
           </div>
         )}
       </CardContent>
