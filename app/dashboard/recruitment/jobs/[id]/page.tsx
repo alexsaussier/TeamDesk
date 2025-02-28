@@ -124,7 +124,7 @@ export default function JobDetailPage() {
 
 I hope this email finds you well. Thank you for your application for the ${job?.title} position at our company.
 
-We were impressed with your qualifications and would like to invite you for an interview. Please select a time that works for you from the available slots.
+We were impressed with your qualifications and would like to invite you for an interview. Please select a time that works for you from the available slots, or calendar link, if provided.
 
 {{scheduling_details}}
 

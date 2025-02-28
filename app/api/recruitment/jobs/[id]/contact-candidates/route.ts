@@ -88,7 +88,7 @@ export async function POST(
       });
 
       // Update candidate status if not already in interview process
-      if (candidate.status === 'Shortlisted') {
+      if (candidate.status === 'Shortlisted' || candidate.status === 'New') {
         candidate.status = 'Interviewing';
         candidate.currentRound = 1; // Set to first interview round
       }

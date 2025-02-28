@@ -20,7 +20,7 @@ export async function GET() {
     // Send a test email
     await transporter.sendMail({
       from: `"Test User" <${process.env.EMAIL_FROM}>`,
-      to: "your-test-email@example.com", // Change this to your email
+      to: "asaussier99@gmail.com", // Change this to your email
       subject: "Test Email",
       text: "This is a test email to verify your email configuration.",
     });
