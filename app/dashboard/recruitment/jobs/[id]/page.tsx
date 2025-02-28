@@ -34,10 +34,13 @@ export default function JobDetailPage() {
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [emailTemplate, setEmailTemplate] = useState("");
-  const [schedulingMethod, setSchedulingMethod] = useState<"manual" | "calendly">("manual");
+  const [schedulingMethod, setSchedulingMethod] = useState<"manual" | "calendly" | "calendar">("manual");
   const [availableDates, setAvailableDates] = useState("");
   const [calendlyLink, setCalendlyLink] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<Array<{start: string, end: string, formatted: string}>>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -61,7 +64,20 @@ export default function JobDetailPage() {
     };
 
     fetchJob();
+    checkCalendarConnection();
   }, [jobId, toast]);
+
+  const checkCalendarConnection = async () => {
+    try {
+      const response = await fetch("/api/calendar/status");
+      if (response.ok) {
+        const data = await response.json();
+        setCalendarConnected(data.connected);
+      }
+    } catch (error) {
+      console.error("Error checking calendar connection:", error);
+    }
+  };
 
   const handleScreenCandidates = async () => {
     setIsScreening(true);
@@ -104,7 +120,7 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleContactCandidates = () => {
+  const handleContactCandidates = async () => {
     if (!selectedCandidates.length) {
       toast({
         title: "No candidates selected",
@@ -137,6 +153,47 @@ The Hiring Team`;
 
     setEmailTemplate(defaultTemplate);
     setContactDialogOpen(true);
+  };
+
+  const fetchCalendarAvailability = async () => {
+    setIsLoadingSlots(true);
+    try {
+      const response = await fetch("/api/calendar/available-slots?days=7&duration=60");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch available slots: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setAvailableSlots(data.availableSlots || []);
+      
+      // If we have slots, pre-populate the available dates
+      if (data.availableSlots && data.availableSlots.length > 0) {
+        const formattedSlots = data.availableSlots
+          .slice(0, 5) // Limit to 5 slots
+          .map((slot: any) => slot.formatted)
+          .join("\n");
+        
+        setAvailableDates(formattedSlots);
+        toast({
+          title: "Success",
+          description: `Found ${data.availableSlots.length} available slots in your calendar.`,
+        });
+      } else {
+        toast({
+          title: "No available slots",
+          description: "No available slots found in your calendar for the next 7 days.",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching available slots:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch calendar availability. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingSlots(false);
+    }
   };
 
   const handleSendEmails = async () => {
@@ -352,14 +409,6 @@ The Hiring Team`;
         
         <TabsContent value="candidates">
           <div className="mb-4 flex justify-end gap-2">
-            <Button 
-              onClick={handleContactCandidates}
-              disabled={!selectedCandidates?.length}
-              className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Contact Selected Candidates
-            </Button>
             
             <Button 
               onClick={handleScreenCandidates} 
@@ -377,6 +426,15 @@ The Hiring Team`;
                   Screen Candidates
                 </>
               )}
+            </Button>
+
+            <Button 
+              onClick={handleContactCandidates}
+              disabled={!selectedCandidates?.length}
+              className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Start Interview Process for Selected Candidates
             </Button>
           </div>
           
@@ -428,7 +486,7 @@ The Hiring Team`;
             
             <div className="space-y-2">
               <Label>Scheduling Method</Label>
-              <RadioGroup value={schedulingMethod} onValueChange={(v) => setSchedulingMethod(v as "manual" | "calendly")}>
+              <RadioGroup value={schedulingMethod} onValueChange={(v) => setSchedulingMethod(v as "manual" | "calendly" | "calendar")}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="manual" id="manual" />
                   <Label htmlFor="manual">Manual (Specify available dates/times)</Label>
@@ -437,6 +495,12 @@ The Hiring Team`;
                   <RadioGroupItem value="calendly" id="calendly" />
                   <Label htmlFor="calendly">Calendly Link</Label>
                 </div>
+                {calendarConnected && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="calendar" id="calendar" />
+                    <Label htmlFor="calendar">Use Calendar Availability</Label>
+                  </div>
+                )}
               </RadioGroup>
             </div>
             
@@ -452,7 +516,7 @@ Tuesday, June 11: 9:00 AM - 11:00 AM, 1:00 PM - 3:00 PM"
                   rows={4}
                 />
               </div>
-            ) : (
+            ) : schedulingMethod === "calendly" ? (
               <div className="space-y-2">
                 <Label htmlFor="calendlyLink">Calendly Link</Label>
                 <Input
@@ -461,6 +525,50 @@ Tuesday, June 11: 9:00 AM - 11:00 AM, 1:00 PM - 3:00 PM"
                   onChange={(e) => setCalendlyLink(e.target.value)}
                   placeholder="https://calendly.com/your-name/interview"
                 />
+              </div>
+            ) : schedulingMethod === "calendar" && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="availableDates">Available Slots from Your Calendar</Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fetchCalendarAvailability}
+                    disabled={isLoadingSlots}
+                  >
+                    {isLoadingSlots ? (
+                      <>
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Checking...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="mr-2 h-3 w-3" />
+                        Find Available Slots
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {isLoadingSlots ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <Textarea
+                    id="availableDates"
+                    value={availableDates}
+                    onChange={(e) => setAvailableDates(e.target.value)}
+                    placeholder="Click 'Find Available Slots' to check your calendar"
+                    rows={4}
+                  />
+                )}
+                
+                {availableSlots.length === 0 && !isLoadingSlots && (
+                  <p className="text-xs text-muted-foreground">
+                    Click "Find Available Slots" to check your calendar for availability.
+                  </p>
+                )}
               </div>
             )}
           </div>

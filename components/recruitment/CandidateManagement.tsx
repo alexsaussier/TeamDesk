@@ -33,10 +33,13 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
   const [interviewDecision, setInterviewDecision] = useState<'Go' | 'No Go' | null>(null);
   const [interviewComments, setInterviewComments] = useState('');
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
-  const [schedulingMethod, setSchedulingMethod] = useState<'calendly' | 'manual'>('calendly');
+  const [schedulingMethod, setSchedulingMethod] = useState<'calendly' | 'manual' | 'calendar'>('calendly');
   const [calendlyLink, setCalendlyLink] = useState('');
   const [availableDates, setAvailableDates] = useState('');
   const [schedulingDetails, setSchedulingDetails] = useState('Congratulations! You have been selected for the next interview round. Please select a time that works for you for the next interview round.');
+  const [availableSlots, setAvailableSlots] = useState<Array<{start: string, end: string, formatted: string}>>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -67,6 +70,23 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
       onCandidatesSelected(selectedCandidates);
     }
   }, [selectedCandidates, onCandidatesSelected]);
+
+  // Check calendar connection status
+  useEffect(() => {
+    const checkCalendarConnection = async () => {
+      try {
+        const response = await fetch("/api/calendar/status");
+        if (response.ok) {
+          const data = await response.json();
+          setCalendarConnected(data.connected);
+        }
+      } catch (error) {
+        console.error("Error checking calendar connection:", error);
+      }
+    };
+    
+    checkCalendarConnection();
+  }, []);
 
   const handleShortlistCandidates = async () => {
     if (!selectedCandidates.length) {
@@ -152,7 +172,7 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
     );
   };
 
-  const handleInterviewFeedback = (candidate: Candidate) => {
+  const handleInterviewFeedback = async (candidate: Candidate) => {
     setSelectedCandidate(candidate);
     setInterviewDecision(null);
     setInterviewComments('');
@@ -160,6 +180,33 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
     setCalendlyLink('');
     setAvailableDates('');
     setSchedulingDetails('Congratulations! You have been selected for the next interview round. Please select a time that works for you for the next interview round.');
+    
+    // Fetch available slots if calendar is connected
+    if (calendarConnected) {
+      setIsLoadingSlots(true);
+      try {
+        const response = await fetch("/api/calendar/available-slots?days=7&duration=60");
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableSlots(data.availableSlots || []);
+          
+          // If we have slots, pre-populate the available dates
+          if (data.availableSlots && data.availableSlots.length > 0) {
+            const formattedSlots = data.availableSlots
+              .slice(0, 5) // Limit to 5 slots
+              .map((slot: any) => slot.formatted)
+              .join("\n");
+            
+            setAvailableDates(formattedSlots);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching available slots:", error);
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    }
+    
     setInterviewFeedbackOpen(true);
   };
 
@@ -257,8 +304,8 @@ The Hiring Team`
         if (!isOffer) {
           if (schedulingMethod === 'calendly') {
             emailTemplate += `\n\nPlease use the following link to schedule your interview: ${calendlyLink}`;
-          } else if (schedulingMethod === 'manual') {
-            emailTemplate += `\n\nPlease choose from the following available dates: ${availableDates}`;
+          } else if (schedulingMethod === 'manual' || schedulingMethod === 'calendar') {
+            emailTemplate += `\n\nPlease choose from the following available dates:\n${availableDates}`;
           }
         }
         
@@ -584,7 +631,7 @@ The Hiring Team`;
                       <Label>Scheduling Method</Label>
                       <RadioGroup 
                         value={schedulingMethod} 
-                        onValueChange={(value) => setSchedulingMethod(value as 'calendly' | 'manual')}
+                        onValueChange={(value) => setSchedulingMethod(value as 'calendly' | 'manual' | 'calendar')}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="calendly" id="calendly" />
@@ -594,6 +641,12 @@ The Hiring Team`;
                           <RadioGroupItem value="manual" id="manual" />
                           <Label htmlFor="manual">Suggest Available Dates</Label>
                         </div>
+                        {calendarConnected && (
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="calendar" id="calendar" />
+                            <Label htmlFor="calendar">Use Calendar Availability</Label>
+                          </div>
+                        )}
                       </RadioGroup>
                     </div>
                     
@@ -607,7 +660,7 @@ The Hiring Team`;
                           onChange={(e) => setCalendlyLink(e.target.value)}
                         />
                       </div>
-                    ) : (
+                    ) : schedulingMethod === 'manual' ? (
                       <div className="space-y-2">
                         <Label htmlFor="availableDates">Available Dates</Label>
                         <Textarea
@@ -617,6 +670,26 @@ The Hiring Team`;
                           onChange={(e) => setAvailableDates(e.target.value)}
                           rows={3}
                         />
+                      </div>
+                    ) : schedulingMethod === 'calendar' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="availableDates">Available Slots from Your Calendar</Label>
+                        {isLoadingSlots ? (
+                          <div className="flex justify-center py-2">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : availableSlots.length > 0 ? (
+                          <Textarea
+                            id="availableDates"
+                            value={availableDates}
+                            onChange={(e) => setAvailableDates(e.target.value)}
+                            rows={5}
+                          />
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No available slots found in your calendar for the next 7 days.
+                          </p>
+                        )}
                       </div>
                     )}
                   </>
@@ -647,7 +720,8 @@ The Hiring Team`;
                  selectedCandidate && 
                  (selectedCandidate.currentRound || 0) + 1 <= (job?.interviewRounds?.length || 0) && 
                  ((schedulingMethod === 'calendly' && !calendlyLink) || 
-                  (schedulingMethod === 'manual' && !availableDates)))
+                  (schedulingMethod === 'manual' && !availableDates) || 
+                  (schedulingMethod === 'calendar' && !availableDates)))
               )}
             >
               {submittingFeedback && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
