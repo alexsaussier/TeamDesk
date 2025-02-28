@@ -21,6 +21,7 @@ export enum JobStatus {
 const CandidateSchema = new mongoose.Schema({
   name: { type: String },
   email: { type: String },
+  phone: { type: String },
   resumeUrl: { type: String },
   status: { 
     type: String, 

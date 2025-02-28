@@ -102,7 +102,33 @@ export async function POST(
       if (key.toLowerCase().endsWith('.pdf')) {
         try {
           const pdfData = await pdf(buffer);
-          return pdfData.text;
+          let text = pdfData.text;
+          
+          // Post-process the text to fix spacing issues
+          
+          // 1. Fix missing spaces between words (when a lowercase letter is followed by an uppercase letter)
+          text = text.replace(/([a-z])([A-Z])/g, '$1 $2');
+          
+          // 2. Fix missing spaces after periods, commas, colons, and semicolons
+          text = text.replace(/([.,:;])([a-zA-Z])/g, '$1 $2');
+          
+          // 3. Fix missing spaces after closing parentheses when followed by a letter
+          text = text.replace(/(\))([a-zA-Z])/g, '$1 $2');
+          
+          // 4. Fix missing spaces before opening parentheses when preceded by a letter
+          text = text.replace(/([a-zA-Z])(\()/g, '$1 $2');
+          
+          // 5. Remove excessive whitespace (multiple spaces, tabs, newlines)
+          text = text.replace(/\s+/g, ' ');
+          
+          // 6. Restore proper paragraph breaks (often PDFs have weird line breaks)
+          // Look for sentences ending with period followed by a capital letter
+          text = text.replace(/\.\s+([A-Z])/g, '.\n\n$1');
+          
+          // 7. Trim the result
+          text = text.trim();
+          
+          return text;
         } catch (error) {
           console.error('Error extracting text from PDF:', error);
           // Fall back to treating as text if PDF extraction fails
@@ -168,15 +194,17 @@ export async function POST(
             candidate.score = score;
             screenedCount++;
             console.log(`Successfully scored candidate ${candidate._id} with score ${score}`);
+
+            candidate.score = 0; // TODO: remove this
           } else {
             console.error(`Failed to parse score for candidate ${candidate._id}: "${scoreText}"`);
-            candidate.score = 50; // Fallback score
+            candidate.score = 0; // Fallback score
             screenedCount++;
           }
         } catch (error) {
           console.error(`Error processing resume for candidate ${candidate._id}:`, error);
           // Assign a fallback score
-          candidate.score = Math.floor(Math.random() * 51) + 50;
+          candidate.score = 0;
           console.log(`Assigned fallback score ${candidate.score} to candidate ${candidate._id} due to error`);
           screenedCount++;
         }

@@ -7,10 +7,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -19,8 +31,13 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [isScreening, setIsScreening] = useState(false);
-  const [isTestingS3, setIsTestingS3] = useState(false);
-  const [s3TestResult, setS3TestResult] = useState<any>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [emailTemplate, setEmailTemplate] = useState("");
+  const [schedulingMethod, setSchedulingMethod] = useState<"manual" | "calendly">("manual");
+  const [availableDates, setAvailableDates] = useState("");
+  const [calendlyLink, setCalendlyLink] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -87,65 +104,85 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleTestS3Retrieval = async () => {
-    setIsTestingS3(true);
-    setS3TestResult(null);
+  const handleContactCandidates = () => {
+    if (!selectedCandidates.length) {
+      toast({
+        title: "No candidates selected",
+        description: "Please select candidates to contact.",
+        variant: "destructive",
+      });
+      return;
+    }
     
+    // Generate default email template based on job details
+    const selectedCandidateNames = job?.candidates
+      .filter(c => selectedCandidates.includes(c._id as string))
+      .map(c => c.name)
+      .join(", ");
+    
+    const defaultTemplate = `Dear {{candidate_name}},
+
+I hope this email finds you well. Thank you for your application for the ${job?.title} position at our company.
+
+We were impressed with your qualifications and would like to invite you for an interview. Please select a time that works for you from the available slots.
+
+{{scheduling_details}}
+
+Please confirm your availability by replying to this email or booking directly through the provided link.
+
+We look forward to speaking with you!
+
+Best regards,
+The Hiring Team`;
+
+    setEmailTemplate(defaultTemplate);
+    setContactDialogOpen(true);
+  };
+
+  const handleSendEmails = async () => {
+    setIsSending(true);
     try {
-      if (!job) {
-        throw new Error("Job data not available");
-      }
+      // Prepare scheduling details based on selected method
+      const schedulingDetails = schedulingMethod === "calendly" 
+        ? `Please use this Calendly link to book your interview: ${calendlyLink}`
+        : `Available interview slots:\n${availableDates}`;
       
-      // Find the first candidate with a resume URL
-      const candidateWithResume = job.candidates.find(
-        (candidate: any) => candidate.resumeUrl && candidate.resumeUrl.startsWith('s3://')
-      );
-      
-      if (!candidateWithResume) {
-        toast({
-          title: "No S3 Resume Found",
-          description: "Could not find a candidate with an S3 resume URL to test.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log("Testing S3 retrieval with URL:", candidateWithResume.resumeUrl);
-      
-      const response = await fetch('/api/test/s3-retrieval', {
-        method: 'POST',
+      const response = await fetch(`/api/recruitment/jobs/${jobId}/contact-candidates`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          s3Url: candidateWithResume.resumeUrl
+          candidateIds: selectedCandidates,
+          emailTemplate,
+          schedulingDetails,
+          schedulingMethod,
+          calendlyLink: schedulingMethod === "calendly" ? calendlyLink : undefined,
+          availableDates: schedulingMethod === "manual" ? availableDates : undefined,
         }),
       });
       
-      const data = await response.json();
-      setS3TestResult(data);
-      
-      if (data.success) {
-        toast({
-          title: "S3 Test Successful",
-          description: `Retrieved ${data.bufferSize} bytes${data.pdfText ? ' and parsed PDF' : ''}`,
-        });
-      } else {
-        toast({
-          title: "S3 Test Failed",
-          description: data.error || "Unknown error",
-          variant: "destructive",
-        });
+      if (!response.ok) {
+        throw new Error("Failed to send emails");
       }
+      
+      const data = await response.json();
+      
+      toast({
+        title: "Emails sent successfully",
+        description: `Sent ${data.sentCount} emails to selected candidates.`,
+      });
+      
+      setContactDialogOpen(false);
     } catch (error) {
-      console.error("Error testing S3 retrieval:", error);
+      console.error("Error sending emails:", error);
       toast({
         title: "Error",
-        description: "Failed to test S3 retrieval. See console for details.",
+        description: "Failed to send emails. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsTestingS3(false);
+      setIsSending(false);
     }
   };
 
@@ -316,22 +353,14 @@ export default function JobDetailPage() {
         <TabsContent value="candidates">
           <div className="mb-4 flex justify-end gap-2">
             <Button 
-              onClick={handleTestS3Retrieval} 
-              disabled={isTestingS3}
-              variant="outline"
-              className="bg-gray-100 hover:bg-gray-200"
+              onClick={handleContactCandidates}
+              disabled={!selectedCandidates?.length}
+              className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
             >
-              {isTestingS3 ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Testing S3...
-                </>
-              ) : (
-                <>
-                  Test S3 Retrieval
-                </>
-              )}
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Contact Selected Candidates
             </Button>
+            
             <Button 
               onClick={handleScreenCandidates} 
               disabled={isScreening}
@@ -351,16 +380,7 @@ export default function JobDetailPage() {
             </Button>
           </div>
           
-          {s3TestResult && (
-            <div className="mb-4 p-4 border rounded-md bg-gray-50">
-              <h3 className="font-medium mb-2">S3 Test Result</h3>
-              <pre className="text-xs overflow-auto max-h-40 p-2 bg-gray-100 rounded">
-                {JSON.stringify(s3TestResult, null, 2)}
-              </pre>
-            </div>
-          )}
-          
-          <CandidateManagement jobId={jobId} />
+          <CandidateManagement jobId={jobId} onCandidatesSelected={setSelectedCandidates} />
         </TabsContent>
         
         <TabsContent value="interviews">
@@ -381,6 +401,91 @@ export default function JobDetailPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Contact Selected Candidates</DialogTitle>
+            <DialogDescription>
+              Send interview invitations to {selectedCandidates.length} selected candidates.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailTemplate">Email Template</Label>
+              <Textarea
+                id="emailTemplate"
+                value={emailTemplate}
+                onChange={(e) => setEmailTemplate(e.target.value)}
+                rows={10}
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use {'{'}{'{'}candidate_name{'}'}{'}'} for the candidate's name and {'{'}{'{'}scheduling_details{'}'}{'}'} for interview slots.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Scheduling Method</Label>
+              <RadioGroup value={schedulingMethod} onValueChange={(v) => setSchedulingMethod(v as "manual" | "calendly")}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="manual" id="manual" />
+                  <Label htmlFor="manual">Manual (Specify available dates/times)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="calendly" id="calendly" />
+                  <Label htmlFor="calendly">Calendly Link</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {schedulingMethod === "manual" ? (
+              <div className="space-y-2">
+                <Label htmlFor="availableDates">Available Interview Slots</Label>
+                <Textarea
+                  id="availableDates"
+                  value={availableDates}
+                  onChange={(e) => setAvailableDates(e.target.value)}
+                  placeholder="Monday, June 10: 10:00 AM - 12:00 PM, 2:00 PM - 4:00 PM
+Tuesday, June 11: 9:00 AM - 11:00 AM, 1:00 PM - 3:00 PM"
+                  rows={4}
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="calendlyLink">Calendly Link</Label>
+                <Input
+                  id="calendlyLink"
+                  value={calendlyLink}
+                  onChange={(e) => setCalendlyLink(e.target.value)}
+                  placeholder="https://calendly.com/your-name/interview"
+                />
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContactDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSendEmails}
+              disabled={isSending}
+              className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
+            >
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Emails"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

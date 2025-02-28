@@ -98,6 +98,7 @@ export interface Candidate {
   visaRequired?: boolean;
   availableFrom?: string;
   interviewFeedback?: InterviewFeedback[];
+  phone?: string;
 }
 
 export interface InterviewFeedback {

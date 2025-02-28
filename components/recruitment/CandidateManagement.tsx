@@ -14,9 +14,10 @@ import { Job, Candidate, CandidateStatus } from "@/types";
 
 interface CandidateManagementProps {
   jobId: string;
+  onCandidatesSelected?: (candidateIds: string[]) => void;
 }
 
-export default function CandidateManagement({ jobId }: CandidateManagementProps) {
+export default function CandidateManagement({ jobId, onCandidatesSelected }: CandidateManagementProps) {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -47,6 +48,12 @@ export default function CandidateManagement({ jobId }: CandidateManagementProps)
 
     fetchJob();
   }, [jobId, toast]);
+
+  useEffect(() => {
+    if (onCandidatesSelected) {
+      onCandidatesSelected(selectedCandidates);
+    }
+  }, [selectedCandidates, onCandidatesSelected]);
 
   const handleShortlistCandidates = async () => {
     if (!selectedCandidates.length) {
