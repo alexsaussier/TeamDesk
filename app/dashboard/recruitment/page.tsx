@@ -528,6 +528,8 @@ export default function RecruitmentDashboard() {
             )}
           </TabsContent>
           
+
+          {/* Create Job Tab */}
           <TabsContent value="create" className="space-y-4">
             {currentStep === "description" && (
               <JobDescriptionCreator onComplete={handleJobDescriptionComplete} onCancel={handleCancel} />

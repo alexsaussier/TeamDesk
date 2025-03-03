@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     // Generate job description using OpenAI
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',

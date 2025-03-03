@@ -5,6 +5,21 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai';
 
+/**
+ * API Route: /api/recruitment/apply
+ * 
+ * Handles job applications submitted by candidates. This route:
+ * - Validates required application fields (name, email, resume, etc)
+ * - Uploads the candidate's resume to S3 storage
+ * - Processes application details including cover letter and visa requirements
+ * - Associates the application with the corresponding job posting
+ * - Stores application data in the database
+ * 
+ * @method POST
+ * @access Public
+ */
+
+
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
   credentials: {

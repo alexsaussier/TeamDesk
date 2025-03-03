@@ -54,7 +54,9 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
       }
 
       const data = await response.json();
-      setGeneratedDescription(data.description);
+      // Remove markdown bold formatting from the description
+      const cleanDescription = data.description.replace(/\*\*/g, '');
+      setGeneratedDescription(cleanDescription);
       setIsEditing(true);
     } catch (error) {
       console.error("Error generating job description:", error);
@@ -146,7 +148,9 @@ export default function JobDescriptionCreator({ onComplete, onCancel }: JobDescr
       
       // If description was generated, set it
       if (data.description) {
-        setGeneratedDescription(data.description);
+        // Remove markdown bold formatting from the description
+        const cleanDescription = data.description.replace(/\*\*/g, '');
+        setGeneratedDescription(cleanDescription);
         setIsEditing(true);
       }
     } catch (error) {
