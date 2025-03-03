@@ -3,7 +3,6 @@ import { connectDB } from '@/lib/mongodb';
 import { Job } from '@/models/Job';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import OpenAI from 'openai';
 
 /**
  * API Route: /api/recruitment/apply
@@ -28,9 +27,6 @@ const s3Client = new S3Client({
   },
 });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(request: Request) {
   try {
