@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Upload, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Organization } from "@/types";
+
 
 export default function JobApplicationPage() {
   const params = useParams();
@@ -21,6 +23,8 @@ export default function JobApplicationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [resume, setResume] = useState<File | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
+
   
   const [formData, setFormData] = useState({
     name: "",
@@ -33,7 +37,7 @@ export default function JobApplicationPage() {
   });
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchJobAndOrganization = async () => {
       try {
         const response = await fetch(`/api/recruitment/jobs/public/${jobId}`);
         if (!response.ok) {
@@ -41,6 +45,17 @@ export default function JobApplicationPage() {
         }
         const data = await response.json();
         setJob(data);
+        
+        // Fetch organization details
+        if (data.organizationId) {
+          const orgResponse = await fetch(`/api/organization?id=${data.organizationId}`);
+          if (orgResponse.ok) {
+            const orgData = await orgResponse.json();
+            console.log("retrieved orgData", orgData);
+
+            setOrganization(orgData);
+          }
+        }
       } catch (error) {
         console.error("Error fetching job:", error);
         toast({
@@ -53,7 +68,7 @@ export default function JobApplicationPage() {
       }
     };
 
-    fetchJob();
+    fetchJobAndOrganization();
   }, [jobId, toast]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -142,7 +157,7 @@ export default function JobApplicationPage() {
             <Check className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <CardTitle>Application Submitted!</CardTitle>
             <CardDescription>
-              Thank you for applying to {job.title} at {job.department}. We'll review your application and be in touch soon.
+              Thank you for applying to {job.title} at {organization?.name || "our company"}. We'll review your application and be in touch soon.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -157,7 +172,7 @@ export default function JobApplicationPage() {
           <CardHeader>
             <CardTitle className="text-2xl">{job.title}</CardTitle>
             <CardDescription className="text-lg">
-              {job.department} • {job.location}
+              {job.department} • {job.location} • {organization?.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="prose max-w-none">
