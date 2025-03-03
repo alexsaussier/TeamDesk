@@ -82,47 +82,7 @@ export async function POST(request: Request) {
     // Store S3 URL in database
     const resumeUrl = `s3://${process.env.AWS_S3_BUCKET_NAME}/${s3Key}`;
     
-    // Parse resume with OpenAI
-    let score = 0;
-    try {
-      // Convert resume to text
-      const resumeText = resumeBuffer.toString('utf-8');
-      
-      // Score the resume against the job description
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert recruiter who evaluates resumes against job descriptions.
-            Score the candidate's resume from 0-100 based on how well it matches the job requirements.
-            Consider skills, experience, education, and overall fit.
-            
-            ${job.additionalInstructions ? `IMPORTANT SCREENING INSTRUCTIONS: ${job.additionalInstructions}` : ''}
-            
-            Return only a number from 0-100 representing the score.`
-          },
-          {
-            role: 'user',
-            content: `Job Description:\n${job.jobDescription}\n\nResume:\n${resumeText}`
-          }
-        ],
-        temperature: 0.3,
-      });
-
-      const scoreText = completion.choices[0].message.content?.trim();
-      score = parseInt(scoreText || '0', 10);
-      
-      // Handle parsing errors
-      if (isNaN(score)) {
-        score = 0;
-      }
-    } catch (error) {
-      console.error('Error scoring resume:', error);
-      // Continue with score = 0 if there's an error
-    }
-
-    // Add the candidate to the job
+    // Add the candidate to the job without scoring
     job.candidates.push({
       name,
       email,
@@ -131,7 +91,6 @@ export async function POST(request: Request) {
       resumeUrl,  // This now contains the S3 URL
       status: 'New',
       currentRound: 0,
-      score,
       salaryExpectation: salaryExpectation ? parseInt(salaryExpectation, 10) : undefined,
       visaRequired,
       availableFrom: availableFrom ? new Date(availableFrom) : undefined,

@@ -8,6 +8,14 @@ const OrganizationSchema = new mongoose.Schema({
   admin: {
     name: { type: String, required: true },
     email: { type: String, required: true }
+  },
+  description: {
+    type: String,
+    default: ''
+  },
+  perks: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true

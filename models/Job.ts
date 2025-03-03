@@ -23,6 +23,7 @@ const CandidateSchema = new mongoose.Schema({
   email: { type: String },
   phone: { type: String },
   resumeUrl: { type: String },
+  coverLetter: { type: String },
   status: { 
     type: String, 
     enum: Object.values(CandidateStatus),

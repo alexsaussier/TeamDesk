@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { Organization } from '@/models/Organization';
+import { connectDB } from '@/lib/mongodb';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -66,6 +68,14 @@ export async function POST(request: Request) {
       }
     }
 
+    // Get organization data
+    await connectDB();
+    const organization = await Organization.findOne({ 'admin.email': session.user?.email });
+    
+    const orgDescription = organization?.description || '';
+    const orgPerks = organization?.perks || '';
+    const orgName = organization?.name || '';
+
     // Generate job description using OpenAI
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -83,7 +93,12 @@ export async function POST(request: Request) {
           7. Benefits and Perks
           
           Format the output in a clean, professional way with appropriate headings and bullet points.
-          Do not include any explanations or notes outside of the job description itself.`
+          Do not include any explanations or notes outside of the job description itself.
+          
+          Use the following company information if provided:
+          Company Name: ${orgName}
+          Company Description: ${orgDescription}
+          Company Benefits and Perks: ${orgPerks}`
         },
         {
           role: 'user',

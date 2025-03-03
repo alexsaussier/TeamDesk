@@ -179,7 +179,7 @@ export async function POST(
               },
               {
                 role: 'user',
-                content: `Job Description:\n${job.jobDescription}\n\nResume:\n${resumeText}`
+                content: `Job Description:\n${job.jobDescription}\n\nResume:\n${resumeText}\n\nCover Letter:\n${candidate.coverLetter || 'No cover letter provided'}`
               }
             ],
             temperature: 0.3,

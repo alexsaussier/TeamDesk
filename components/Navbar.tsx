@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
-import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2, Briefcase } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2, Briefcase, Settings } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 
@@ -93,6 +93,7 @@ const navSections: NavSection[] = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [orgName, setOrgName] = useState<string>("")
   const [isOpen, setIsOpen] = useState(false)
 
@@ -148,7 +149,21 @@ export default function Navbar() {
             TeamDesk
           </Link>
           {orgName && (
-            <p className="text-sm text-gray-600 mb-6 px-1">{orgName}</p>
+            <div className="flex items-center justify-between mb-6 px-1">
+              <p className="text-sm text-gray-600">{orgName}</p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-1 h-auto" 
+                onClick={() => {
+                  router.push('/dashboard/settings');
+                  handleNavigation();
+                }}
+              >
+                <Settings className="h-4 w-4 text-gray-600" />
+                <span className="sr-only">Organization Settings</span>
+              </Button>
+            </div>
           )}
           <div className="space-y-4">
             <div>

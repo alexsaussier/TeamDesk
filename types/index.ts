@@ -90,6 +90,7 @@ export interface Candidate {
   name: string;
   email: string;
   resumeUrl?: string;
+  coverLetter?: string;
   status: CandidateStatus;
   currentRound: number;
   score?: number;
@@ -143,6 +144,19 @@ export interface Job {
     offered: number;
     hired: number;
   };
+}
+
+export interface Organization {
+  _id: string;
+  name: string;
+  admin: {
+    name: string;
+    email: string;
+  };
+  description: string;
+  perks: string;
+  createdAt: string;
+  updatedAt: string;
 }
   
   
