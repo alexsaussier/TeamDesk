@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CandidateManagementProps {
   jobId: string;
@@ -453,14 +454,23 @@ The Hiring Team`;
               />
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-1"
-                onClick={handleAutoShortlist}
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Auto-Shortlist
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-1"
+                      onClick={handleAutoShortlist}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Auto-Shortlist
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Automatically shortlist top candidates based on their resume scores. This will select the highest-scoring candidates with 'New' status.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button 
                 variant="outline" 
                 className="flex items-center gap-1"

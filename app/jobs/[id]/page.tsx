@@ -172,7 +172,7 @@ export default function JobApplicationPage() {
           <CardHeader>
             <CardTitle className="text-2xl">{job.title}</CardTitle>
             <CardDescription className="text-lg">
-              {job.department} • {job.location} • {organization?.name}
+            {organization?.name} • {job.department} • {job.location} 
             </CardDescription>
           </CardHeader>
           <CardContent className="prose max-w-none">

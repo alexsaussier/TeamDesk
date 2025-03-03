@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -23,6 +23,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -41,6 +47,7 @@ export default function JobDetailPage() {
   const [availableSlots, setAvailableSlots] = useState<Array<{start: string, end: string, formatted: string}>>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
+  const [organizationName, setOrganizationName] = useState<string>("");
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -51,6 +58,11 @@ export default function JobDetailPage() {
         }
         const data = await response.json();
         setJob(data);
+        
+        // If job has organizationId, fetch organization details
+        if (data.organizationId) {
+          fetchOrganizationName(data.organizationId);
+        }
       } catch (error) {
         console.error("Error fetching job:", error);
         toast({
@@ -66,6 +78,18 @@ export default function JobDetailPage() {
     fetchJob();
     checkCalendarConnection();
   }, [jobId, toast]);
+
+  const fetchOrganizationName = async (organizationId: string) => {
+    try {
+      const response = await fetch(`/api/organization?id=${organizationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setOrganizationName(data.name);
+      }
+    } catch (error) {
+      console.error("Error fetching organization:", error);
+    }
+  };
 
   const checkCalendarConnection = async () => {
     try {
@@ -120,25 +144,41 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleContactCandidates = async () => {
-    if (!selectedCandidates.length) {
-      toast({
-        title: "No candidates selected",
-        description: "Please select candidates to contact.",
-        variant: "destructive",
-      });
-      return;
+  const handleContactCandidates = async (useShortlisted = false) => {
+    let candidatesToContact = selectedCandidates;
+    
+    // If using shortlisted candidates instead of selected ones
+    if (useShortlisted) {
+      candidatesToContact = job?.candidates
+        .filter(c => c.status === "Shortlisted")
+        .map(c => c._id as string) || [];
+        
+      if (!candidatesToContact.length) {
+        toast({
+          title: "No shortlisted candidates",
+          description: "There are no shortlisted candidates to contact.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Using selected candidates
+      if (!candidatesToContact.length) {
+        toast({
+          title: "No candidates selected",
+          description: "Please select candidates to contact.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
-    // Generate default email template based on job details
-    const selectedCandidateNames = job?.candidates
-      .filter(c => selectedCandidates.includes(c._id as string))
-      .map(c => c.name)
-      .join(", ");
+    // Get organization name from state or fallback to job data or generic term
+    const orgName = organizationName || "our organization";
     
     const defaultTemplate = `Dear {{candidate_name}},
 
-I hope this email finds you well. Thank you for your application for the ${job?.title} position at our company.
+I hope this email finds you well. Thank you for your application for the ${job?.title} position at ${orgName}.
 
 We were impressed with your qualifications and would like to invite you for an interview. Please select a time that works for you from the available slots, or calendar link, if provided.
 
@@ -151,6 +191,7 @@ We look forward to speaking with you!
 Best regards,
 The Hiring Team`;
 
+    setSelectedCandidates(candidatesToContact);
     setEmailTemplate(defaultTemplate);
     setContactDialogOpen(true);
   };
@@ -241,6 +282,12 @@ The Hiring Team`;
     } finally {
       setIsSending(false);
     }
+  };
+
+  // Add this function to check if all candidates have scores
+  const allCandidatesScored = () => {
+    if (!job || !job.candidates || job.candidates.length === 0) return false;
+    return job.candidates.every(candidate => candidate.score !== undefined);
   };
 
   if (loading) {
@@ -410,32 +457,57 @@ The Hiring Team`;
         <TabsContent value="candidates">
           <div className="mb-4 flex justify-end gap-2">
             
-            <Button 
-              onClick={handleScreenCandidates} 
-              disabled={isScreening}
-              className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
-            >
-              {isScreening ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Screening Candidates...
-                </>
-              ) : (
-                <>
-                  <Brain className="mr-2 h-4 w-4" />
-                  Screen Candidates
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      onClick={handleScreenCandidates} 
+                      disabled={isScreening || allCandidatesScored()}
+                      className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
+                    >
+                      {isScreening ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Screening Candidates...
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="mr-2 h-4 w-4" />
+                          Screen Candidates
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  {allCandidatesScored() ? (
+                    <p>All candidates have already been scored.</p>
+                  ) : (
+                    <p>Automatically analyze and score candidates based on their resumes and the job requirements. This helps identify the most qualified candidates.</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <Button 
-              onClick={handleContactCandidates}
-              disabled={!selectedCandidates?.length}
+              onClick={() => handleContactCandidates(true)}
+              disabled={!job?.candidates?.some(candidate => candidate.status === "Shortlisted")}
               className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
-              Start Interview Process for Selected Candidates
+              Start Interviewing Shortlisted
             </Button>
+            
+            {selectedCandidates.length > 0 && (
+              <Button 
+                onClick={() => handleContactCandidates(false)}
+                className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Start Interviewing Selected ({selectedCandidates.length})
+              </Button>
+            )}
           </div>
           
           <CandidateManagement jobId={jobId} onCandidatesSelected={setSelectedCandidates} />
@@ -461,7 +533,7 @@ The Hiring Team`;
       </Tabs>
 
       <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Contact Selected Candidates</DialogTitle>
             <DialogDescription>

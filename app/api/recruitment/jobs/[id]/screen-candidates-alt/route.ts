@@ -9,6 +9,26 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import pdf from 'pdf-parse/lib/pdf-parse';
 
+/**
+ * Alternative route for screening job candidates using AI
+ * 
+ * This API endpoint processes candidates for a specific job posting by:
+ * 1. Retrieving resumes from S3 storage
+ * 2. Extracting text content from PDF/text resumes
+ * 3. Using GPT-4 to score each candidate's resume against the job description
+ * 4. Updating candidate scores in the database
+ * 
+ * The scoring considers:
+ * - Skills match
+ * - Experience relevance  
+ * - Education requirements
+ * - Overall fit for the role
+ * - Any additional screening instructions provided
+ * 
+ * Returns success status and number of candidates screened
+ */
+
+
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
@@ -195,7 +215,6 @@ export async function POST(
             screenedCount++;
             console.log(`Successfully scored candidate ${candidate._id} with score ${score}`);
 
-            candidate.score = 0; // TODO: remove this
           } else {
             console.error(`Failed to parse score for candidate ${candidate._id}: "${scoreText}"`);
             candidate.score = 0; // Fallback score

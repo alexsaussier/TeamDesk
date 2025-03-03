@@ -7,6 +7,20 @@ import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { cookies } from 'next/headers';
 
+/**
+ * Calendar API route for fetching available interview slots
+ * 
+ * This route handles:
+ * - Retrieving calendar credentials from either cookies or database
+ * - Checking calendar availability for a specified time period (default 7 days)
+ * - Finding free slots during business hours (9am-5pm)
+ * - Excluding weekends and times that conflict with existing calendar events
+ * - Returns formatted available time slots that can be used for scheduling interviews
+ */
+
+
+
+
 // Function to get available slots for the next 7 days
 export async function GET(request: Request) {
   try {
@@ -128,19 +142,25 @@ export async function GET(request: Request) {
       // Generate available slots (9 AM to 5 PM, excluding busy times)
       const availableSlots = [];
       const currentDate = new Date(now);
+      
+      // Start from tomorrow instead of today
+      currentDate.setDate(currentDate.getDate() + 1);
       currentDate.setHours(9, 0, 0, 0); // Start at 9 AM
-
-      // If we're already past 9 AM, start from the next hour
-      if (now.getHours() >= 9) {
-        currentDate.setHours(now.getHours() + 1, 0, 0, 0);
-      }
 
       // Loop through each day
       while (currentDate < endDate) {
         // Skip weekends
         if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+          // Track slots per day (maximum 3)
+          let slotsForCurrentDay = 0;
+          
           // Loop through each hour from 9 AM to 5 PM
           for (let hour = currentDate.getHours(); hour < 17; hour++) {
+            // Stop if we already have 3 slots for this day
+            if (slotsForCurrentDay >= 3) {
+              break;
+            }
+            
             const slotStart = new Date(currentDate);
             slotStart.setHours(hour, 0, 0, 0);
             
@@ -170,6 +190,9 @@ export async function GET(request: Request) {
                 end: slotEnd.toISOString(),
                 formatted: `${slotStart.toLocaleDateString()} at ${slotStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               });
+              
+              // Increment the counter for slots on this day
+              slotsForCurrentDay++;
             }
           }
         }
