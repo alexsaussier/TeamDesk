@@ -31,7 +31,7 @@ export async function GET() {
           path: '/',
         });
         return response;
-      } catch (_) {
+      } catch {
         // If refresh fails, consider disconnected
         return NextResponse.json({ connected: false });
       }
