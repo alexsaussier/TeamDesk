@@ -513,7 +513,9 @@ The Hiring Team`;
                       
                       <Avatar className="h-10 w-10">
                         <AvatarFallback>
-                          {candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {candidate.name 
+                            ? candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                            : 'N/A'}
                         </AvatarFallback>
                       </Avatar>
                       
@@ -562,7 +564,7 @@ The Hiring Team`;
                           className="hidden sm:flex"
                           asChild
                         >
-                          <a href={`/dashboard/recruitment/candidates/${candidate._id}`}>
+                          <a href={`/dashboard/recruitment/jobs/${jobId}/candidates/${candidate._id}`}>
                             View
                           </a>
                         </Button>

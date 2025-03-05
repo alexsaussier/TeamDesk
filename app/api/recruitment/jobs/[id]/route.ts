@@ -60,12 +60,13 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     });
 
     // Convert MongoDB document to plain object and stringify ObjectIds
+    const jobObj = job.toObject();
     const jobData = {
-      ...job.toObject(),
+      ...jobObj,
       _id: job._id.toString(),
       organizationId: job.organizationId.toString(),
       createdBy: job.createdBy.toString(),
-      candidates: job.candidates.map((candidate: Candidate) => ({
+      candidates: jobObj.candidates.map((candidate: any) => ({
         ...candidate,
         _id: candidate._id?.toString() || ''
       })),

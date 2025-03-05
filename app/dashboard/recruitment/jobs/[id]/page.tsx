@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -309,7 +309,9 @@ The Hiring Team`;
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        
         <div>
+          
           <h1 className="text-2xl font-bold">{job.title}</h1>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Building className="h-4 w-4" />
@@ -332,7 +334,7 @@ The Hiring Team`;
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="gap-2">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="candidates">
             Candidates ({job.candidateCounts?.total || 0})

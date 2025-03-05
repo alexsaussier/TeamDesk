@@ -55,7 +55,18 @@ export default function RecruitmentDashboard() {
         throw new Error("Failed to fetch jobs");
       }
       const data = await response.json();
-      setJobs(data);
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setJobs(data);
+      } else if (data.jobs && Array.isArray(data.jobs)) {
+        // If the API returns an object with a jobs property
+        setJobs(data.jobs);
+      } else {
+        // If neither condition is met, set to empty array
+        console.error("Unexpected API response format:", data);
+        setJobs([]);
+      }
     } catch (error) {
       console.error("Error fetching jobs:", error);
       toast({
@@ -63,6 +74,7 @@ export default function RecruitmentDashboard() {
         description: "Failed to load jobs. Please try again.",
         variant: "destructive",
       });
+      setJobs([]); // Set to empty array on error
     } finally {
       setLoading(false);
     }
@@ -154,18 +166,20 @@ export default function RecruitmentDashboard() {
   };
 
   // Filter jobs based on search query and active tab
-  const filteredJobs = (jobs || []).filter(job => {
-    const matchesSearch = 
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (jobsActiveTab === "all") {
-      return matchesSearch;
-    }
-    
-    return matchesSearch && job.status.toLowerCase() === jobsActiveTab;
-  });
+  const filteredJobs = Array.isArray(jobs) 
+    ? jobs.filter(job => {
+        const matchesSearch = 
+          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.location.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        if (jobsActiveTab === "all") {
+          return matchesSearch;
+        }
+        
+        return matchesSearch && job.status.toLowerCase() === jobsActiveTab;
+      })
+    : [];
 
   const handleStartJobCreation = () => {
     setIsCreatingJob(true)
@@ -238,15 +252,60 @@ export default function RecruitmentDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">AI Recruitment Agent</h1>
-        {!isCreatingJob && (
-          <Button 
-            onClick={handleStartJobCreation}
-            className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Job
-          </Button>
-        )}
+        <div className="flex items-center gap-5">
+          
+          {/* Calendar Integration with Dropdown */}
+          <div className="relative group">
+            <div className="flex items-center gap-2 text-sm cursor-pointer">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-2"
+                onClick={!calendarConnected ? handleConnectCalendar : undefined}
+                disabled={isConnectingCalendar}
+              >
+                <div className={`w-2 h-2 rounded-full ${calendarConnected ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                {isConnectingCalendar ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Calendar className="h-3 w-3" />
+                )}
+                {calendarConnected ? 'Connected' : 'Connect'}
+
+              </Button>
+            </div>
+            
+            {/* Dropdown menu that appears on hover */}
+            {calendarConnected && (
+              <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="py-1">
+                  <button
+                    className="w-full text-left px-2 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                    onClick={handleDisconnectCalendar}
+                    disabled={isConnectingCalendar}
+                  >
+                    {isConnectingCalendar ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                    ) : (
+                      <Calendar className="h-3 w-3 mr-2" />                    
+                    )}
+                    Disconnect Calendar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {!isCreatingJob && (
+            <Button 
+              onClick={handleStartJobCreation}
+              className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create New Job
+            </Button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -340,66 +399,6 @@ export default function RecruitmentDashboard() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Calendar Integration Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  Calendar Integration
-                </CardTitle>
-                <CardDescription>
-                  Connect your Google Calendar to automatically schedule interviews with candidates
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${calendarConnected ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                  <p>{calendarConnected ? 'Connected to Google Calendar' : 'Not connected'}</p>
-                </div>
-                {calendarConnected && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Your AI recruitment agent can now automatically schedule interviews based on your availability.
-                  </p>
-                )}
-              </CardContent>
-              <CardFooter>
-                {calendarConnected ? (
-                  <Button 
-                    variant="outline" 
-                    onClick={handleDisconnectCalendar}
-                    disabled={isConnectingCalendar}
-                  >
-                    {isConnectingCalendar ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Disconnecting...
-                      </>
-                    ) : (
-                      "Disconnect Calendar"
-                    )}
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleConnectCalendar}
-                    disabled={isConnectingCalendar}
-                    className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
-                  >
-                    {isConnectingCalendar ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connecting...
-                      </>
-                    ) : (
-                      <>
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Connect Google Calendar
-                      </>
-                    )}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
 
             {jobs.length === 0 ? (
               <Card>
