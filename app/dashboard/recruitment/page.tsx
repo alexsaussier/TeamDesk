@@ -154,7 +154,7 @@ export default function RecruitmentDashboard() {
   };
 
   // Filter jobs based on search query and active tab
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = (jobs || []).filter(job => {
     const matchesSearch = 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
