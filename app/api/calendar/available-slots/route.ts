@@ -18,8 +18,10 @@ import { cookies } from 'next/headers';
  * - Returns formatted available time slots that can be used for scheduling interviews
  */
 
-
-
+// Add this interface at the top of the file
+interface ErrorWithMessage {
+  message: string;
+}
 
 // Function to get available slots for the next 7 days
 export async function GET(request: Request) {
@@ -27,7 +29,7 @@ export async function GET(request: Request) {
     await connectDB();
 
     // First try to get credentials from cookies (for development/testing)
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('google_calendar_token');
     let credentials = null;
     
@@ -93,12 +95,14 @@ export async function GET(request: Request) {
         
         // Update tokens in database or cookie based on where we got them from
         if (tokenCookie) {
-          cookieStore.set('google_calendar_token', JSON.stringify(refreshedCredentials), {
+          const response = NextResponse.json({ success: true });
+          response.cookies.set('google_calendar_token', JSON.stringify(refreshedCredentials), {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 24 * 7, // 1 week
             path: '/',
           });
+          return response;
         } else {
           const session = await getServerSession(authOptions);
           await User.updateOne(
@@ -114,8 +118,9 @@ export async function GET(request: Request) {
         
         oauth2Client.setCredentials(refreshedCredentials);
       } catch (error) {
-        console.error("Error refreshing token:", error);
-        return NextResponse.json({ error: 'Failed to refresh token', details: error.message }, { status: 401 });
+        const err = error as ErrorWithMessage;
+        console.error("Error refreshing token:", err);
+        return NextResponse.json({ error: 'Failed to refresh token', details: err.message }, { status: 401 });
       }
     }
 
@@ -204,11 +209,13 @@ export async function GET(request: Request) {
 
       return NextResponse.json({ availableSlots });
     } catch (error) {
-      console.error("Error querying calendar:", error);
-      return NextResponse.json({ error: 'Failed to query calendar', details: error.message }, { status: 500 });
+      const err = error as ErrorWithMessage;
+      console.error("Error querying calendar:", err);
+      return NextResponse.json({ error: 'Failed to query calendar', details: err.message }, { status: 500 });
     }
   } catch (error) {
-    console.error('Error fetching available slots:', error);
-    return NextResponse.json({ error: 'Failed to fetch available slots', details: error.message }, { status: 500 });
+    const err = error as ErrorWithMessage;
+    console.error('Error fetching available slots:', err);
+    return NextResponse.json({ error: 'Failed to fetch available slots', details: err.message }, { status: 500 });
   }
 } 

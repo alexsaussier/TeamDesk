@@ -30,8 +30,8 @@ export async function GET(request: Request) {
     const { tokens } = await oauth2Client.getToken(code);
     
     // Store tokens in cookies
-    const cookieStore = cookies();
-    cookieStore.set('google_calendar_token', JSON.stringify(tokens), {
+    const response = NextResponse.json({ success: true });
+    response.cookies.set('google_calendar_token', JSON.stringify(tokens), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 1 week
@@ -51,8 +51,10 @@ export async function GET(request: Request) {
           <p>You can close this window now.</p>
           <script>
             window.onload = function() {
-              window.close();
-            }
+              setTimeout(function() {
+                window.close();
+              }, 2000);
+            };
           </script>
         </body>
       </html>
@@ -60,7 +62,8 @@ export async function GET(request: Request) {
       {
         headers: {
           'Content-Type': 'text/html',
-        },
+          'Set-Cookie': response.headers.get('Set-Cookie') || ''
+        }
       }
     );
   } catch (error) {
