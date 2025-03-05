@@ -17,11 +17,6 @@ interface JobSettingsFormProps {
   onCancel: () => void;
 }
 
-interface InterviewRound {
-  id: string;
-  name: string;
-  interviewers: string[];
-}
 
 export default function JobSettingsForm({ jobDescription, onComplete, onCancel }: JobSettingsFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,10 +91,7 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  };
+  
 
   const handleRoundChange = (index: number, field: string, value: string) => {
     setFormData(prev => {
