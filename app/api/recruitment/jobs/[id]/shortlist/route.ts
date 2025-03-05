@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { CandidateStatus } from '@/models/Job';
+import { Candidate } from '@/types/index';
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -40,8 +41,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     }
 
     // Update candidate statuses
-    job.candidates.forEach((candidate: any) => {
-      if (candidateIds.includes(candidate._id.toString())) {
+    job.candidates.forEach((candidate: Candidate) => {
+      if (candidateIds.includes(candidate._id?.toString() || '')) {
         candidate.status = CandidateStatus.Shortlisted;
       }
     });

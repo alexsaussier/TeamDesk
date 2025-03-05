@@ -4,6 +4,7 @@ import { Job } from '@/models/Job';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
+import { Candidate } from '@/types/index';
 /**
  * API route handler for managing individual job postings
  * Provides endpoints to:
@@ -51,7 +52,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     };
 
     // Count candidates by status
-    job.candidates.forEach((candidate: any) => {
+    job.candidates.forEach((candidate: Candidate) => {
       const status = candidate.status.toLowerCase() as keyof typeof candidateCounts;
       if (candidateCounts.hasOwnProperty(status)) {
         candidateCounts[status]++;
@@ -64,9 +65,9 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       _id: job._id.toString(),
       organizationId: job.organizationId.toString(),
       createdBy: job.createdBy.toString(),
-      candidates: job.candidates.map((candidate: any) => ({
-        ...candidate.toObject(),
-        _id: candidate._id.toString()
+      candidates: job.candidates.map((candidate: Candidate) => ({
+        ...candidate,
+        _id: candidate._id?.toString() || ''
       })),
       candidateCounts
     };

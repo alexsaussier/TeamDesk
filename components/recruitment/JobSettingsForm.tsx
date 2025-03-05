@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Sparkles, X } from "lucide-react";
+import { Loader2, Plus, Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
@@ -445,7 +443,7 @@ export default function JobSettingsForm({ jobDescription, onComplete, onCancel }
             rows={3}
           />
           <p className="text-xs text-muted-foreground">
-            These instructions will guide the AI when screening resumes. They won't be visible to candidates.
+            These instructions will guide the AI when screening resumes. They won&apos;t be visible to candidates.
           </p>
         </div>
       </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, Search, Filter, Download, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Search, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Job, Candidate, CandidateStatus, InterviewFeedback } from "@/types";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -195,7 +195,7 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
           if (data.availableSlots && data.availableSlots.length > 0) {
             const formattedSlots = data.availableSlots
               .slice(0, 5) // Limit to 5 slots
-              .map((slot: any) => slot.formatted)
+              .map((slot: { formatted: string }) => slot.formatted)
               .join("\n");
             
             setAvailableDates(formattedSlots);
@@ -428,7 +428,7 @@ The Hiring Team`;
   if (!job) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">Job not found or you don't have access.</p>
+        <p className="text-muted-foreground">Job not found or you don&apos;t have access.</p>
       </div>
     );
   }
@@ -467,7 +467,7 @@ The Hiring Team`;
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Automatically shortlist top candidates based on their resume scores. This will select the highest-scoring candidates with 'New' status.</p>
+                    <p>Automatically shortlist top candidates based on their resume scores. This will select the highest-scoring candidates with &apos;New&apos; status.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -583,7 +583,7 @@ The Hiring Team`;
             <DialogDescription>
               {selectedCandidate && (
                 <>
-                  Provide feedback for {selectedCandidate.name}'s Round {selectedCandidate.currentRound} interview.
+                  Provide feedback for {selectedCandidate.name}&apos;s Round {selectedCandidate.currentRound} interview.
                 </>
               )}
             </DialogDescription>

@@ -5,7 +5,7 @@ import { oauth2Client } from '@/lib/config';
 export async function GET() {
   try {
     // Get token from cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const tokenCookie = cookieStore.get('google_calendar_token');
     
     if (!tokenCookie) {
@@ -23,13 +23,14 @@ export async function GET() {
       try {
         const { credentials } = await oauth2Client.refreshAccessToken();
         // Save refreshed token
-        cookieStore.set('google_calendar_token', JSON.stringify(credentials), {
+        const response = NextResponse.json({ connected: true });
+        response.cookies.set('google_calendar_token', JSON.stringify(credentials), {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           maxAge: 60 * 60 * 24 * 7, // 1 week
           path: '/',
         });
-        return NextResponse.json({ connected: true });
+        return response;
       } catch (_) {
         // If refresh fails, consider disconnected
         return NextResponse.json({ connected: false });

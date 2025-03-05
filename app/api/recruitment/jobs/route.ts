@@ -4,6 +4,7 @@ import { Job } from '@/models/Job';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
+import { Candidate, Job as JobType } from '@/types/index';
 
 /**
  * API route handler for managing job listings
@@ -29,7 +30,9 @@ export async function GET(request: Request) {
     const status = url.searchParams.get('status');
     
     // Build query
-    const query: any = { organizationId: new mongoose.Types.ObjectId(organizationId) };
+    const query: { organizationId: mongoose.Types.ObjectId; status?: string } = { 
+      organizationId: new mongoose.Types.ObjectId(organizationId) 
+    };
     if (status) {
       query.status = status;
     }
@@ -41,8 +44,14 @@ export async function GET(request: Request) {
 
     // Add summary statistics
     const jobsWithStats = jobs.map(job => {
+      const typedJob = job as unknown as JobType & { 
+        _id: mongoose.Types.ObjectId;
+        organizationId: mongoose.Types.ObjectId;
+        createdBy: mongoose.Types.ObjectId;
+      };
+      
       const candidateCounts = {
-        total: job.candidates?.length || 0,
+        total: typedJob.candidates?.length || 0,
         new: 0,
         shortlisted: 0,
         interviewing: 0,
@@ -52,7 +61,7 @@ export async function GET(request: Request) {
       };
 
       // Count candidates by status
-      job.candidates?.forEach((candidate: any) => {
+      typedJob.candidates?.forEach((candidate: Candidate) => {
         const status = candidate.status.toLowerCase() as keyof typeof candidateCounts;
         if (candidateCounts.hasOwnProperty(status)) {
           candidateCounts[status]++;
@@ -60,17 +69,20 @@ export async function GET(request: Request) {
       });
 
       return {
-        ...job,
-        _id: (job as any)._id.toString(),
-        organizationId: (job as any).organizationId.toString(),
-        createdBy: (job as any).createdBy.toString(),
+        ...typedJob,
+        _id: typedJob._id.toString(),
+        organizationId: typedJob.organizationId.toString(),
+        createdBy: typedJob.createdBy.toString(),
         candidateCounts
       };
     });
 
-    return NextResponse.json(jobsWithStats);
+    return NextResponse.json({ jobs: jobsWithStats });
   } catch (error) {
     console.error('Error fetching jobs:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch jobs' },
+      { status: 500 }
+    );
   }
 } 

@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Upload, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Organization } from "@/types";
+import { Organization, Job } from "@/types";
 
 
 export default function JobApplicationPage() {
@@ -18,7 +18,7 @@ export default function JobApplicationPage() {
   const jobId = params.id as string;
   const { toast } = useToast();
   
-  const [job, setJob] = useState<any>(null);
+  const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -157,7 +157,7 @@ export default function JobApplicationPage() {
             <Check className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <CardTitle>Application Submitted!</CardTitle>
             <CardDescription>
-              Thank you for applying to {job.title} at {organization?.name || "our company"}. We'll review your application and be in touch soon.
+              Thank you for applying to {job.title} at {organization?.name || "our company"}. We&apos;ll review your application and be in touch soon.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -176,8 +176,8 @@ export default function JobApplicationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="prose max-w-none">
-            {job.description ? (
-              <div dangerouslySetInnerHTML={{ __html: job.description.replace(/\n/g, '<br/>') }} />
+            {job.jobDescription ? (
+              <div dangerouslySetInnerHTML={{ __html: job.jobDescription.replace(/\n/g, '<br/>') }} />
             ) : (
               <p>No job description available.</p>
             )}

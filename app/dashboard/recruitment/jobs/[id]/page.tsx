@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, Info } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -211,7 +211,7 @@ The Hiring Team`;
       if (data.availableSlots && data.availableSlots.length > 0) {
         const formattedSlots = data.availableSlots
           .slice(0, 5) // Limit to 5 slots
-          .map((slot: any) => slot.formatted)
+          .map((slot: { formatted: string }) => slot.formatted)
           .join("\n");
         
         setAvailableDates(formattedSlots);
@@ -301,7 +301,7 @@ The Hiring Team`;
   if (!job) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">Job not found or you don't have access.</p>
+        <p className="text-muted-foreground">Job not found or you don&apos;t have access.</p>
       </div>
     );
   }
@@ -552,7 +552,7 @@ The Hiring Team`;
                 className="font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground">
-                Use {'{'}{'{'}candidate_name{'}'}{'}'} for the candidate's name and {'{'}{'{'}scheduling_details{'}'}{'}'} for interview slots.
+                Use {'{'}{'{'}candidate_name{'}'}{'}'} for the candidate&apos;s name and {'{'}{'{'}scheduling_details{'}'}{'}'} for interview slots.
               </p>
             </div>
             
@@ -631,14 +631,14 @@ Tuesday, June 11: 9:00 AM - 11:00 AM, 1:00 PM - 3:00 PM"
                     id="availableDates"
                     value={availableDates}
                     onChange={(e) => setAvailableDates(e.target.value)}
-                    placeholder="Click 'Find Available Slots' to check your calendar"
+                    placeholder="Click &quot;Find Available Slots&quot; to check your calendar for availability"
                     rows={4}
                   />
                 )}
                 
                 {availableSlots.length === 0 && !isLoadingSlots && (
                   <p className="text-xs text-muted-foreground">
-                    Click "Find Available Slots" to check your calendar for availability.
+                    Click &quot;Find Available Slots&quot; to check your calendar for availability.
                   </p>
                 )}
               </div>

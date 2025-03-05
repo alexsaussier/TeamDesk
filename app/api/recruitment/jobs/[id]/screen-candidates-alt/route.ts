@@ -8,6 +8,7 @@ import OpenAI from 'openai';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import pdf from 'pdf-parse/lib/pdf-parse';
+import { Candidate } from '@/types/index';
 
 /**
  * Alternative route for screening job candidates using AI
@@ -71,7 +72,7 @@ export async function POST(
 
     // Find candidates without scores
     const candidatesToScreen = job.candidates.filter(
-      (candidate: any) => candidate.score === undefined || candidate.score === null || candidate.score === 0
+      (candidate: Candidate) => candidate.score === undefined || candidate.score === null || candidate.score === 0
     );
     console.log("candidates to screen: ", candidatesToScreen.length);
 

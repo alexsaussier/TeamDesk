@@ -4,6 +4,7 @@ import { Job } from '@/models/Job';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
+import { Candidate } from '@/types/index';
 
 export async function POST(
   request: Request,
@@ -43,7 +44,7 @@ export async function POST(
 
     // Find the candidate in the job
     const candidateIndex = job.candidates.findIndex(
-      (c: any) => c._id.toString() === candidateId
+      (c: Candidate) => c._id?.toString() === candidateId
     );
 
     if (candidateIndex === -1) {

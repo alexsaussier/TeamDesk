@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, FileText, Settings, Users, MessageSquare, Mic, Search, Calendar, Building, Globe, Loader2, Trash2, Check } from "lucide-react"
+import { PlusCircle, FileText, Users, MessageSquare, Search, Calendar, Building, Globe, Loader2, Trash2 } from "lucide-react"
 import JobDescriptionCreator from "@/components/recruitment/JobDescriptionCreator"
 import JobSettingsForm from "@/components/recruitment/JobSettingsForm"
 import { useToast } from "@/hooks/use-toast";
@@ -552,7 +552,7 @@ export default function RecruitmentDashboard() {
           <DialogHeader>
             <DialogTitle>Delete Job</DialogTitle>
             <DialogDescription>
-              This will permanently delete the job "{jobToDelete?.title}". This action cannot be undone.
+              This will permanently delete the job &quot;{jobToDelete?.title}&quot;. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

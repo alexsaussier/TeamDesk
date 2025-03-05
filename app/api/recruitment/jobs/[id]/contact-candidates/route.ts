@@ -5,6 +5,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
+import { Candidate } from '@/types/index';
+import { CandidateStatus } from '@/models/Job';
 
 export async function POST(
   request: Request,
@@ -49,9 +51,9 @@ export async function POST(
       );
     }
 
-    // Filter candidates by the provided IDs
+    // Get candidates to contact
     const candidatesToContact = job.candidates.filter(
-      (candidate: any) => candidateIds.includes(candidate._id.toString())
+      (candidate: Candidate) => candidateIds.includes(candidate._id?.toString() || '')
     );
 
     if (!candidatesToContact.length) {
@@ -73,9 +75,9 @@ export async function POST(
     });
 
     // Send emails to each candidate
-    const emailPromises = candidatesToContact.map(async (candidate: any) => {
+    const emailPromises = candidatesToContact.map(async (candidate: Candidate) => {
       // Replace template variables
-      let emailContent = emailTemplate
+      const emailContent = emailTemplate
         .replace(/{{candidate_name}}/g, candidate.name)
         .replace(/{{scheduling_details}}/g, schedulingDetails);
 
@@ -88,8 +90,8 @@ export async function POST(
       });
 
       // Update candidate status if not already in interview process
-      if (candidate.status === 'Shortlisted' || candidate.status === 'New') {
-        candidate.status = 'Interviewing';
+      if (candidate.status === CandidateStatus.Shortlisted || candidate.status === CandidateStatus.New) {
+        candidate.status = CandidateStatus.Interviewing;
         candidate.currentRound = 1; // Set to first interview round
       }
 

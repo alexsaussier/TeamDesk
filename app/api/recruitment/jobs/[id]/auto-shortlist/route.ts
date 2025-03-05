@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { CandidateStatus } from '@/models/Job';
+import { Candidate } from '@/types/index';
 
 /**
  * Auto-shortlist route - Automatically shortlists top candidates based on their scores
@@ -49,11 +50,11 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
 
     // Get only new candidates
     const newCandidates = job.candidates.filter(
-      (candidate: any) => candidate.status === CandidateStatus.New
+      (candidate: Candidate) => candidate.status === CandidateStatus.New
     );
 
     // Sort by score (highest first)
-    newCandidates.sort((a: any, b: any) => (b.score || 0) - (a.score || 0));
+    newCandidates.sort((a: Candidate, b: Candidate) => (b.score || 0) - (a.score || 0));
 
     // Get the number of candidates to shortlist
     const shortlistCount = Math.min(
@@ -64,11 +65,11 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     // Get the IDs of candidates to shortlist
     const candidateIdsToShortlist = newCandidates
       .slice(0, shortlistCount)
-      .map((candidate: any) => candidate._id.toString());
+      .map((candidate: Candidate) => candidate._id?.toString() || '');
 
     // Update candidate statuses
-    job.candidates.forEach((candidate: any) => {
-        if (candidateIdsToShortlist.includes(candidate._id.toString())) {
+    job.candidates.forEach((candidate: Candidate) => {
+        if (candidateIdsToShortlist.includes(candidate._id?.toString() || '')) {
           candidate.status = CandidateStatus.Shortlisted;
         }
       });
@@ -84,9 +85,9 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
         _id: job._id.toString(),
         organizationId: job.organizationId.toString(),
         createdBy: job.createdBy.toString(),
-        candidates: job.candidates.map((candidate: any) => ({
-          ...candidate.toObject(),
-          _id: candidate._id.toString()
+        candidates: job.candidates.map((candidate: Candidate) => ({
+          ...candidate,
+          _id: candidate._id?.toString() || ''
         }))
       }
     });
