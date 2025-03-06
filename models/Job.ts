@@ -41,7 +41,10 @@ const CandidateSchema = new mongoose.Schema({
     decision: { type: String, enum: ['Go', 'No Go', 'Pending'] },
     comments: { type: String },
     submittedAt: { type: Date }
-  }]
+  }],
+  interviewScheduled: { type: Boolean },
+  interviewDateTime: { type: Date },
+  meetingLink: { type: String }
 });
 
 // Define interview round schema
@@ -83,4 +86,4 @@ const JobSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-export const Job = mongoose.models.Job || mongoose.model('Job', JobSchema); 
+export const Job = mongoose.models.Job || mongoose.model('Job', JobSchema);

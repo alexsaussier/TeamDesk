@@ -6,6 +6,15 @@ import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { Candidate } from '@/types/index';
 
+/**
+ * API route handler for updating candidate information within a job listing
+ * Provides endpoint to:
+ * - POST: Update a candidate's details (status, interview feedback, etc.)
+ * - Validates authentication and organization access
+ * - Ensures candidate exists in the specified job
+ * - Handles updates to candidate properties while maintaining data integrity
+ */
+
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {

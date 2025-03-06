@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -48,36 +48,30 @@ export default function JobDetailPage() {
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [organizationName, setOrganizationName] = useState<string>("");
+  const [isCheckingEmails, setIsCheckingEmails] = useState(false);
+
+  const fetchJob = async () => {
+    try {
+      const response = await fetch(`/api/recruitment/jobs/${jobId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch job");
+      }
+      const data = await response.json();
+      setJob(data);
+      setLoading(false);
+      if (data.organizationId) {
+        fetchOrganizationName(data.organizationId);
+      }
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const response = await fetch(`/api/recruitment/jobs/${jobId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch job");
-        }
-        const data = await response.json();
-        setJob(data);
-        
-        // If job has organizationId, fetch organization details
-        if (data.organizationId) {
-          fetchOrganizationName(data.organizationId);
-        }
-      } catch (error) {
-        console.error("Error fetching job:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load job details. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchJob();
     checkCalendarConnection();
-  }, [jobId, toast]);
+  }, [jobId]);
 
   const fetchOrganizationName = async (organizationId: string) => {
     try {
@@ -127,11 +121,8 @@ export default function JobDetailPage() {
       });
       
       // Refresh job data to get updated scores
-      const jobResponse = await fetch(`/api/recruitment/jobs/${job._id}`);
-      if (jobResponse.ok) {
-        const updatedJob = await jobResponse.json();
-        setJob(updatedJob);
-      }
+      console.log("Refreshing job data...");
+      window.location.reload();
     } catch (error) {
       console.error("Error screening candidates:", error);
       toast({
@@ -288,6 +279,59 @@ The Hiring Team`;
   const allCandidatesScored = () => {
     if (!job || !job.candidates || job.candidates.length === 0) return false;
     return job.candidates.every(candidate => candidate.score !== undefined);
+  };
+
+  const checkEmailResponses = async () => {
+    console.log("Starting email response check...");
+    setIsCheckingEmails(true);
+    try {
+      console.log("Sending request to /api/email/monitor-responses");
+      const response = await fetch('/api/email/monitor-responses', {
+        method: 'POST',
+      });
+      
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error response data:", errorData);
+        
+        // Check if the error is due to missing calendar connection
+        if (response.status === 400 && errorData.error === 'Calendar not connected') {
+          toast({
+            title: "Calendar Not Connected",
+            description: "Please connect your Google Calendar in the recruitment dashboard.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        throw new Error(`Failed to check email responses: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log("Response data:", data);
+      
+      toast({
+        title: "Email check complete",
+        description: `Scheduled ${data.scheduledCount} interviews based on candidate responses.`,
+      });
+      
+      // Refresh job data to get updated candidate statuses
+      console.log("Refreshing job data...");
+      window.location.reload();
+    } catch (error) {
+      console.error('Error checking emails:', error);
+      console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+      toast({
+        title: "Error",
+        description: "Failed to check email responses. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      console.log("Email check process completed");
+      setIsCheckingEmails(false);
+    }
   };
 
   if (loading) {
@@ -492,24 +536,88 @@ The Hiring Team`;
               </Tooltip>
             </TooltipProvider>
 
-            <Button 
-              onClick={() => handleContactCandidates(true)}
-              disabled={!job?.candidates?.some(candidate => candidate.status === "Shortlisted")}
-              className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Start Interviewing Shortlisted
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      onClick={() => handleContactCandidates(true)}
+                      disabled={!job?.candidates?.some(candidate => candidate.status === "Shortlisted")}
+                      className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white"
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Start Interviewing Shortlisted
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  {!job?.candidates?.some(candidate => candidate.status === "Shortlisted") ? 
+                    <p>No shortlisted candidates available to start interviewing.</p> :
+                    <p>Send interview invitations to all shortlisted candidates.</p>
+                  }
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
             {selectedCandidates.length > 0 && (
-              <Button 
-                onClick={() => handleContactCandidates(false)}
-                className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Start Interviewing Selected ({selectedCandidates.length})
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button 
+                        onClick={() => handleContactCandidates(false)}
+                        disabled={!selectedCandidates.some(id => {
+                          const candidate = job?.candidates.find(c => c._id === id);
+                          return candidate && candidate.status !== "Interviewing" && candidate.status !== "Offered" && candidate.status !== "Hired";
+                        })}
+                        className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
+                      >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Start Interviewing Selected ({selectedCandidates.length})
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    {!selectedCandidates.some(id => {
+                      const candidate = job?.candidates.find(c => c._id === id);
+                      return candidate && candidate.status !== "Interviewing" && candidate.status !== "Offered" && candidate.status !== "Hired";
+                    }) ? 
+                      <p>Selected candidates are already in the interview process. To move them to the next round, click on "Decision" button for each candidate.</p> :
+                      <p>Send interview invitations to selected candidates who are not yet in the interview process.</p>
+                    }
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      onClick={checkEmailResponses} 
+                      disabled={isCheckingEmails}
+                      className="bg-gradient-to-r from-indigo-400 to-indigo-600 hover:from-indigo-500 hover:to-indigo-700 text-white"
+                    >
+                      {isCheckingEmails ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Checking Emails...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="mr-2 h-4 w-4" />
+                          Check Email Responses
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Manually check for new email responses from candidates.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           <CandidateManagement jobId={jobId} onCandidatesSelected={setSelectedCandidates} />

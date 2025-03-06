@@ -360,7 +360,7 @@ export default function RecruitmentDashboard() {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
+          <TabsList className="gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="create" disabled={!isCreatingJob}>Create Job</TabsTrigger>
           </TabsList>
@@ -437,7 +437,7 @@ export default function RecruitmentDashboard() {
                 </div>
 
                 <Tabs value={jobsActiveTab} onValueChange={setJobsActiveTab}>
-                  <TabsList>
+                  <TabsList className="gap-2">
                     <TabsTrigger value="all">All Jobs</TabsTrigger>
                     <TabsTrigger value="published">Published</TabsTrigger>
                     <TabsTrigger value="draft">Draft</TabsTrigger>

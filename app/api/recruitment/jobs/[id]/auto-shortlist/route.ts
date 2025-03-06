@@ -53,6 +53,16 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       (candidate: Candidate) => candidate.status === CandidateStatus.New
     );
 
+    // If no new candidates, return early
+    if (newCandidates.length === 0) {
+      console.log(`No new candidates found for job ${jobId} that can be shortlisted`);
+      return NextResponse.json({ 
+        success: true,
+        shortlistedCount: 0,
+        message: "No new candidates available for shortlisting"
+      });
+    }
+
     // Sort by score (highest first)
     newCandidates.sort((a: Candidate, b: Candidate) => (b.score || 0) - (a.score || 0));
 

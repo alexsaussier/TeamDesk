@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, Search, CheckCircle2 } from "lucide-react";
+import { Loader2, Search, CheckCircle2, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Job, Candidate, CandidateStatus, InterviewFeedback } from "@/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -140,28 +140,43 @@ export default function CandidateManagement({ jobId, onCandidatesSelected }: Can
 
   const handleAutoShortlist = async () => {
     try {
-      const response = await fetch(`/api/recruitment/jobs/${jobId}/auto-shortlist`, {
-        method: "POST",
+      setLoading(true);
+      const response = await fetch(`/api/recruitment/jobs/${job?._id}/auto-shortlist`, {
+        method: 'POST',
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to auto-shortlist candidates");
-      }
-
+      
       const data = await response.json();
-      setJob(data.job);
-
-      toast({
-        title: "Auto-shortlisting complete",
-        description: `Successfully shortlisted ${data.shortlistedCount} candidates based on their scores.`,
-      });
+      
+      if (response.ok) {
+        // Check if job data was returned
+        if (data.job) {
+          setJob(data.job);
+        }
+        
+        // Show appropriate toast based on shortlisted count
+        if (data.shortlistedCount > 0) {
+          toast({
+            title: "Success",
+            description: `${data.shortlistedCount} candidates have been shortlisted.`,
+          });
+        } else {
+          toast({
+            title: "Information",
+            description: "No new candidates available for shortlisting.",
+          });
+        }
+      } else {
+        throw new Error(data.error || "Failed to auto-shortlist candidates");
+      }
     } catch (error) {
-      console.error("Error auto-shortlisting:", error);
+      console.error("Error auto-shortlisting candidates:", error);
       toast({
         title: "Error",
         description: "Failed to auto-shortlist candidates. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -484,7 +499,7 @@ The Hiring Team`;
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 sm:grid-cols-6">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="new">New</TabsTrigger>
               <TabsTrigger value="shortlisted">Shortlisted</TabsTrigger>
@@ -537,6 +552,51 @@ The Hiring Team`;
                               </div>
                             </div>
                           </div>
+
+                          {candidate.status === CandidateStatus.Interviewing && (
+                            <div className="flex items-center gap-2">
+                              {candidate.interviewScheduled ? (
+                                <div className="flex items-center">
+                                  <Badge className="bg-green-100 text-green-800 mr-2">
+                                    Interview Scheduled
+                                  </Badge>
+                                  {candidate.meetingLink && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            onClick={() => window.open(candidate.meetingLink, '_blank')}
+                                          >
+                                            <Calendar className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Open meeting link</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {candidate.interviewDateTime ? new Date(candidate.interviewDateTime).toLocaleString() : 'Time not specified'}
+                                          </p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
+                              ) : (
+                                <Badge className="bg-yellow-100 text-yellow-800 mr-2">
+                                  Awaiting Response
+                                </Badge>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleInterviewFeedback(candidate)}
+                              >
+                                Decision
+                              </Button>
+                            </div>
+                          )}
+                          
                           <div className="flex items-center gap-2">
                             <Badge className={getStatusColor(candidate.status)}>
                               {candidate.status}
@@ -549,15 +609,7 @@ The Hiring Team`;
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        {candidate.status === CandidateStatus.Interviewing && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleInterviewFeedback(candidate)}
-                          >
-                            Feedback
-                          </Button>
-                        )}
+                        
                         <Button 
                           variant="ghost" 
                           size="sm" 

@@ -100,6 +100,9 @@ export interface Candidate {
   availableFrom?: string;
   interviewFeedback?: InterviewFeedback[];
   phone?: string;
+  interviewScheduled?: boolean;
+  interviewDateTime?: Date | string;
+  meetingLink?: string;
 }
 
 export interface InterviewFeedback {

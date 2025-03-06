@@ -10,8 +10,10 @@ export const oauth2Client = new google.auth.OAuth2(
 
 // Define the scopes we need
 export const SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
   'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/calendar.events'
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/gmail.readonly',
 ];
 
 // Helper function to get calendar client
