@@ -228,7 +228,9 @@ export default function RecruitmentDashboard() {
       }
       
       // Remove the job from the state
-      setJobs(jobs.filter(job => job._id !== jobToDelete._id));
+      setJobs(prevJobs => Array.isArray(prevJobs) 
+        ? prevJobs.filter(job => job._id !== jobToDelete._id)
+        : []);
       
       toast({
         title: "Success",

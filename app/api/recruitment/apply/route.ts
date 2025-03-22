@@ -53,7 +53,10 @@ export async function POST(request: Request) {
     
     // Find the job
     const job = await Job.findOne({
-      publicLink: { $regex: `/jobs/${jobId}$` }
+      $or: [
+        { _id: jobId },  // Try to find by direct MongoDB ID
+        { publicLink: { $regex: `/jobs/${jobId}$` } }  // Try to find by publicLink pattern
+      ]
     });
     if (!job) {
       return NextResponse.json(

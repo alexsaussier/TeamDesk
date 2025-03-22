@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link, Mail } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link as LinkIcon, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Link from "next/link";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -314,12 +315,11 @@ The Hiring Team`;
       
       toast({
         title: "Email check complete",
-        description: `Scheduled ${data.scheduledCount} interviews based on candidate responses.`,
+        description: `Scheduled ${data.scheduledCount} interviews based on candidate responses. Reload page to refresh data`,
       });
       
       // Refresh job data to get updated candidate statuses
       console.log("Refreshing job data...");
-      window.location.reload();
     } catch (error) {
       console.error('Error checking emails:', error);
       console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
@@ -352,17 +352,29 @@ The Hiring Team`;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        
-        <div>
+      <div className="flex items-start justify-between gap-2 mb-4">
+        <div className="flex items-start gap-6">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="flex items-center gap-1 mt-1"
+          >
+            <Link href="/dashboard/recruitment">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </Button>
           
-          <h1 className="text-2xl font-bold">{job.title}</h1>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Building className="h-4 w-4" />
-            <span>{job.department}</span>
-            <span>•</span>
-            <Globe className="h-4 w-4" />
-            <span>{job.location}</span>
+          <div> 
+            <h1 className="text-2xl font-bold">{job.title}</h1>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Building className="h-4 w-4" />
+              <span>{job.department}</span>
+              <span>•</span>
+              <Globe className="h-4 w-4" />
+              <span>{job.location}</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -377,7 +389,7 @@ The Hiring Team`;
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4 pt-4">
         <TabsList className="gap-2">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="candidates">
