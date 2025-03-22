@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { Job } from '@/models/Job';
 import { google } from 'googleapis';
-import { oauth2Client, SCOPES } from '@/lib/config';
+import { oauth2Client } from '@/lib/config';
 import OpenAI from 'openai';
 import { Candidate } from '@/types';
 
@@ -15,7 +15,7 @@ interface ErrorWithMessage {
   stack?: string;
 }
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   console.log("API: Email monitoring process started");
   try {
     console.log("API: Connecting to database");

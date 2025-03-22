@@ -66,7 +66,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       _id: job._id.toString(),
       organizationId: job.organizationId.toString(),
       createdBy: job.createdBy.toString(),
-      candidates: jobObj.candidates.map((candidate: any) => ({
+      candidates: jobObj.candidates.map((candidate: Candidate) => ({
         ...candidate,
         _id: candidate._id?.toString() || ''
       })),

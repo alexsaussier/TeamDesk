@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Link as LinkIcon, Mail } from "lucide-react";
+import { Loader2, Users, Calendar, Globe, Building, Brain, MessageSquare, ArrowLeft, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CandidateManagement from "@/components/recruitment/CandidateManagement";
 import { Job } from "@/types";
@@ -594,7 +594,7 @@ The Hiring Team`;
                       const candidate = job?.candidates.find(c => c._id === id);
                       return candidate && candidate.status !== "Interviewing" && candidate.status !== "Offered" && candidate.status !== "Hired";
                     }) ? 
-                      <p>Selected candidates are already in the interview process. To move them to the next round, click on "Decision" button for each candidate.</p> :
+                      <p>Selected candidates are already in the interview process. To move them to the next round, click on &quot;Decision&quot; button for each candidate.</p> :
                       <p>Send interview invitations to selected candidates who are not yet in the interview process.</p>
                     }
                   </TooltipContent>
