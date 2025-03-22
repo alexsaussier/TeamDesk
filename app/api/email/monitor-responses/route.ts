@@ -15,7 +15,7 @@ interface ErrorWithMessage {
   stack?: string;
 }
 
-export async function POST(_request: Request) {
+export async function POST() {
   console.log("API: Email monitoring process started");
   try {
     console.log("API: Connecting to database");
