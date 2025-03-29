@@ -42,6 +42,8 @@ export default function RecruitmentDashboard() {
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
 
+  const [showInstructions, setShowInstructions] = useState(false);
+
   useEffect(() => {
     fetchJobs();
     checkCalendarConnection();
@@ -297,16 +299,6 @@ export default function RecruitmentDashboard() {
               </div>
             )}
           </div>
-          
-          {!isCreatingJob && (
-            <Button 
-              onClick={handleStartJobCreation}
-              className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create New Job
-            </Button>
-          )}
         </div>
       </div>
 
@@ -364,10 +356,85 @@ export default function RecruitmentDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="create" disabled={!isCreatingJob}>Create Job</TabsTrigger>
+            <TabsTrigger 
+              value="create" 
+              className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
+              onClick={!isCreatingJob ? handleStartJobCreation : undefined}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Job
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
+            {showInstructions ? (
+              <Card className="mb-4 relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute top-2 right-2 h-8 w-8 p-0" 
+                  onClick={() => setShowInstructions(false)}
+                >
+                  <span className="sr-only">Close</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </Button>
+                <CardHeader>
+                  <CardTitle>How to create a new role opening?</CardTitle>
+                  <CardDescription>
+                    Follow these simple steps to create and manage job openings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">1</div>
+                    <div>
+                      <p className="font-medium">Click on &quot;Create Job&quot;</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">2</div>
+                    <div>
+                      <p className="font-medium">Type or talk through the specifications of the role.</p>
+                      <p className="text-sm text-muted-foreground">Our AI will help you craft the perfect job description.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">3</div>
+                    <div>
+                      <p className="font-medium">Edit the job description and publish.</p>
+                      <p className="text-sm text-muted-foreground"> A shareable web page is created to collect applications.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">4</div>
+                    <div>
+                      <p className="font-medium">Share the job page and receive resumes</p>
+                      <p className="text-sm text-muted-foreground">Track applications and manage candidates all in one place</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => setShowInstructions(true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <path d="M12 17h.01"/>
+                  </svg>
+                  Show Help
+                </Button>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
