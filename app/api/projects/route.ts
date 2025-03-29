@@ -75,7 +75,8 @@ export async function GET() {
       updatedBy: project.updatedBy.toString(),
       assignedConsultants: project.assignedConsultants.map((assignment: { 
         consultantId: { _id: string; name: string; skills: string[]; picture: string; level: string }; 
-        percentage: number 
+        percentage: number
+        hourlyRate: number
       }) => ({
         id: assignment.consultantId._id.toString(),
         name: assignment.consultantId.name,
@@ -83,6 +84,7 @@ export async function GET() {
         picture: assignment.consultantId.picture,
         percentage: assignment.percentage,
         level: assignment.consultantId.level,
+        hourlyRate: assignment.hourlyRate
       }))
 
     }))

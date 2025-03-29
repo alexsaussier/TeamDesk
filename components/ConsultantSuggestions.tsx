@@ -9,6 +9,26 @@ import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
 import { Label } from "@/components/ui/label"
 
+/**
+ * ConsultantSuggestions Component
+ * 
+ * This component is used to suggest and assign consultants to projects based on their skills,
+ * availability, and match with project requirements. It's primarily used in:
+ * 
+ * 1. The AddProjectModal component when creating a new project (step 2 of the project creation flow)
+ * 2. Potentially in project editing flows to modify team assignments
+ * 
+ * The component analyzes consultants' skills against project requirements, calculates their
+ * availability based on existing assignments across all projects, and provides an interface
+ * for project managers to select appropriate team members with relevant information like:
+ * - Skill match percentage
+ * - Availability during the project timeline
+ * - Consultant level (junior, manager, partner)
+ * 
+ * It also allows setting assignment percentages and hourly rates for consultants assigned to projects.
+ */
+
+
 interface ConsultantSuggestionProps {
   consultant: Consultant;
   matchScore: number;
@@ -31,6 +51,11 @@ interface ConsultantSuggestionsProps {
   };
   allProjects: Project[];
   projectId: string;
+  defaultHourlyRates?: {
+    junior: number;
+    manager: number;
+    partner: number;
+  };
 }
 
 function ConsultantCard({ consultant, matchScore, skillsMatch, isAvailable, isAssigned, onToggleAssign, availabilityPercentage }: ConsultantSuggestionProps) {
@@ -156,7 +181,8 @@ export default function ConsultantSuggestions({
   consultants, 
   projectRequirements, 
   allProjects,
-  projectId 
+  projectId,
+  defaultHourlyRates
 }: ConsultantSuggestionsProps) {
   // Track assigned consultants locally
   const [assignedConsultants, setAssignedConsultants] = useState<string[]>([])

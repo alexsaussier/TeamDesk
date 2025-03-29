@@ -3,6 +3,7 @@ export type ConsultantLevel = 'junior' | 'manager' | 'partner';
 export interface ConsultantAssignment {
   projectId: string;
   percentage: number;
+  hourlyRate?: number;
 }
 
 export interface Consultant {
@@ -45,6 +46,7 @@ export interface Project {
     skills: string[];
     picture: string;
     percentage: number;
+    hourlyRate?: number;
     level: ConsultantLevel;
   }[];
   status: ProjectStatus;

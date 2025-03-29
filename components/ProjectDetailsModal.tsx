@@ -50,6 +50,9 @@ export function ProjectDetailsModal({
   const [isEditingPercentage, setIsEditingPercentage] = useState<Record<string, boolean>>({})
   const [tempPercentage, setTempPercentage] = useState<Record<string, number | null>>({})
   const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
+  const [isEditingHourlyRate, setIsEditingHourlyRate] = useState<Record<string, boolean>>({})
+  const [tempHourlyRate, setTempHourlyRate] = useState<Record<string, number | null>>({})
+  const [isUpdatingHourlyRate, setIsUpdatingHourlyRate] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     setLocalProject(project)
@@ -186,6 +189,42 @@ export function ProjectDetailsModal({
       setIsUpdatingPercentage(prev => ({ ...prev, [consultantId]: false }))
       setIsEditingPercentage(prev => ({ ...prev, [consultantId]: false }))
       setTempPercentage(prev => ({ ...prev, [consultantId]: null }))
+    }
+  }
+
+  const handleUpdateHourlyRate = async (consultantId: string, hourlyRate: number) => {
+    try {
+      setIsUpdatingHourlyRate(prev => ({ ...prev, [consultantId]: true }))
+      const response = await fetch(`/api/projects/${localProject.id}/update-assignment`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ consultantId, hourlyRate }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update hourly rate')
+      }
+
+      setLocalProject(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          assignedConsultants: prev.assignedConsultants.map(c => {
+            if ((c._id === consultantId || c.id === consultantId)) {
+              return { ...c, hourlyRate }
+            }
+            return c
+          })
+        }
+      })
+    } catch (error) {
+      console.error('Error updating hourly rate:', error)
+    } finally {
+      setIsUpdatingHourlyRate(prev => ({ ...prev, [consultantId]: false }))
+      setIsEditingHourlyRate(prev => ({ ...prev, [consultantId]: false }))
+      setTempHourlyRate(prev => ({ ...prev, [consultantId]: null }))
     }
   }
 
@@ -419,43 +458,57 @@ export function ProjectDetailsModal({
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-24">
-                                {isEditingPercentage?.[consultant._id || consultant.id] ? (
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    value={tempPercentage?.[consultant._id || consultant.id] ?? consultant.percentage}
-                                    onChange={(e) => setTempPercentage(prev => ({
-                                      ...prev,
-                                      [consultant._id || consultant.id]: parseInt(e.target.value) || 0
-                                    }))}
-                                    className="h-8"
-                                  />
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm">{consultant.percentage}%</span>
-                                    {isUpdatingPercentage?.[consultant._id || consultant.id] && (
-                                      <Spinner className="h-4 w-4" />
-                                    )}
-                                  </div>
-                                )}
-                              </div>
                               {isEditingPercentage?.[consultant._id || consultant.id] ? (
                                 <>
+                                  <div className="w-24">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      value={tempPercentage?.[consultant._id || consultant.id] ?? consultant.percentage}
+                                      onChange={(e) => setTempPercentage(prev => ({
+                                        ...prev,
+                                        [consultant._id || consultant.id]: parseInt(e.target.value) || 0
+                                      }))}
+                                      className="h-8"
+                                      placeholder="Percentage"
+                                    />
+                                  </div>
+                                  
+                                  <div className="w-24">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={tempHourlyRate?.[consultant._id || consultant.id] ?? consultant.hourlyRate ?? 0}
+                                      onChange={(e) => setTempHourlyRate(prev => ({
+                                        ...prev,
+                                        [consultant._id || consultant.id]: parseFloat(e.target.value) || 0
+                                      }))}
+                                      className="h-8"
+                                      placeholder="Rate/hour"
+                                    />
+                                  </div>
+                                  
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-green-600 hover:text-green-700"
                                     onClick={() => {
                                       const id = consultant._id || consultant.id;
-                                      handleUpdateAssignment(id, tempPercentage?.[id] ?? consultant.percentage);
+                                      // Update both values at once
+                                      Promise.all([
+                                        handleUpdateAssignment(id, tempPercentage?.[id] ?? consultant.percentage),
+                                        handleUpdateHourlyRate(id, tempHourlyRate?.[id] ?? consultant.hourlyRate ?? 0)
+                                      ]);
                                       setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
                                       setTempPercentage(prev => ({ ...prev, [id]: null }));
+                                      setTempHourlyRate(prev => ({ ...prev, [id]: null }));
                                     }}
                                   >
                                     <Check className="h-4 w-4" />
                                   </Button>
+                                  
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -464,23 +517,55 @@ export function ProjectDetailsModal({
                                       const id = consultant._id || consultant.id;
                                       setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
                                       setTempPercentage(prev => ({ ...prev, [id]: null }));
+                                      setTempHourlyRate(prev => ({ ...prev, [id]: null }));
                                     }}
                                   >
                                     <X className="h-4 w-4" />
                                   </Button>
                                 </>
                               ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => {
-                                    const id = consultant._id || consultant.id;
-                                    setIsEditingPercentage(prev => ({ ...prev, [id]: true }));
-                                  }}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
+                                <>
+                                  <div className="w-24 flex flex-col">
+                                    <span className="text-xs text-muted-foreground mb-1">Assignment</span>
+                                    <div className="flex items-center">
+                                      <span className="text-sm">{consultant.percentage}%</span>
+                                      {isUpdatingPercentage?.[consultant._id || consultant.id] && (
+                                        <Spinner className="h-4 w-4 ml-1" />
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="w-24 flex flex-col">
+                                    <span className="text-xs text-muted-foreground mb-1">Rate</span>
+                                    <div className="flex items-center">
+                                      <span className="text-sm">${consultant.hourlyRate ?? 0}/hr</span>
+                                      {isUpdatingHourlyRate?.[consultant._id || consultant.id] && (
+                                        <Spinner className="h-4 w-4 ml-1" />
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => {
+                                      const id = consultant._id || consultant.id;
+                                      setIsEditingPercentage(prev => ({ ...prev, [id]: true }));
+                                      // Pre-populate the temp states with current values
+                                      setTempPercentage(prev => ({ 
+                                        ...prev, 
+                                        [id]: consultant.percentage 
+                                      }));
+                                      setTempHourlyRate(prev => ({ 
+                                        ...prev, 
+                                        [id]: consultant.hourlyRate ?? 0 
+                                      }));
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </>
                               )}
                               <Button
                                 variant="ghost"

@@ -29,6 +29,12 @@ const ProjectSchema = new mongoose.Schema({
       min: 0,
       max: 100,
       default: 100
+    },
+    hourlyRate: {
+      type: Number,
+      required: false,
+      min: 0,
+      default: 0
     }
   }],
   status: { 

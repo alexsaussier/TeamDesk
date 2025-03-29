@@ -47,6 +47,11 @@ export function AddProjectModal({
     }
   })
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
+  const [defaultHourlyRates, setDefaultHourlyRates] = useState({
+    junior: 100, // Default values - adjust as needed
+    manager: 180,
+    partner: 250
+  });
 
   {/*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -330,6 +335,7 @@ export function AddProjectModal({
                 }}
                 allProjects={allProjects}
                 projectId={createdProjectId!}
+                defaultHourlyRates={defaultHourlyRates}
               />
             </div>
           )}
