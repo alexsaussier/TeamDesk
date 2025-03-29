@@ -49,9 +49,8 @@ export function ProjectDetailsModal({
   const [tempChanceToClose, setTempChanceToClose] = useState<number | null>(null)
   const [isEditingPercentage, setIsEditingPercentage] = useState<Record<string, boolean>>({})
   const [tempPercentage, setTempPercentage] = useState<Record<string, number | null>>({})
-  const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
-  const [isEditingHourlyRate, setIsEditingHourlyRate] = useState<Record<string, boolean>>({})
   const [tempHourlyRate, setTempHourlyRate] = useState<Record<string, number | null>>({})
+  const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
   const [isUpdatingHourlyRate, setIsUpdatingHourlyRate] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -223,7 +222,7 @@ export function ProjectDetailsModal({
       console.error('Error updating hourly rate:', error)
     } finally {
       setIsUpdatingHourlyRate(prev => ({ ...prev, [consultantId]: false }))
-      setIsEditingHourlyRate(prev => ({ ...prev, [consultantId]: false }))
+      setIsEditingPercentage(prev => ({ ...prev, [consultantId]: false }))
       setTempHourlyRate(prev => ({ ...prev, [consultantId]: null }))
     }
   }

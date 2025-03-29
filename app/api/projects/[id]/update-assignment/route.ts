@@ -32,8 +32,8 @@ export async function PATCH(request: NextRequest) {
     const consultantObjectId = new mongoose.Types.ObjectId(consultantId)
 
     // Create update objects based on what fields were provided
-    const projectUpdateObj: Record<string, any> = {};
-    const consultantUpdateObj: Record<string, any> = {};
+    const projectUpdateObj: Record<string, number> = {};
+    const consultantUpdateObj: Record<string, number> = {};
 
     if (percentage !== undefined) {
       projectUpdateObj['assignedConsultants.$.percentage'] = percentage;

@@ -1,3 +1,5 @@
+"use client"
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,16 +8,27 @@ import SignInButton from '@/components/SignInButton'
 import Image from 'next/image'
 import { Check } from 'lucide-react'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel'
-
+import { useSession } from 'next-auth/react'
 
 export default function LandingPage() {
+  const { data: session, status } = useSession()
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
       <header className="py-6 px-4 sm:px-6 lg:px-8">
         <nav className="flex justify-between items-center">
           <div className="text-2xl font-bold text-blue-600">TeamDesk</div>
           <div className="space-x-4">
-            <SignInButton />
+            {status === 'authenticated' && session.user ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-blue-700">Welcome, {session.user.name || session.user.email}</span>
+                <Button asChild variant="outline">
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+              </div>
+            ) : (
+              <SignInButton />
+            )}
           </div>
         </nav>
       </header>

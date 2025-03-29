@@ -195,6 +195,9 @@ export default function ConsultantSuggestions({
 
     try {
       if (assigned) {
+        const consultant = consultants.find(c => c._id === consultantId || c.id === consultantId);
+        const hourlyRate = consultant && defaultHourlyRates ? defaultHourlyRates[consultant.level] : 0;
+        
         // Call the assign API
         const response = await fetch(`/api/projects/${projectId}/assign`, {
           method: 'POST',
@@ -203,7 +206,8 @@ export default function ConsultantSuggestions({
           },
           body: JSON.stringify({ 
             consultantId,
-            percentage
+            percentage,
+            hourlyRate
           }),
         })
 

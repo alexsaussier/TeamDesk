@@ -23,6 +23,12 @@ interface AddProjectModalProps {
 
 const projectStatuses: ProjectStatus[] = ['Discussions', 'Sold', 'Started', 'Completed']
 
+const defaultHourlyRates = {
+  junior: 100, // Default values - adjust as needed
+  manager: 180,
+  partner: 250
+};
+
 export function AddProjectModal({ 
   isOpen, 
   onClose, 
@@ -47,11 +53,6 @@ export function AddProjectModal({
     }
   })
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
-  const [defaultHourlyRates, setDefaultHourlyRates] = useState({
-    junior: 100, // Default values - adjust as needed
-    manager: 180,
-    partner: 250
-  });
 
   {/*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

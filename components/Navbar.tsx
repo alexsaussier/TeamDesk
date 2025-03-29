@@ -145,7 +145,7 @@ export default function Navbar() {
         z-50
       `}>
         <div className="flex flex-col h-full">
-          <Link href="/" className="text-2xl font-bold mb-2" onClick={handleNavigation}>
+          <Link href="/dashboard" className="text-2xl font-bold mb-2" onClick={handleNavigation}>
             TeamDesk
           </Link>
           {orgName && (
