@@ -7,6 +7,8 @@ import { Project } from "@/types"
 import { ProjectSelector } from "@/components/project-analysis/ProjectSelector"
 import { ProjectOverview } from "@/components/project-analysis/ProjectOverview"
 import { ProjectCosts } from "@/components/project-analysis/ProjectCosts"
+import { ProjectRevenue } from "@/components/project-analysis/ProjectRevenue"
+import { ProjectMargin } from "@/components/project-analysis/ProjectMargin"
 
 export default function ProjectAnalysisPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -84,10 +86,7 @@ export default function ProjectAnalysisPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* ProjectRevenue will be implemented later */}
-                    <div className="border rounded-md p-8 flex items-center justify-center">
-                      <p className="text-muted-foreground">Project revenue will be placed here</p>
-                    </div>
+                    <ProjectRevenue project={selectedProject} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -101,10 +100,7 @@ export default function ProjectAnalysisPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* ProjectMargin will be implemented later */}
-                    <div className="border rounded-md p-8 flex items-center justify-center">
-                      <p className="text-muted-foreground">Margin analysis will be placed here</p>
-                    </div>
+                    <ProjectMargin project={selectedProject} />
                   </CardContent>
                 </Card>
               </TabsContent>
