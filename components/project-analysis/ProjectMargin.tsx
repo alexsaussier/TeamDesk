@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
-import { TrendingUp, DollarSign, PieChart, AlertTriangle } from "lucide-react"
+import { PieChart, AlertTriangle } from "lucide-react"
 import { differenceInWeeks, parseISO } from "date-fns"
 
 interface ProjectMarginProps {

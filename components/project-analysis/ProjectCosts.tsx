@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Project, Consultant } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
-import { DollarSign, Users, CalendarDays, Briefcase } from "lucide-react"
+import { DollarSign, Users, CalendarDays } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
@@ -278,7 +278,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
               <span className="font-medium">Total Cost:</span> Daily Cost × {workingDays} working days
             </p>
             <p className="text-xs mt-4">
-              Note: Costs are calculated based on the consultants' annual salaries and their assignment percentages to this project.
+              Note: Costs are calculated based on the consultants&apos; annual salaries and their assignment percentages to this project.
               We assume 252 working days per year and have calculated {workingDays} working days for this project.
             </p>
           </div>
