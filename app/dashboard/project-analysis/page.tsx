@@ -96,9 +96,9 @@ export default function ProjectAnalysisPage() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="margin">Margin Analysis</TabsTrigger>
               <TabsTrigger value="costs">Costs</TabsTrigger>
               <TabsTrigger value="revenue">Revenue</TabsTrigger>
-              <TabsTrigger value="margin">Margin Analysis</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="mt-4">
