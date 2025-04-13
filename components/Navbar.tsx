@@ -162,7 +162,7 @@ export default function Navbar() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-1 h-auto" 
+                className="p-1 h-auto hover:bg-gray-200" 
                 onClick={() => {
                   router.push('/dashboard/settings');
                   handleNavigation();
@@ -178,7 +178,7 @@ export default function Navbar() {
               <Button 
                 variant="ghost" 
                 className={`w-full justify-start ${
-                  pathname === "/dashboard" ? "bg-gray-200" : "hover:bg-gray-200"
+                  pathname === "/dashboard" ? "bg-gradient-to-l from-blue-300 to-blue-500 text-white" : "hover:bg-gradient-to-l hover:from-blue-300 hover:to-blue-500 hover:text-white"
                 }`} 
                 asChild
                 onClick={handleNavigation}
@@ -193,8 +193,10 @@ export default function Navbar() {
             {navSections.map((section) => (
               <div key={section.label} className="space-y-2">
                 <div className="px-4 py-1 flex items-center">
-                  <section.icon className="h-4 w-4 mr-2 text-gray-500" />
-                  <p className="text-sm text-gray-500 font-medium">{section.label}</p>
+                  <section.icon className="h-4 w-4 mr-2 text-blue-600" />
+                  <p className="text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-800 text-transparent bg-clip-text">
+                    {section.label}
+                  </p>
                 </div>
                 <div className="pl-2">
                   {section.items.map((item) => (
@@ -202,7 +204,7 @@ export default function Navbar() {
                       key={item.href}
                       variant="ghost"
                       className={`w-full justify-start ${
-                        pathname === item.href ? "bg-gray-200" : "hover:bg-gray-200"
+                        pathname === item.href ? "bg-gradient-to-l from-blue-300 to-blue-500 text-white" : "hover:bg-gradient-to-l hover:from-blue-300 hover:to-blue-500 hover:text-white"
                       }`}
                       asChild
                       onClick={handleNavigation}
@@ -211,9 +213,18 @@ export default function Navbar() {
                         <item.icon className="mr-2 h-4 w-4" />
                         {item.label}
                         {item.badge && (
-                          <Badge variant="ai" className="ml-2">
+                          <Badge 
+                            variant="ai" 
+                            className={`ml-2 ${
+                              pathname === item.href ? "border-white text-white" : ""
+                            }`}
+                          >
                             {item.badge.text}
-                            <Wand2 className="w-3 h-3 ml-1 text-purple-500" />
+                            <Wand2 
+                              className={`w-3 h-3 ml-1 ${
+                                pathname === item.href ? "text-white" : "text-purple-500"
+                              }`} 
+                            />
                           </Badge>
                         )}
                       </Link>

@@ -105,8 +105,8 @@ export function ProjectSelector({ onProjectSelect, selectedProjectId }: ProjectS
                 {groupedProjects[status].map(project => (
                   <SelectItem key={project.id} value={project.id}>
                     <div className="flex items-center justify-between w-full">
-                      <span>{project.name}</span>
-                      <div className="flex items-center space-x-2">
+                      <span>{project.name}</span> 
+                      <div className="flex items-center ml-2">
                         <Badge variant="outline" className="text-xs">
                           {project.client}
                         </Badge>

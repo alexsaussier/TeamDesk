@@ -175,7 +175,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                         src={consultant.picture} 
                         alt={`${consultant.name}'s picture`} 
                         fill
-                        className="rounded-full object-cover"
+                        className="rounded-full object-cover border border-white"
                       />
                     </div>
                     <Popover>

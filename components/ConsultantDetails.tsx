@@ -168,7 +168,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
           {/* Consultant Profile Section */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex items-start gap-6">
-              <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border border-white">
                 <AvatarImage src={consultant?.picture} alt={consultant?.name} />
               </Avatar>
               <div className="space-y-2">

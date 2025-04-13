@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, FileText, Wand2 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
+import { GradientButton } from "@/components/GradientButton";
 
 export default function ProposalPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -72,10 +73,10 @@ export default function ProposalPage() {
           <Wand2 className="w-4 h-4 text-purple-500" />
         </div>
 
-        <Card className="bg-gray-50">
+        <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-500" />
+              <FileText className="h-5 w-5 text-white" />
               Upload RFP Document
             </CardTitle>
           </CardHeader>
@@ -84,17 +85,32 @@ export default function ProposalPage() {
               <div className="space-y-2">
                 <Label htmlFor="rfp">Upload a RFP document (pdf format). Our tool will read the RFP and generate a tailored proposal.</Label>
                 <div className="flex gap-4">
-                  <input
-                    id="rfp"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium"
-                  />
-                  <Button 
+                  <div className="relative">
+                    <label 
+                      htmlFor="rfp" 
+                      className="flex h-10 w-full items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-500 hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                      Choose RFP File
+                    </label>
+                    <input
+                      id="rfp"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      className="absolute inset-0 opacity-0 w-full h-full"
+                    />
+                    {file && (
+                      <p className="mt-2 text-sm text-gray-600">
+                        Selected file: {file.name}
+                      </p>
+                    )}
+                  </div>
+                  <GradientButton
+                    label="Generate Proposal"
+                    variant="gray"
+                    icon={Wand2}
                     type="submit" 
                     disabled={!file || isLoading}
-                    className="bg-gradient-to-r from-blue-400 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white"
                   >
                     {isLoading ? (
                       <>
@@ -107,19 +123,19 @@ export default function ProposalPage() {
                         Generate Proposal
                       </>
                     )}
-                  </Button>
+                  </GradientButton>
                 </div>
               </div>
             </form>
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-50">
+        <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
           <CardHeader>
             <CardTitle>Generated Proposal</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="relative min-h-[300px] rounded-lg border bg-white p-4 overflow-auto">
+          <CardContent className="text-black">
+            <div className="relative min-h-[300px] rounded-lg border bg-white p-4 overflow-auto ">
               {draft ? (
                 <div className="prose prose-sm max-w-none [&>*]:mb-4 [&>h1]:mt-8 [&>h2]:mt-6 [&>h3]:mt-4">
                   <ReactMarkdown
