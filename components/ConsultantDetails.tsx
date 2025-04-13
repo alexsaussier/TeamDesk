@@ -162,9 +162,10 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
         </Button>
       </div>
 
-      {/* Consultant Profile Card */}
-      <Card className="bg-white">
-        <CardContent className="pt-6">
+      {/* Main Card Container */}
+      <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white overflow-hidden">
+        <CardContent className="p-6 space-y-6">
+          {/* Consultant Profile Section */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex items-start gap-6">
               <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
@@ -172,7 +173,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
               </Avatar>
               <div className="space-y-2">
                 <h1 className="text-xl sm:text-2xl font-bold">{consultant?.name}</h1>
-                <div className="text-muted-foreground capitalize">Level: {consultant?.level}</div>
+                <div className="text-white/80 capitalize">Level: {consultant?.level}</div>
                 <div className="flex flex-wrap gap-2">
                   Skills: {consultant?.skills.map(skill => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>
@@ -182,7 +183,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
             </div>
 
             <div className="space-y-2 w-full sm:w-auto">
-              <Label>Salary</Label>
+              <Label className="text-white">Salary</Label>
               <div className="flex items-center gap-2">
                 {isEditingRate ? (
                   <>
@@ -191,20 +192,21 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                       min="0"
                       value={salary}
                       onChange={(e) => setsalary(Number(e.target.value))}
-                      className="w-32"
+                      className="w-32 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                     />
                     <Button 
                       onClick={handleUpdateRate} 
                       disabled={isUpdating}
+                      className="bg-white text-blue-500 hover:bg-white/90"
                     >
                       Save
                     </Button>
                     <Button 
-                      variant="ghost" 
                       onClick={() => {
                         setIsEditingRate(false)
                         setsalary(consultant.salary)
                       }}
+                      className="bg-white text-red-500 hover:bg-white/90"
                     >
                       Cancel
                     </Button>
@@ -222,7 +224,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 text-white hover:bg-white"
                         onClick={() => setShowSalary(!showSalary)}
                       >
                         {showSalary ? (
@@ -234,7 +236,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 text-white hover:bg-white"
                         onClick={() => setIsEditingRate(true)}
                       >
                         <Pencil className="h-4 w-4" />
@@ -245,85 +247,87 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
               </div>
             </div>
           </div>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              icon={<Users className="h-5 w-5" />}
+              title="Current Project"
+              value={getCurrentProject(consultant, projects)?.name || "Unassigned"}
+            />
+            <StatsCard
+              icon={<Calendar className="h-5 w-5" />}
+              title="Next Assignment"
+              value={getNextProject(consultant, projects)?.name || "None scheduled"}
+              subtitle={getNextProject(consultant, projects)
+                ? `In ${Math.ceil((new Date(getNextProject(consultant, projects)!.startDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days - ${new Date(getNextProject(consultant, projects)!.startDate).toLocaleDateString()}`
+                : undefined}
+            />
+            <StatsCard
+              icon={<TrendingUp className="h-5 w-5" />}
+              title="Past 12M Utilization"
+              value={`${calculateUtilization(consultant, projects)}%`}
+            />
+            <StatsCard
+              icon={<Briefcase className="h-5 w-5" />}
+              title="Total Projects"
+              value={consultant?.assignments?.length.toString() || "0"}
+            />
+          </div>
+
+          {/* Detailed Content in White Card */}
+          <div className="bg-white text-gray-900 rounded-lg p-6 overflow-hidden">
+            <Tabs defaultValue="utilization" className="space-y-6">
+              <TabsList className="bg-blue-50 space-x-1">
+                <TabsTrigger 
+                  value="utilization"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                >
+                  Utilization
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="timeline"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                >
+                  Timeline
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                >
+                  Project History
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="utilization" className="mt-6 overflow-visible">
+                <ConsultantUtilizationChart 
+                  consultant={consultant}
+                  projects={projects}
+                />
+              </TabsContent>
+
+              <TabsContent value="timeline" className="mt-6">
+                <ConsultantProjectTimeline 
+                  consultant={consultant}
+                  projects={projects}
+                />
+              </TabsContent>
+
+              <TabsContent value="history" className="mt-6">
+                <ConsultantProjectHistory 
+                  consultant={consultant}
+                  projects={projects}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
         </CardContent>
       </Card>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          icon={<Users className="h-5 w-5" />}
-          title="Current Project"
-          value={getCurrentProject(consultant, projects)?.name || "Unassigned"}
-        />
-        <StatsCard
-          icon={<Calendar className="h-5 w-5" />}
-          title="Next Assignment"
-          value={getNextProject(consultant, projects)?.name || "None scheduled"}
-          subtitle={getNextProject(consultant, projects)
-            ? `In ${Math.ceil((new Date(getNextProject(consultant, projects)!.startDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days - ${new Date(getNextProject(consultant, projects)!.startDate).toLocaleDateString()}`
-            : undefined}
-        />
-        <StatsCard
-          icon={<TrendingUp className="h-5 w-5" />}
-          title="Past 12M Utilization"
-          value={`${calculateUtilization(consultant, projects)}%`}
-        />
-        <StatsCard
-          icon={<Briefcase className="h-5 w-5" />}
-          title="Total Projects"
-          value={consultant?.assignments?.length.toString() || "0"}
-        />
-      </div>
-
-      {/* Detailed Content Tabs */}
-      <Tabs defaultValue="utilization" className="space-y-6">
-        <TabsList className="bg-muted/50 space-x-1 p-1">
-          <TabsTrigger 
-            value="utilization"
-            className="bg-blue-50 data-[state=active]:bg-blue-100 data-[state=active]:text-primary data-[state=active]:shadow-sm"
-          >
-            Utilization
-          </TabsTrigger>
-          <TabsTrigger 
-            value="timeline"
-            className="bg-blue-50 data-[state=active]:bg-blue-100 data-[state=active]:text-primary data-[state=active]:shadow-sm"
-          >
-            Timeline
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history"
-            className="bg-blue-50 data-[state=active]:bg-blue-100 data-[state=active]:text-primary data-[state=active]:shadow-sm"
-          >
-            Project History
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="utilization" className="mt-6">
-          <ConsultantUtilizationChart 
-            consultant={consultant}
-            projects={projects}
-          />
-        </TabsContent>
-
-        <TabsContent value="timeline" className="mt-6">
-          <ConsultantProjectTimeline 
-            consultant={consultant}
-            projects={projects}
-          />
-        </TabsContent>
-
-        <TabsContent value="history" className="mt-6">
-          <ConsultantProjectHistory 
-            consultant={consultant}
-            projects={projects}
-          />
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }
 
-// Helper component for stats cards
+// Modified Stats Card to look better in the enclosing blue gradient card
 function StatsCard({ 
   icon, 
   title, 
@@ -336,15 +340,13 @@ function StatsCard({
   subtitle?: string 
 }) {
   return (
-    <Card>
-      <CardContent className="pt-4">
-        <div className="flex items-center gap-2 text-muted-foreground mb-2">
-          {icon}
-          <span className="text-sm font-medium">{title}</span>
-        </div>
-        <div className="text-2xl font-bold">{value}</div>
-        {subtitle && <div className="text-sm text-muted-foreground mt-1">{subtitle}</div>}
-      </CardContent>
-    </Card>
+    <div className="bg-white text-black rounded-lg p-4 backdrop-blur-sm border border-white/20">
+      <div className="flex items-center gap-2 mb-2">
+        {icon}
+        <span className="text-sm font-medium">{title}</span>
+      </div>
+      <div className="text-2xl font-bold">{value}</div>
+      {subtitle && <div className="text-sm mt-1">{subtitle}</div>}
+    </div>
   )
 } 

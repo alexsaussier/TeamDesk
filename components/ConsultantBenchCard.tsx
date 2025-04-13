@@ -30,7 +30,7 @@ export default function ConsultantBenchCard({
 
   return (
     <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer bg-sky-50 border-sky-100"
+      className="hover:shadow-md transition-shadow cursor-pointer bg-white"
       onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
     >
       <CardContent className="pt-6 space-y-4">
@@ -74,11 +74,17 @@ export default function ConsultantBenchCard({
         </div>
 
         {/* Dates Information */}
-        <div className="space-y-1 text-sm border-t border-sky-200 pt-3">
-          {availableFrom && (
+        <div className="space-y-1 text-sm border-t border-blue-500 pt-3">
+          {/* Show availability information */}
+          {availableFrom ? (
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>Available from {availableFrom.toLocaleDateString()}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-green-500 shrink-0" />
+              <span className="text-green-600 font-medium">Immediately available</span>
             </div>
           )}
           

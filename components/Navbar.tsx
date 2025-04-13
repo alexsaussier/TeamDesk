@@ -89,7 +89,10 @@ const navSections: NavSection[] = [
       {
         href: "/dashboard/recruitment",
         label: "AI Recruiter",
-        icon: Briefcase
+        icon: Briefcase,
+        badge: {
+          text: "AI"
+        }
       },
       
     ]

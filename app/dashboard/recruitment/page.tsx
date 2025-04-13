@@ -356,11 +356,11 @@ export default function RecruitmentDashboard() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger 
               value="create" 
-              className="bg-gradient-to-r from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white"
+              className="bg-gradient-to-r from-blue-400 to-blue-700 hover:from-blue-500 hover:to-blue-800 text-white"
               onClick={!isCreatingJob ? handleStartJobCreation : undefined}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              Create Job
+              Publish a new job
             </TabsTrigger>
           </TabsList>
           
@@ -434,7 +434,7 @@ export default function RecruitmentDashboard() {
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
+              <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
                   <FileText className="h-4 w-4 text-muted-foreground" />
@@ -443,7 +443,7 @@ export default function RecruitmentDashboard() {
                   <div className="text-2xl font-bold">{jobs.length}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Candidates</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -454,7 +454,7 @@ export default function RecruitmentDashboard() {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Pending Interviews</CardTitle>
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -525,7 +525,7 @@ export default function RecruitmentDashboard() {
                         {filteredJobs.map((job) => (
                           <div key={job._id} className="relative group">
                             <Link href={`/dashboard/recruitment/jobs/${job._id}`}>
-                              <Card className="h-full cursor-pointer hover:shadow-md transition-shadow">
+                              <Card className="h-full cursor-pointer hover:shadow-md transition-shadow bg-gradient-to-l from-blue-300 to-blue-500 text-white">
                                 <CardHeader className="pb-2">
                                   <div className="flex justify-between items-start">
                                     <CardTitle className="text-lg">{job.title}</CardTitle>
@@ -537,7 +537,7 @@ export default function RecruitmentDashboard() {
                                       {job.status}
                                     </Badge>
                                   </div>
-                                  <CardDescription className="flex items-center gap-1">
+                                  <CardDescription className="flex items-center gap-1 text-white">
                                     <Building className="h-3 w-3" />
                                     {job.department}
                                     <span className="mx-1">•</span>

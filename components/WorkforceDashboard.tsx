@@ -9,6 +9,7 @@ import { GradientButton } from "@/components/GradientButton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload } from 'lucide-react'
 import { BatchUploadModal } from './BatchUploadModal'
+import { Loading } from "@/components/ui/loading"
 
 export default function WorkforceDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -111,9 +112,7 @@ export default function WorkforceDashboard() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-        </div>
+        <Loading text="Loading consultants..." />
       ) : (
         <WorkforceList 
           consultants={filteredConsultants}

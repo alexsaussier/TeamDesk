@@ -21,9 +21,9 @@ export function Loading({ size = "md", text = "Loading...", fullPage = false }: 
   
   return (
     <div className={containerClasses}>
-      <div className="text-center">
+      <div className="flex items-center gap-3">
         <Spinner className={sizeClasses[size]} />
-        {text && <p className="mt-2 text-sm text-muted-foreground">{text}</p>}
+        {text && <p className="text-sm text-muted-foreground">{text}</p>}
       </div>
     </div>
   )

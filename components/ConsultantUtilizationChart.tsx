@@ -75,12 +75,12 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
   const data = calculateMonthlyData()
 
   return (
-    <Card>
+    <Card >
       <CardHeader>
         <CardTitle>12-Month Utilization View</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full">
+        <div className="min-h-[400px] w-full pt-2 pb-6">
           <ChartContainer
             config={{
               expectedUtilization: {
@@ -97,7 +97,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
               },
             }}
           >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={400}>
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 

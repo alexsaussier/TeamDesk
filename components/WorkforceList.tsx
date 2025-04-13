@@ -158,14 +158,14 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
           return (
             <Card 
               key={consultant._id} 
-              className="bg-sky-50 border-sky-100 cursor-pointer hover:shadow-md transition-shadow relative"
+              className="bg-gradient-to-l from-blue-300 to-blue-500 text-white cursor-pointer hover:shadow-md transition-shadow relative"
               onClick={() => router.push(`/dashboard/workforce/${consultant._id}`)}
             >
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex justify-between items-center text-base sm:text-lg">
                   <div className="flex flex-col">
                     <span>{consultant.name}</span>
-                    <span className="text-sm font-normal text-gray-500 capitalize">
+                    <span className="text-sm font-normal text-white capitalize">
                       {consultant.level}
                     </span>
                   </div>
@@ -226,10 +226,10 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
               <CardContent className="pb-4 sm:pb-6 px-4 sm:px-6">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-1">
-                    <h4 className="text-xs sm:text-sm font-medium text-gray-500">Skills:</h4>
+                    <h4 className="text-xs sm:text-sm font-medium text-white">Skills:</h4>
                     <div className="flex flex-wrap gap-1">
                       {consultant.skills.map(skill => (
-                        <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
+                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
                       ))}
                     </div>
                   </div>

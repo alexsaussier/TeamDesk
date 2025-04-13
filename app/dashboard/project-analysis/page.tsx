@@ -160,13 +160,14 @@ export default function ProjectAnalysisPage() {
           </Tabs>
         ) : (
           <>
-            <Card>
+            <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
               <CardHeader>
                 <CardTitle>Select a Project for Analysis</CardTitle>
-                <CardDescription>
+                <CardDescription className="text-white">
                   Choose a project from the cards below to view detailed financial analysis
                 </CardDescription>
               </CardHeader>
+             
             </Card>
             
             {isLoading ? (

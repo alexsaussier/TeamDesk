@@ -24,12 +24,12 @@ export default function CurrentBenchList({ consultants, projects }: CurrentBench
   }))
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-l from-blue-300 to-blue-500 text-white">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Currently Available Workforce</span>
           <Select value={levelFilter} onValueChange={setLevelFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] text-black">
               <SelectValue placeholder="Filter by level" />
             </SelectTrigger>
             <SelectContent>
