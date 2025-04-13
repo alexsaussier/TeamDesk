@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead } from "@/components/ui/table"
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
 import { SalaryMetricCard } from "@/components/SalaryMetricCard"
+import { Loading } from "@/components/ui/loading"
 
 export default function FinancialsDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -55,7 +56,7 @@ export default function FinancialsDashboard() {
     fetchData()
   }, [])
 
-  if (!metrics) return <div>Loading...</div>
+  if (!metrics) return <Loading fullPage text="Loading financial metrics..." />
 
   return (
     <div className="space-y-6">

@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Loading } from "@/components/ui/loading"
 
 export default function RecruitmentDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -346,10 +347,7 @@ export default function RecruitmentDashboard() {
           
           {/* Loading overlay */}
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-            <div className="text-center">
-              <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-              <p className="mt-2 text-sm text-muted-foreground">Loading jobs...</p>
-            </div>
+          <Loading fullPage text="Loading jobs..." />
           </div>
         </div>
       ) : (

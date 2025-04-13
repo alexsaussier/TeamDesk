@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import { Loading } from "@/components/ui/loading"
 
 import { Organization } from "@/types"
 import { Loader2, Pencil, Save, X } from "lucide-react"
@@ -178,11 +179,7 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    )
+    return <Loading fullPage />
   }
 
   return (

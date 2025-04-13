@@ -5,6 +5,7 @@ import { Consultant, Project } from '@/types'
 import CurrentBenchList from '@/components/CurrentBenchList'
 import UpcomingBenchList from '@/components/UpcomingBenchList'
 import BenchCalendar from '@/components/BenchCalendar'
+import { Loading } from "@/components/ui/loading"
 
 export default function BenchPage() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -38,11 +39,7 @@ export default function BenchPage() {
   }, [])
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-      </div>
-    )
+    return <Loading fullPage text="Loading bench data..." />
   }
 
   return (

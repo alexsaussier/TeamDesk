@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Upload, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Organization, Job } from "@/types";
+import { Loading } from "@/components/ui/loading";
 
 
 export default function JobApplicationPage() {
@@ -127,11 +128,7 @@ export default function JobApplicationPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loading fullPage text="Loading job details..." />
   }
 
   if (!job) {
