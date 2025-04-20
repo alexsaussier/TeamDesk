@@ -128,10 +128,16 @@ export function AddProjectModal({
       const createdProject = await onAdd(newProject)
       setCreatedProjectId(createdProject.id)
       setStep(2)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating project: ", error)
       
-      if (error.message?.includes('Free plan is limited')) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as {message: unknown}).message)
+          : 'An unexpected error occurred';
+      
+      if (errorMessage.includes('Free plan is limited')) {
         toast({
           title: "Free Plan Limit Reached",
           description: "Your free plan is limited to 3 projects. Please upgrade to premium for unlimited projects.",
@@ -140,7 +146,7 @@ export function AddProjectModal({
       } else {
         toast({
           title: "Error Creating Project",
-          description: error.message || "An unexpected error occurred",
+          description: errorMessage,
           variant: "destructive"
         })
       }
@@ -171,7 +177,7 @@ export function AddProjectModal({
     if (!isOpen) {
       handleClose()
     }
-  }, [isOpen])
+  }, [isOpen, handleClose])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

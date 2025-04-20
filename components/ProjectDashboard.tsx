@@ -157,10 +157,12 @@ export default function ProjectDashboard() {
       if (!response.ok) {
         const data = await response.json()
         
-        // Create a custom error with status and message
-        const error: any = new Error(data.error || 'Failed to create project')
-        error.status = response.status
-        throw error
+        // Create a custom error with proper typing instead of 'any'
+        const error = new Error(data.error || 'Failed to create project') as Error & {
+          status?: number;
+        };
+        error.status = response.status;
+        throw error;
       }
       
       const createdProject = await response.json()
