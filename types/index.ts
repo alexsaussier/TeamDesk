@@ -160,6 +160,7 @@ export interface Organization {
   };
   description: string;
   perks: string;
+  planType: 'free' | 'premium';
   createdAt: string;
   updatedAt: string;
 }
