@@ -86,6 +86,7 @@ export default function TimelineDashboard() {
         
         throw new Error(errorData.error || 'Failed to add project')
       }
+      
 
       const data = await response.json()
       const addedProject: Project = {
