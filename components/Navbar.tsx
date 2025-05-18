@@ -55,14 +55,14 @@ const navSections: NavSection[] = [
     label: "Workforce",
     items: [
       {
-        href: "/dashboard/workforce",
-        label: "Workforce View",
-        icon: Users
-      },
-      {
         href: "/dashboard/workforce-timeline",
         label: "Workforce Timeline",
         icon: Calendar
+      },
+      {
+        href: "/dashboard/workforce",
+        label: "Workforce View",
+        icon: Users
       },
       {
         href: "/dashboard/bench",
