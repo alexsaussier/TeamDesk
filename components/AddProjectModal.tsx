@@ -6,12 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import ConsultantSuggestions from './ConsultantSuggestions'
 import { useSession } from 'next-auth/react'
-//import { useProjectModal } from '@/hooks/useProjectModal'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from "@/hooks/use-toast"
-import { useRef } from 'react'
 
 
 interface AddProjectModalProps {
@@ -258,7 +256,7 @@ export function AddProjectModal({
 
                 <div className="space-y-4">
                   <div>
-                    <Label>Team Size</Label>
+                    <Label>Estimated Team Structure</Label>
                     <div className="grid grid-cols-3 gap-4 mt-2">
                       <div>
                         <Label className="text-sm">Junior</Label>

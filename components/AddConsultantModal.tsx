@@ -127,7 +127,7 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="salary">Salary ($)</Label>
+            <Label htmlFor="salary">Annual Salary</Label>
             <Input
               id="salary"
               type="number"
