@@ -3,21 +3,28 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BarChart, Users, Calendar, TrendingUp } from 'lucide-react'
-import SignInButton from '@/components/SignInButton'
+import { BarChart, Users, Calendar, TrendingUp, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import { Check } from 'lucide-react'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel'
-import { useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 
 export default function LandingPage() {
   const { data: session, status } = useSession()
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
+    <div
+      className="min-h-screen bg-gradient-to-b from-blue-100 to-white"
+      style={{
+        backgroundImage: 'url(/images/landing_1b.png), url(/images/landing_3.png)',
+        backgroundPosition: 'top center, bottom center',
+        backgroundRepeat: 'no-repeat, no-repeat',
+        backgroundSize: '100% auto, 100% auto',
+      }}
+    >
       <header className="py-6 px-4 sm:px-6 lg:px-8">
-        <nav className="flex justify-between items-center">
-          <div className="text-2xl font-bold text-blue-600">TeamDesk</div>
+        <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-6 bg-white/90 backdrop-blur-sm transition-all duration-200">
+          <div className="text-2xl font-bold text-blue-800">TeamDesk</div>
           <div className="space-x-4">
             {status === 'authenticated' && session.user ? (
               <div className="flex items-center space-x-3">
@@ -27,23 +34,52 @@ export default function LandingPage() {
                 </Button>
               </div>
             ) : (
-              <SignInButton />
+              <div className="flex items-center space-x-3">
+                {/* Try For Free Button */}
+                <Button 
+                  asChild 
+                  className="bg-white font-bold border border-blue-300/30 transition-colors hover:bg-blue-100"
+                >
+                  <Link href="/auth/signup" className="flex items-center gap-2">
+                    <span className="bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent">
+                      Get Started For Free
+                    </span>
+                  </Link>
+                </Button>
+
+                {/* Sign In Button */}
+                <Button 
+                  variant="outline"
+                  onClick={() => signIn()} 
+                  className="bg-white text-blue-800 border border-blue-800"
+                >
+                  Sign In
+                </Button>
+              </div>
             )}
           </div>
         </nav>
       </header>
 
-      <main className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-            Manage your projects and teams in one place
-          </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-          Teamdesk is the all-in-one tool for your consulting team or agency.
+      <main className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">        
+        <div className="text-center bg-white py-5 rounded-lg border border-blue-500">
+          <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent sm:text-5xl md:text-6xl">
+            Optimize your project planning
+          </span>
+          <p className="pt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+          Teamdesk is the all-in-one tool for managing the projects of your consulting team or agency.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-400 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-200 shadow-md hover:shadow-lg">
-              <Link href="/request-demo">Request a Demo</Link>
+            <Button 
+              asChild 
+              size="lg"
+              className="backdrop-blur-md bg-blue-100/50 font-bold text-lg border border-blue-300/30 hover:bg-blue-100 transition-colors"
+            >
+              <Link href="/auth/signup" className="flex items-center gap-2">
+                <span className="bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent">
+                  Get Started For Free
+                </span>
+              </Link>
             </Button>
           </div>
         </div>
@@ -303,11 +339,30 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-          <Button size="lg" asChild className="bg-gradient-to-r from-blue-400 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-200 shadow-md hover:shadow-lg">
-            <Link href="/request-demo">Request a Demo</Link>
-          </Button>
-        </div>
+       
+        <section className="py-12 md:py-23 lg:py-24  ">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <h2 className="text-white text-3xl font-bold tracking-tighter sm:text-5xl">
+                Ready to streamline your team management?
+              </h2>
+              <p className="max-w-[700px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Get started with TeamDesk today. No credit card required.
+              </p>
+              <div className="mt-6">
+                <Button 
+                  asChild 
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white border border-white"
+                >
+                  <Link href="/auth/signup" className="flex items-center gap-2">
+                    Try For Free <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
         
       </main>
 
