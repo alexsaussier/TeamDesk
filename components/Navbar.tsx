@@ -60,6 +60,11 @@ const navSections: NavSection[] = [
         icon: Users
       },
       {
+        href: "/dashboard/workforce-timeline",
+        label: "Workforce Timeline",
+        icon: Calendar
+      },
+      {
         href: "/dashboard/bench",
         label: "Bench",
         icon: Sofa
