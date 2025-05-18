@@ -4,6 +4,7 @@ import { Project } from '@/models/Project'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { Consultant } from '@/models/Consultant'
+import { Organization } from '@/models/Organization'
 
 
 export async function POST(request: Request) {
@@ -17,6 +18,26 @@ export async function POST(request: Request) {
 
     const userId = session.user.id
     const organizationId = session.user.organizationId
+
+    // Get the organization to check plan type
+    const organization = await Organization.findById(organizationId)
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
+    }
+
+    // Check project limits for free plan
+    // Treat organizations with no planType (or planType not set to 'premium') as free
+    if (!organization.planType || organization.planType === 'free') {
+      // Count existing projects for this organization
+      const projectCount = await Project.countDocuments({ organizationId })
+      
+      // Free plan is limited to 3 projects
+      if (projectCount >= 3) {
+        return NextResponse.json({ 
+          error: 'Free plan is limited to 3 projects. Please upgrade to premium for unlimited projects.' 
+        }, { status: 403 })
+      }
+    }
 
     const body = await request.json()
     const { name, client, requiredSkills, startDate, endDate, status, assignedConsultants, teamSize, chanceToClose } = body

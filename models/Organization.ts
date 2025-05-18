@@ -16,6 +16,11 @@ const OrganizationSchema = new mongoose.Schema({
   perks: {
     type: String,
     default: ''
+  },
+  planType: {
+    type: String,
+    enum: ['free', 'premium'],
+    default: 'free'
   }
 }, {
   timestamps: true

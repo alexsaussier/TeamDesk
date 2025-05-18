@@ -28,7 +28,7 @@ export async function POST() {
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) {
-    return new NextResponse(null, { status: 401 })
+    return NextResponse.json({ user: null }, { status: 401 })
   }
   return NextResponse.json(session)
 } 

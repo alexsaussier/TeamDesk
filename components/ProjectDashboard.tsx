@@ -144,34 +144,34 @@ export default function ProjectDashboard() {
     }
   }
 
-  const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
+  const handleAddProject = async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newProject),
+        body: JSON.stringify(project),
       })
-
+      
       if (!response.ok) {
-        throw new Error('Failed to add project')
-      }
-
-      const data = await response.json()
-      const addedProject: Project = {
-        ...data,
-        id: data.id || data._id,
+        const data = await response.json()
+        
+        // Create a custom error with proper typing instead of 'any'
+        const error = new Error(data.error || 'Failed to create project') as Error & {
+          status?: number;
+        };
+        error.status = response.status;
+        throw error;
       }
       
-      // Update local state
-      setProjects(prev => [...prev, addedProject])
+      const createdProject = await response.json()
+      // Update your local state with the new project
       
-      // Return the created project for the modal
-      return addedProject
+      return createdProject
     } catch (error) {
-      console.error('Error adding project:', error)
-      throw error // Re-throw to let modal handle the error
+      // Pass the error up to the modal
+      throw error
     }
   }
 

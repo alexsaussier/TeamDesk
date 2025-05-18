@@ -11,9 +11,11 @@ import { useProjectDelete } from '@/hooks/useProjectDelete'
 import { Spinner } from "@/components/ui/spinner"
 import { BatchUploadModal } from './BatchUploadModal'
 import { Upload } from 'lucide-react'
+import { useToast } from "@/hooks/use-toast"
 
 export default function TimelineDashboard() {
   const { data: session, status } = useSession()
+  const { toast } = useToast()
   const [projects, setProjects] = useState<Project[]>([])
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -65,7 +67,26 @@ export default function TimelineDashboard() {
         body: JSON.stringify(newProject),
       })
 
-      if (!response.ok) throw new Error('Failed to add project')
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        if (response.status === 403 && errorData.error?.includes('Free plan is limited')) {
+          toast({
+            title: "Free Plan Limit Reached",
+            description: "Your free plan is limited to 3 projects. Please upgrade to premium for unlimited projects.",
+            variant: "destructive"
+          })
+        } else {
+          toast({
+            title: "Error Adding Project",
+            description: errorData.error || "Failed to add project",
+            variant: "destructive"
+          })
+        }
+        
+        throw new Error(errorData.error || 'Failed to add project')
+      }
+      
 
       const data = await response.json()
       const addedProject: Project = {

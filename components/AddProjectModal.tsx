@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from "@/hooks/use-toast"
 
 
 interface AddProjectModalProps {
@@ -37,6 +38,7 @@ export function AddProjectModal({
   allProjects 
 }: AddProjectModalProps) {
   const { data: session } = useSession()
+  const { toast } = useToast()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     name: '',
@@ -126,14 +128,30 @@ export function AddProjectModal({
       const createdProject = await onAdd(newProject)
       setCreatedProjectId(createdProject.id)
       setStep(2)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating project: ", error)
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as {message: unknown}).message)
+          : 'An unexpected error occurred';
+      
+      if (errorMessage.includes('Free plan is limited')) {
+        toast({
+          title: "Free Plan Limit Reached",
+          description: "Your free plan is limited to 3 projects. Please upgrade to premium for unlimited projects.",
+          variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Error Creating Project",
+          description: errorMessage,
+          variant: "destructive"
+        })
+      }
     }
   }
-
-  
-
- 
 
   const handleClose = () => {
     setStep(1)
@@ -159,7 +177,7 @@ export function AddProjectModal({
     if (!isOpen) {
       handleClose()
     }
-  }, [isOpen])
+  }, [isOpen, handleClose])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
