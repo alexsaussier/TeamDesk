@@ -3,12 +3,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { Badge } from '@/components/ui/badge' // For consultant level or skills
 
 // Helper to get months (can be extracted to a shared util if used elsewhere)
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   const months: string[] = []
-  let currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
+  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
   const finalEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
 
   while (currentDate <= finalEndDate) {
@@ -158,7 +157,7 @@ export default function ConsultantTimeline({ consultants, projects, onProjectCli
                         >
                           {activeProjectsForConsultantInMonth.length > 0 && (
                             <div className="relative w-full h-full flex flex-col justify-around">
-                              {activeProjectsForConsultantInMonth.map((project, index) => {
+                              {activeProjectsForConsultantInMonth.map((project) => {
                                 const { barStyle } = getAssignmentCellStyle(project, monthString, timelineMonths, activeProjectsForConsultantInMonth);
                                 const projectColor = getProjectColor(project.id);
                                 const assignmentDetails = consultant.assignments.find(a => a.projectId === project.id);
