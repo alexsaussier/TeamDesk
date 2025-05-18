@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Project, ProjectStatus, Consultant } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from "@/hooks/use-toast"
+import { useRef } from 'react'
 
 
 interface AddProjectModalProps {
@@ -56,28 +57,10 @@ export function AddProjectModal({
   })
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
 
-  {/*const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (selectedProject) {
-      onEdit?.(selectedProject)
-    } else {
-      const newProject = {
-        name: formData.name,
-        client: formData.client,
-        requiredSkills: formData.requiredSkills
-          .split(',')
-          .map(skill => skill.trim())
-          .filter(Boolean),
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        assignedConsultants: [],
-        status: formData.status,
-        organizationId: session?.user?.organizationId || '',
-        teamSize: formData.teamSize
-      }
-      onAdd(newProject)
-    }}
-    // Reset form
+  // Memoized function to reset the modal's internal state
+  const resetModalState = useCallback(() => {
+    setStep(1);
+    setCreatedProjectId(null);
     setFormData({
       name: '',
       client: '',
@@ -85,13 +68,30 @@ export function AddProjectModal({
       startDate: '',
       endDate: '',
       status: 'Discussions',
-      teamSize: {
-        junior: 0,
-        manager: 0,
-        partner: 0
-      }
-    })
-  */}
+      teamSize: { junior: 0, manager: 0, partner: 0 },
+      chanceToClose: 100 // Consistent with previous handleClose reset logic
+    });
+  }, [setStep, setCreatedProjectId, setFormData]);
+
+  // Memoized function to trigger the closing process
+  const triggerClose = useCallback(() => {
+    resetModalState(); // Reset internal state
+    onClose();        // Call parent's onClose to update isOpen
+  }, [onClose, resetModalState]);
+
+  // useEffect to reset internal state if isOpen prop changes to false
+  useEffect(() => {
+    if (!isOpen) {
+      resetModalState();
+    }
+  }, [isOpen, resetModalState]);
+
+  // Handler for the Dialog's onOpenChange prop
+  const handleOpenChange = (newOpenState: boolean) => {
+    if (!newOpenState) {
+      triggerClose();
+    }
+  };
 
   const handleChange = (field: string, value: string) => {
     if (field === 'status') {
@@ -153,34 +153,8 @@ export function AddProjectModal({
     }
   }
 
-  const handleClose = () => {
-    setStep(1)
-    setCreatedProjectId(null)
-    setFormData({
-      name: '',
-      client: '',
-      requiredSkills: '',
-      startDate: '',
-      endDate: '',
-      status: 'Discussions',
-      teamSize: {
-        junior: 0,
-        manager: 0,
-        partner: 0
-      },
-      chanceToClose: 100
-    })
-    onClose()
-  }
-
-  useEffect(() => {
-    if (!isOpen) {
-      handleClose()
-    }
-  }, [isOpen, handleClose])
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
@@ -372,7 +346,7 @@ export function AddProjectModal({
           <div className="flex space-x-2">
             {step === 1 ? (
               <>
-                <Button type="button" variant="outline" onClick={handleClose}>
+                <Button type="button" variant="outline" onClick={triggerClose}>
                   Cancel
                 </Button>
                 <Button type="submit" form="new-project-form">Create Project</Button>
@@ -380,7 +354,7 @@ export function AddProjectModal({
             ) : (
               <>
                
-                <Button onClick={handleClose}>
+                <Button onClick={triggerClose}>
                   Done
                 </Button>
               </>

@@ -20,7 +20,7 @@ const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
   const currentDate = new Date(startDate)
 
   while (currentDate <= endDate) {
-    months.push(currentDate.toLocaleString('default', { month: 'short', year: 'numeric' }))
+    months.push(currentDate.toLocaleString('en-US', { month: 'short', year: 'numeric' }))
     currentDate.setMonth(currentDate.getMonth() + 1)
   }
 
