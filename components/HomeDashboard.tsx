@@ -77,17 +77,19 @@ export default function HomeDashboard() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-6">Current Period Utilization</h2>
+        <h2 className="text-2xl font-semibold mb-6">Utilization Of Your Team</h2>
         <UtilizationMetrics consultants={consultants} projects={projects} />
       </section>
 
       <section>
         <h2 className="text-2xl font-semibold mb-6">Utilization Forecast</h2>
+        <p className="text-sm text-gray-500 mb-6">What you should expect your utilization to look like in the coming months, if your projects start and end as expected.</p>
         <UtilizationForecastPlot consultants={consultants} projects={projects} />
       </section>
 
       <section>
         <h2 className="text-2xl font-semibold mb-6">Historical Performance</h2>
+        <p className="text-sm text-gray-500 mb-6">Your team's utilization in the past.</p>
         <UtilizationHistoricalChart consultants={consultants} projects={projects} />
       </section>
     </div>
