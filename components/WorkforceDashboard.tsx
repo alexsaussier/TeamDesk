@@ -10,8 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload } from 'lucide-react'
 import { BatchUploadModal } from './BatchUploadModal'
 import { Loading } from "@/components/ui/loading"
+import { useToast } from "@/hooks/use-toast"
 
 export default function WorkforceDashboard() {
+  const { toast } = useToast()
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -28,6 +30,11 @@ export default function WorkforceDashboard() {
       setConsultants(data)
     } catch (error) {
       console.error('Error fetching consultants:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch consultants",
+        variant: "destructive"
+      })
     } finally {
       setIsLoading(false)
     }
@@ -43,7 +50,7 @@ export default function WorkforceDashboard() {
       setIsModalOpen(false)
     } catch (error) {
       console.error('Error in handleAddConsultant:', error)
-      throw error // Re-throw to be handled by the modal
+      // Error is already handled in the modal
     }
   }
 

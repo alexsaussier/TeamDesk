@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Consultant } from '@/models/Consultant'
+import { Organization } from '@/models/Organization'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
@@ -39,6 +40,29 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const organizationId = session.user.organizationId
+
+    // Get the organization to check plan type
+    const organization = await Organization.findById(organizationId)
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
+    }
+
+    // Check consultant limits for free plan
+    // Treat organizations with no planType (or planType not set to 'premium') as free
+    if (!organization.planType || organization.planType === 'free') {
+      // Count existing consultants for this organization
+      const consultantCount = await Consultant.countDocuments({ organizationId })
+      
+      // Free plan is limited to 15 consultants
+      if (consultantCount >= 10) {
+        return NextResponse.json({ 
+          error: 'Free plan is limited to 10 consultants. Please upgrade to premium for unlimited consultants.' 
+        }, { status: 403 })
+      }
     }
 
     const body = await request.json()

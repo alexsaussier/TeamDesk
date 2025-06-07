@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from "@/hooks/use-toast"
+import ImageUpload from './ImageUpload'
 
 interface AddConsultantModalProps {
   isOpen: boolean
@@ -16,6 +18,7 @@ interface AddConsultantModalProps {
 }
 
 export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsultantModalProps) {
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     level: 'junior' as ConsultantLevel,
@@ -39,6 +42,13 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
       setError(null)
     }
   }, [isOpen])
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      picture: imageUrl
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,11 +76,29 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
       const data = await response.json()
       
       if (!response.ok) {
+        // Check if it's a free plan limit error
+        if (response.status === 403 && data.error?.includes('Free plan is limited')) {
+          toast({
+            title: "Free Plan Limit Reached",
+            description: "Your free plan is limited to 10 consultants. Please upgrade to premium for unlimited consultants.",
+            variant: "destructive"
+          })
+        } else {
+          toast({
+            title: "Error Adding Consultant",
+            description: data.error || "Failed to add consultant",
+            variant: "destructive"
+          })
+        }
         throw new Error(data.error || 'Failed to add consultant')
       }
 
       await onAdd(data)
       onClose()
+      toast({
+        title: "Consultant Added",
+        description: `${formData.name} has been added successfully.`,
+      })
     } catch (error) {
       console.error('Error adding consultant:', error)
       setError(error instanceof Error ? error.message : 'Failed to add consultant')
@@ -81,7 +109,7 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add New Consultant</DialogTitle>
         </DialogHeader>
@@ -98,6 +126,15 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
               required
             />
           </div>
+          
+          <div>
+            <Label>Profile Picture</Label>
+            <ImageUpload
+              onImageUploaded={handleImageUploaded}
+              currentImageUrl={formData.picture}
+            />
+          </div>
+
           <div>
             <Label htmlFor="level">Level</Label>
             <Select value={formData.level} onValueChange={(value: ConsultantLevel) => setFormData(prev => ({
@@ -114,6 +151,7 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
               </SelectContent>
             </Select>
           </div>
+          
           <div>
             <Label htmlFor="skills">Skills (comma-separated)</Label>
             <Input
@@ -124,8 +162,10 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
                 skills: e.target.value
               }))}
               required
+              placeholder="React, Node.js, TypeScript"
             />
           </div>
+          
           <div className="space-y-2">
             <Label htmlFor="salary">Annual Salary</Label>
             <Input
@@ -137,39 +177,30 @@ export default function AddConsultantModal({ isOpen, onClose, onAdd }: AddConsul
                 ...prev,
                 salary: Number(e.target.value)
               }))}
+              placeholder="75000"
             />
           </div>
-          <div>
-            <Label htmlFor="picture">Picture URL</Label>
-            <Input
-              id="picture"
-              type="url"
-              value={formData.picture}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                picture: e.target.value
-              }))}
-              placeholder="https://example.com/avatar.jpg"
-            />
-          </div>
+
           {error && (
-            <div className="text-sm text-red-600">
-              {error}
-            </div>
+            <div className="text-red-600 text-sm">{error}</div>
           )}
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Adding...
-                </>
-              ) : (
-                'Add Consultant'
-              )}
-            </Button>
-          </DialogFooter>
         </form>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                Adding...
+              </>
+            ) : (
+              'Add Consultant'
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
