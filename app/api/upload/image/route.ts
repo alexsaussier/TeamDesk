@@ -49,8 +49,7 @@ export async function POST(request: NextRequest) {
       Key: s3Key,
       Body: imageBuffer,
       ContentType: file.type,
-      // Make the image publicly readable
-      ACL: 'public-read',
+      // Removed ACL parameter - bucket policy will handle public access
     }))
 
     // Generate the public URL
