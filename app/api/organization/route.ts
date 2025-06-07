@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth'
 
 /**
  * API route for organization-related operations
- * GET: Retrieves basic organization details (name and admin info) by ID or for the authenticated user's organization
+ * GET: Retrieves basic organization details by ID or for the authenticated user's organization
  * PATCH: Updates organization details (name, description, perks)
  * Requires authentication via NextAuth session
  * Returns 401 if unauthorized, 404 if organization not found, 500 for server errors
@@ -50,10 +50,13 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.json({
+        _id: organization._id,
         name: organization.name,
-        admin: organization.admin,
         description: organization.description,
-        perks: organization.perks
+        perks: organization.perks,
+        planType: organization.planType,
+        createdAt: organization.createdAt,
+        updatedAt: organization.updatedAt
       })
     }
   } catch (error) {
@@ -97,9 +100,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({
       _id: organization._id,
       name: organization.name,
-      admin: organization.admin,
       description: organization.description,
       perks: organization.perks,
+      planType: organization.planType,
       createdAt: organization.createdAt,
       updatedAt: organization.updatedAt
     })

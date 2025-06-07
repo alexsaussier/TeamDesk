@@ -3,11 +3,13 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 
 /**
  * ConsultantSuggestions Component
@@ -184,6 +186,8 @@ export default function ConsultantSuggestions({
   projectId,
   defaultHourlyRates
 }: ConsultantSuggestionsProps) {
+  const { levels } = useOrganizationLevels()
+  const { toast } = useToast()
   // Track assigned consultants locally
   const [assignedConsultants, setAssignedConsultants] = useState<string[]>([])
 
@@ -196,7 +200,9 @@ export default function ConsultantSuggestions({
     try {
       if (assigned) {
         const consultant = consultants.find(c => c._id === consultantId || c.id === consultantId);
-        const hourlyRate = consultant && defaultHourlyRates ? defaultHourlyRates[consultant.level] : 0;
+        const hourlyRate = consultant && defaultHourlyRates && (consultant.level in defaultHourlyRates) 
+          ? defaultHourlyRates[consultant.level as keyof typeof defaultHourlyRates] 
+          : 0;
         
         // Call the assign API
         const response = await fetch(`/api/projects/${projectId}/assign`, {
@@ -291,45 +297,39 @@ export default function ConsultantSuggestions({
     };
   };
 
-  // Group consultants by level and calculate match scores
-  const groupedSuggestions = consultants.reduce((acc, consultant) => {
-    const level = consultant.level;
-    const matchData = calculateMatchScore(consultant);
-    
-    if (!acc[level]) {
-      acc[level] = [];
-    }
-    
-    acc[level].push(matchData);
-    return acc;
-  }, {} as Record<string, ConsultantSuggestionProps[]>);
+  // Calculate consultant suggestions
+  const consultantSuggestions = consultants.map(calculateMatchScore);
 
-  // Sort suggestions by match score within each group
-  Object.keys(groupedSuggestions).forEach(level => {
-    groupedSuggestions[level].sort((a, b) => b.matchScore - a.matchScore);
-  });
-
-  
+  // Group suggestions by level using dynamic levels
+  const groupedSuggestions = useMemo(() => {
+    const grouped: Record<string, ConsultantSuggestionProps[]> = {}
+    
+    levels.forEach(level => {
+      grouped[level.id] = consultantSuggestions.filter(s => s.consultant.level === level.id)
+    })
+    
+    return grouped
+  }, [consultantSuggestions, levels])
 
   return (
     <div className="space-y-6">
-      {Object.entries(projectRequirements.teamSize)
-        .filter(([, count]) => count > 0)
-        .map(([level]) => (
-          <div key={level} className="space-y-3">
+      {levels
+        .filter(level => (projectRequirements.teamSize[level.id] || 0) > 0)
+        .map((level) => (
+          <div key={level.id} className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium capitalize">
-                {level} Consultants ({assignedConsultants.filter(id => 
-                  consultants.find(c => c._id === id)?.level === level
-                ).length}/{projectRequirements.teamSize[level as keyof TeamSize]} assigned)
+              <h3 className="text-lg font-medium">
+                {level.name} Consultants ({assignedConsultants.filter(id => 
+                  consultants.find(c => c._id === id)?.level === level.id
+                ).length}/{projectRequirements.teamSize[level.id]} assigned)
               </h3>
               <Badge variant="outline">
-                {groupedSuggestions[level]?.filter(s => s.isAvailable).length || 0} available
+                {groupedSuggestions[level.id]?.filter(s => s.isAvailable).length || 0} available
               </Badge>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {groupedSuggestions[level]?.map(suggestion => (
+              {groupedSuggestions[level.id]?.map(suggestion => (
                 <ConsultantCard 
                   key={suggestion.consultant._id}
                   {...suggestion}
@@ -338,9 +338,9 @@ export default function ConsultantSuggestions({
                   availabilityPercentage={suggestion.availabilityPercentage}
                 />
               ))}
-              {(!groupedSuggestions[level] || groupedSuggestions[level].length === 0) && (
+              {(!groupedSuggestions[level.id] || groupedSuggestions[level.id].length === 0) && (
                 <p className="text-sm text-muted-foreground col-span-2">
-                  No {level} consultants found
+                  No {level.name} consultants found
                 </p>
               )}
             </div>

@@ -24,11 +24,7 @@ export async function POST(request: Request) {
 
     // Create new organization
     const organization = new Organization({
-      name: organizationName,
-      admin: {
-        name,
-        email
-      }
+      name: organizationName
     })
     const savedOrganization = await organization.save()
 

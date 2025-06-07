@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { Project, ProjectStatus, Consultant } from '@/types'
+import { Project, ProjectStatus, Consultant, TeamSize } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import ConsultantSuggestions from './ConsultantSuggestions'
@@ -10,12 +10,13 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from "@/hooks/use-toast"
+import { useOrganizationLevels } from "@/contexts/OrganizationContext"
 
 
 interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => Promise<Project>
+  onAdd: (project: Partial<Project>) => Promise<Project>
   onEdit?: (project: Project) => void
   consultants: Consultant[]
   allProjects: Project[]
@@ -38,7 +39,18 @@ export function AddProjectModal({
 }: AddProjectModalProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
+  const { levels } = useOrganizationLevels()
   const [step, setStep] = useState(1)
+  
+  // Initialize teamSize with all available levels set to 0
+  const getInitialTeamSize = () => {
+    const teamSize: TeamSize = {}
+    levels.forEach(level => {
+      teamSize[level.id] = 0
+    })
+    return teamSize
+  }
+
   const [formData, setFormData] = useState({
     name: '',
     client: '',
@@ -47,13 +59,17 @@ export function AddProjectModal({
     endDate: '',
     status: 'Discussions' as ProjectStatus,
     chanceToClose: 2,
-    teamSize: {
-      junior: 0,
-      manager: 0,
-      partner: 0
-    }
+    teamSize: getInitialTeamSize()
   })
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
+
+  // Update teamSize when levels change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      teamSize: getInitialTeamSize()
+    }))
+  }, [levels])
 
   // Memoized function to reset the modal's internal state
   const resetModalState = useCallback(() => {
@@ -66,10 +82,10 @@ export function AddProjectModal({
       startDate: '',
       endDate: '',
       status: 'Discussions',
-      teamSize: { junior: 0, manager: 0, partner: 0 },
-      chanceToClose: 100 // Consistent with previous handleClose reset logic
+      teamSize: getInitialTeamSize(),
+      chanceToClose: 100
     });
-  }, [setStep, setCreatedProjectId, setFormData]);
+  }, [setStep, setCreatedProjectId, setFormData, levels]);
 
   // Memoized function to trigger the closing process
   const triggerClose = useCallback(() => {
@@ -257,56 +273,26 @@ export function AddProjectModal({
                 <div className="space-y-4">
                   <div>
                     <Label>Estimated Team Structure</Label>
-                    <p className="text-sm text-gray-500 mb-2">You can add fractional team members, e.g. 0.5 for half a manager's time.</p>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
-                      <div>
-                        <Label className="text-sm">Junior</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          value={formData.teamSize.junior}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            teamSize: {
-                              ...prev.teamSize,
-                              junior: parseFloat(e.target.value)
-                            }
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Manager</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          value={formData.teamSize.manager}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            teamSize: {
-                              ...prev.teamSize,
-                              manager: parseFloat(e.target.value)
-                            }
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Partner</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          value={formData.teamSize.partner}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            teamSize: {
-                              ...prev.teamSize,
-                              partner: parseFloat(e.target.value)
-                            }
-                          }))}
-                        />
-                      </div>
+                    <p className="text-sm text-gray-500 mb-2">You can add fractional team members, e.g. 0.5 for half a consultant's time.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                      {levels.map((level) => (
+                        <div key={level.id}>
+                          <Label className="text-sm">{level.name}</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={formData.teamSize[level.id] || 0}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              teamSize: {
+                                ...prev.teamSize,
+                                [level.id]: parseFloat(e.target.value) || 0
+                              }
+                            }))}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

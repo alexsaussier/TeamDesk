@@ -1,16 +1,19 @@
 "use client"
 
-import { Calendar, Clock, Briefcase, Users, Tag, LayoutGrid } from "lucide-react"
+import { Calendar, Clock, Briefcase, Users, Tag, LayoutGrid, BarChart3 } from "lucide-react"
 import { Project } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 
 interface ProjectOverviewProps {
   project: Project
 }
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
+  const { levels } = useOrganizationLevels()
+  
   // Calculate project duration in days
   const startDate = new Date(project.startDate)
   const endDate = new Date(project.endDate)
@@ -19,11 +22,10 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
   // Calculate project duration in weeks
   const durationWeeks = Math.ceil(durationDays / 7)
   
-  // Count total team size
-  const totalTeamSize = 
-    (project.teamSize.junior || 0) + 
-    (project.teamSize.manager || 0) + 
-    (project.teamSize.partner || 0)
+  // Count total team size using dynamic levels
+  const totalTeamSize = levels.reduce((sum, level) => {
+    return sum + (project.teamSize[level.id] || 0)
+  }, 0)
   
   // Count actual assigned consultants
   const assignedCount = project.assignedConsultants.length
@@ -72,13 +74,12 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
                   <div className="flex items-center">
                     <Badge 
-                      className={`
-                        ${project.status === 'Started' ? 'bg-green-500' : ''} 
-                        ${project.status === 'Sold' ? 'bg-blue-500' : ''} 
-                        ${project.status === 'Discussions' ? 'bg-yellow-500' : ''} 
-                        ${project.status === 'Completed' ? 'bg-gray-500' : ''}
-                        text-white
-                      `}
+                      variant={
+                        project.status === 'Completed' ? 'default' :
+                        project.status === 'Started' ? 'default' :
+                        project.status === 'Sold' ? 'secondary' : 'outline'
+                      }
+                      className="text-lg font-semibold"
                     >
                       {project.status}
                     </Badge>
@@ -102,21 +103,17 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Team Composition</p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {project.teamSize.junior > 0 && (
-                      <Badge variant="secondary">
-                        {project.teamSize.junior} Junior
-                      </Badge>
-                    )}
-                    {project.teamSize.manager > 0 && (
-                      <Badge variant="secondary">
-                        {project.teamSize.manager} Manager
-                      </Badge>
-                    )}
-                    {project.teamSize.partner > 0 && (
-                      <Badge variant="secondary">
-                        {project.teamSize.partner} Partner
-                      </Badge>
-                    )}
+                    {levels.map(level => {
+                      const count = project.teamSize[level.id] || 0
+                      if (count > 0) {
+                        return (
+                          <Badge key={level.id} variant="secondary">
+                            {count} {level.name}
+                          </Badge>
+                        )
+                      }
+                      return null
+                    })}
                   </div>
                 </div>
               </div>

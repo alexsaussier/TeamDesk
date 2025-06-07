@@ -10,16 +10,30 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Loading } from "@/components/ui/loading"
+import OrganizationLevelsSetup from "@/components/OrganizationLevelsSetup"
+import { useOrganizationLevels } from "@/contexts/OrganizationContext"
 
-import { Organization } from "@/types"
-import { Loader2, Pencil, Save, X } from "lucide-react"
+import { Organization, ConsultantLevelDefinition, User } from "@/types"
+import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function SettingsPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { levels, refreshLevels } = useOrganizationLevels()
   const [organization, setOrganization] = useState<Organization | null>(null)
+  const [admins, setAdmins] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [levelsModalOpen, setLevelsModalOpen] = useState(false)
+  const [addAdminModalOpen, setAddAdminModalOpen] = useState(false)
   const [editMode, setEditMode] = useState({
     name: false,
     description: false,
@@ -30,23 +44,42 @@ export default function SettingsPage() {
     description: "",
     perks: ""
   })
+  const [newAdminData, setNewAdminData] = useState({
+    name: "",
+    email: "",
+    password: ""
+  })
+  const [addingAdmin, setAddingAdmin] = useState(false)
 
   useEffect(() => {
-    const fetchOrganization = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/organization')
-        if (!response.ok) {
+        const [orgResponse, adminsResponse] = await Promise.all([
+          fetch('/api/organization'),
+          fetch('/api/organization/admins')
+        ])
+
+        if (!orgResponse.ok) {
           throw new Error('Failed to fetch organization')
         }
-        const data = await response.json()
-        setOrganization(data)
+        if (!adminsResponse.ok) {
+          throw new Error('Failed to fetch admins')
+        }
+
+        const [orgData, adminsData] = await Promise.all([
+          orgResponse.json(),
+          adminsResponse.json()
+        ])
+
+        setOrganization(orgData)
+        setAdmins(adminsData.admins)
         setFormData({
-          name: data.name || "",
-          description: data.description || "",
-          perks: data.perks || ""
+          name: orgData.name || "",
+          description: orgData.description || "",
+          perks: orgData.perks || ""
         })
       } catch (error) {
-        console.error('Error fetching organization:', error)
+        console.error('Error fetching data:', error)
         toast({
           title: "Error",
           description: "Failed to load organization data",
@@ -57,7 +90,7 @@ export default function SettingsPage() {
       }
     }
 
-    fetchOrganization()
+    fetchData()
   }, [toast])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -178,9 +211,137 @@ export default function SettingsPage() {
     }
   }
 
+  const handleSaveLevels = async (newLevels: ConsultantLevelDefinition[]) => {
+    try {
+      const response = await fetch('/api/organization/levels', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ levels: newLevels }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update consultant levels')
+      }
+
+      await refreshLevels()
+      toast({
+        title: "Success",
+        description: "Consultant levels updated successfully",
+      })
+    } catch (error) {
+      console.error('Error updating levels:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update consultant levels",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAddingAdmin(true)
+
+    try {
+      const response = await fetch('/api/organization/admins', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newAdminData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          toast({
+            title: "Plan Limit Reached",
+            description: data.error,
+            variant: "destructive"
+          })
+        } else {
+          toast({
+            title: "Error Adding Admin",
+            description: data.error || "Failed to add admin",
+            variant: "destructive"
+          })
+        }
+        return
+      }
+
+      // Refresh admins list
+      const adminsResponse = await fetch('/api/organization/admins')
+      if (adminsResponse.ok) {
+        const adminsData = await adminsResponse.json()
+        setAdmins(adminsData.admins)
+      }
+
+      toast({
+        title: "Success",
+        description: "Admin added successfully",
+      })
+
+      setAddAdminModalOpen(false)
+      setNewAdminData({ name: "", email: "", password: "" })
+    } catch (error) {
+      console.error('Error adding admin:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add admin",
+        variant: "destructive"
+      })
+    } finally {
+      setAddingAdmin(false)
+    }
+  }
+
+  const handleRemoveAdmin = async (adminId: string) => {
+    try {
+      const response = await fetch(`/api/organization/admins?id=${adminId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to remove admin",
+          variant: "destructive"
+        })
+        return
+      }
+
+      // Refresh admins list
+      const adminsResponse = await fetch('/api/organization/admins')
+      if (adminsResponse.ok) {
+        const adminsData = await adminsResponse.json()
+        setAdmins(adminsData.admins)
+      }
+
+      toast({
+        title: "Success",
+        description: "Admin removed successfully",
+      })
+    } catch (error) {
+      console.error('Error removing admin:', error)
+      toast({
+        title: "Error",
+        description: "Failed to remove admin",
+        variant: "destructive"
+      })
+    }
+  }
+
   if (loading) {
     return <Loading fullPage />
   }
+
+  const maxAdmins = organization?.planType === 'premium' ? 5 : 1
+  const canAddMoreAdmins = admins.length < maxAdmins
 
   return (
     <div className="container mx-auto py-10">
@@ -332,6 +493,169 @@ export default function SettingsPage() {
           </Button>
         </CardFooter>
       </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="h-5 w-5" />
+            Admin Management
+          </CardTitle>
+          <CardDescription>
+            Manage administrators for your organization. {organization?.planType === 'free' ? 'Free plan allows 1 admin.' : 'Premium plan allows up to 5 admins.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600">
+                Current admins ({admins.length}/{maxAdmins}):
+              </div>
+              <Button 
+                onClick={() => setAddAdminModalOpen(true)}
+                disabled={!canAddMoreAdmins}
+                size="sm"
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Admin
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              {admins.map((admin) => (
+                <div key={admin._id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                  <div>
+                    <div className="font-medium">{admin.name}</div>
+                    <div className="text-sm text-gray-500">{admin.email}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-gray-400">
+                      Joined {new Date(admin.createdAt).toLocaleDateString()}
+                    </div>
+                    {admins.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveAdmin(admin._id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {!canAddMoreAdmins && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="text-sm text-orange-800">
+                  <strong>Plan Limit Reached:</strong> Your {organization?.planType} plan is limited to {maxAdmins} admin{maxAdmins > 1 ? 's' : ''}.
+                  {organization?.planType === 'free' && ' Upgrade to premium to add up to 5 admins.'}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Consultant Levels</CardTitle>
+          <CardDescription>
+            Configure the seniority levels used throughout your organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              Current levels (from junior to senior):
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {levels.map((level, index) => (
+                <div key={level.id} className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full text-sm">
+                  <span className="text-blue-800 font-medium">{index + 1}.</span>
+                  <span className="text-blue-700">{level.name}</span>
+                </div>
+              ))}
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setLevelsModalOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Configure Levels
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={addAdminModalOpen} onOpenChange={setAddAdminModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Admin</DialogTitle>
+            <DialogDescription>
+              Create a new admin account for your organization.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddAdmin}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="admin-name">Name</Label>
+                <Input
+                  id="admin-name"
+                  value={newAdminData.name}
+                  onChange={(e) => setNewAdminData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter admin name"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="admin-email">Email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  value={newAdminData.email}
+                  onChange={(e) => setNewAdminData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter admin email"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="admin-password">Password</Label>
+                <Input
+                  id="admin-password"
+                  type="password"
+                  value={newAdminData.password}
+                  onChange={(e) => setNewAdminData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter admin password"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddAdminModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addingAdmin}>
+                {addingAdmin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add Admin
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <OrganizationLevelsSetup
+        isOpen={levelsModalOpen}
+        onClose={() => setLevelsModalOpen(false)}
+        onSave={handleSaveLevels}
+        initialLevels={levels}
+      />
     </div>
   )
 } 

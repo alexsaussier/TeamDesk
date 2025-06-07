@@ -1,4 +1,11 @@
-export type ConsultantLevel = 'junior' | 'manager' | 'partner';
+export type ConsultantLevel = string;
+
+export interface ConsultantLevelDefinition {
+  id: string;
+  name: string;
+  order: number;
+  isActive: boolean;
+}
 
 export interface ConsultantAssignment {
   projectId: string;
@@ -24,9 +31,7 @@ export interface Consultant {
 export type ProjectStatus = 'Discussions' | 'Sold' | 'Started' | 'Completed';
 
 export interface TeamSize {
-  junior: number;
-  manager: number;
-  partner: number;
+  [levelId: string]: number;
 }
 
 export interface Project {
@@ -154,15 +159,23 @@ export interface Job {
 export interface Organization {
   _id: string;
   name: string;
-  admin: {
-    name: string;
-    email: string;
-  };
   description: string;
   perks: string;
   planType: 'free' | 'premium';
+  consultantLevels: ConsultantLevelDefinition[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  organizationId: string;
+  role: 'admin';
+  createdAt: string;
+  updatedAt: string;
+  lastLogin: string;
 }
   
   

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "@/app/globals.css"
 import Navbar from "@/components/Navbar"
+import { OrganizationProvider } from "@/contexts/OrganizationContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -16,11 +17,13 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className={`${inter.className} flex h-screen`}>
-        <Navbar />
-        <main className="flex-1 overflow-auto p-4">
-          {children}
-        </main>
-    </div>
+    <OrganizationProvider>
+      <div className={`${inter.className} flex h-screen`}>
+          <Navbar />
+          <main className="flex-1 overflow-auto p-4">
+            {children}
+          </main>
+      </div>
+    </OrganizationProvider>
   )
 } 

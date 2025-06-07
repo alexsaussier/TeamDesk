@@ -10,6 +10,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     ref: 'Organization'
   },
+  role: {
+    type: String,
+    enum: ['admin'],
+    default: 'admin'
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   lastLogin: { type: Date, default: Date.now }

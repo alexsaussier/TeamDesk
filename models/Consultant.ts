@@ -8,8 +8,7 @@ const ConsultantSchema = new mongoose.Schema({
   },
   name: { type: String, required: true },
   level: { 
-    type: String, 
-    enum: ['junior', 'manager', 'partner'],
+    type: String,
     required: true,
     default: 'junior'
   },
