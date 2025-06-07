@@ -187,7 +187,6 @@ export default function ConsultantSuggestions({
   defaultHourlyRates
 }: ConsultantSuggestionsProps) {
   const { levels } = useOrganizationLevels()
-  const { toast } = useToast()
   // Track assigned consultants locally
   const [assignedConsultants, setAssignedConsultants] = useState<string[]>([])
 

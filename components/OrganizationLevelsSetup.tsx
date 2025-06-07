@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Plus, Trash2, GripVertical } from 'lucide-react'
 import { ConsultantLevelDefinition } from '@/types'
 import { useToast } from "@/hooks/use-toast"
@@ -41,7 +40,7 @@ export default function OrganizationLevelsSetup({
     }])
   }
 
-  const updateLevel = (index: number, field: keyof ConsultantLevelDefinition, value: any) => {
+  const updateLevel = (index: number, field: keyof ConsultantLevelDefinition, value: string | number | boolean) => {
     const updated = [...levels]
     updated[index] = { ...updated[index], [field]: value }
     setLevels(updated)

@@ -89,7 +89,7 @@ export default function HomeDashboard() {
 
       <section>
         <h2 className="text-2xl font-semibold mb-6">Historical Performance</h2>
-        <p className="text-sm text-gray-500 mb-6">Your team's utilization in the past.</p>
+        <p className="text-sm text-gray-500 mb-6">Your team&apos;s utilization in the past.</p>
         <UtilizationHistoricalChart consultants={consultants} projects={projects} />
       </section>
     </div>

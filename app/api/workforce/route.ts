@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
     const organizationId = session.user.organizationId
 
     // Get the organization to check plan type

@@ -11,19 +11,20 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 // Reusable icon mapping with types
 
+interface NavItem {
+  href: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  badge?: {
+    text: string
+    className?: string
+  }
+}
 
 interface NavSection {
   icon: React.ComponentType<{ className?: string }>
   label: string
-  items: {
-    href: string
-    label: string
-    icon: React.ComponentType<{ className?: string }>
-    badge?: {
-      text: string
-      className?: string
-    }
-  }[]
+  items: NavItem[]
 }
 
 const navSections: NavSection[] = [
@@ -133,7 +134,7 @@ export default function Navbar() {
     return href === "/dashboard/proposalsxxx" || href === "/dashboard/recruitmentxxx"
   }
 
-  const renderNavItem = (item: any) => {
+  const renderNavItem = (item: NavItem) => {
     const isDisabled = isComingSoon(item.href)
     
     if (isDisabled) {

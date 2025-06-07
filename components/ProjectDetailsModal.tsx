@@ -28,6 +28,12 @@ interface ProjectDetailsModalProps {
   onUpdateChanceToClose: (projectId: string, chanceToClose: number) => Promise<void>
 }
 
+type AssignedConsultant = Pick<Consultant, '_id' | 'id' | 'name' | 'skills' | 'picture'> & {
+  level: ConsultantLevel;
+  percentage: number;
+  hourlyRate?: number;
+}
+
 export function ProjectDetailsModal({
   project,
   consultants,
@@ -229,8 +235,8 @@ export function ProjectDetailsModal({
     }
   }
 
-  const organizeTeamSlots = (teamSize: TeamSize, assignedConsultants: Array<Partial<Consultant> & { level: ConsultantLevel }>) => {
-    const slots: Record<string, Array<any>> = {}
+  const organizeTeamSlots = (teamSize: TeamSize, assignedConsultants: AssignedConsultant[]) => {
+    const slots: Record<string, Array<AssignedConsultant | null>> = {}
     levels.forEach(level => {
       slots[level.id] = Array(Math.ceil(teamSize[level.id] || 0)).fill(null)
     })

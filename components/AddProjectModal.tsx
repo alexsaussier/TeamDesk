@@ -273,7 +273,7 @@ export function AddProjectModal({
                 <div className="space-y-4">
                   <div>
                     <Label>Estimated Team Structure</Label>
-                    <p className="text-sm text-gray-500 mb-2">You can add fractional team members, e.g. 0.5 for half a consultant's time.</p>
+                    <p className="text-sm text-gray-500 mb-2">You can add fractional team members, e.g. 0.5 for half a consultant&apos;s time.</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                       {levels.map((level) => (
                         <div key={level.id}>

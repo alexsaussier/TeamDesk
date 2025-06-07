@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Clock, Briefcase, Users, Tag, LayoutGrid, BarChart3 } from "lucide-react"
+import { Calendar, Clock, Briefcase, Users, Tag, LayoutGrid } from "lucide-react"
 import { Project } from "@/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

@@ -4,7 +4,7 @@ import { User } from '@/models/User'
 import { Organization } from '@/models/Organization'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import bcrypt from 'bcryptjs'
+
 
 // Get all admins for the organization
 export async function GET() {
