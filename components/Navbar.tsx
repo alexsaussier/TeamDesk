@@ -7,6 +7,7 @@ import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSi
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Reusable icon mapping with types
 
@@ -41,7 +42,7 @@ const navSections: NavSection[] = [
         icon: Kanban
       },
       {
-        href: "/dashboard/proposals",
+        href: "/dashboard/proposalsxxx",
         label: "Proposals",
         icon: FileText,
         badge: {
@@ -92,7 +93,7 @@ const navSections: NavSection[] = [
     label: "Recruitment",
     items: [
       {
-        href: "/dashboard/recruitment",
+        href: "/dashboard/recruitmentxxx",
         label: "AI Recruiter",
         icon: Briefcase,
         badge: {
@@ -126,6 +127,83 @@ export default function Navbar() {
 
   const handleNavigation = () => {
     setIsOpen(false)
+  }
+
+  const isComingSoon = (href: string) => {
+    return href === "/dashboard/proposalsxxx" || href === "/dashboard/recruitmentxxx"
+  }
+
+  const renderNavItem = (item: any) => {
+    const isDisabled = isComingSoon(item.href)
+    
+    if (isDisabled) {
+      return (
+        <TooltipProvider key={item.href}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-full">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-gray-400 cursor-not-allowed opacity-60 hover:bg-transparent hover:text-gray-400"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <div className="flex items-center">
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.label}
+                    {item.badge && (
+                      <Badge 
+                        variant="ai" 
+                        className="ml-2 opacity-60"
+                      >
+                        {item.badge.text}
+                        <Wand2 className="w-3 h-3 ml-1 text-purple-500" />
+                      </Badge>
+                    )}
+                  </div>
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="bg-gray-100 text-gray-600">
+              <p>Coming Soon</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
+    }
+
+    return (
+      <Button
+        key={item.href}
+        variant="ghost"
+        className={`w-full justify-start ${
+          pathname === item.href 
+            ? "bg-gradient-to-l from-blue-300 to-blue-500 text-white" 
+            : "hover:bg-gradient-to-l hover:from-blue-300 hover:to-blue-500 hover:text-white"
+        }`}
+        asChild
+        onClick={handleNavigation}
+      >
+        <Link href={item.href} className="flex items-center">
+          <item.icon className="mr-2 h-4 w-4" />
+          {item.label}
+          {item.badge && (
+            <Badge 
+              variant="ai" 
+              className={`ml-2 ${
+                pathname === item.href ? "border-white text-white" : ""
+              }`}
+            >
+              {item.badge.text}
+              <Wand2 
+                className={`w-3 h-3 ml-1 ${
+                  pathname === item.href ? "text-white" : "text-purple-500"
+                }`} 
+              />
+            </Badge>
+          )}
+        </Link>
+      </Button>
+    )
   }
 
   return (
@@ -204,37 +282,7 @@ export default function Navbar() {
                   </p>
                 </div>
                 <div className="pl-2">
-                  {section.items.map((item) => (
-                    <Button
-                      key={item.href}
-                      variant="ghost"
-                      className={`w-full justify-start ${
-                        pathname === item.href ? "bg-gradient-to-l from-blue-300 to-blue-500 text-white" : "hover:bg-gradient-to-l hover:from-blue-300 hover:to-blue-500 hover:text-white"
-                      }`}
-                      asChild
-                      onClick={handleNavigation}
-                    >
-                      <Link href={item.href} className="flex items-center">
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {item.label}
-                        {item.badge && (
-                          <Badge 
-                            variant="ai" 
-                            className={`ml-2 ${
-                              pathname === item.href ? "border-white text-white" : ""
-                            }`}
-                          >
-                            {item.badge.text}
-                            <Wand2 
-                              className={`w-3 h-3 ml-1 ${
-                                pathname === item.href ? "text-white" : "text-purple-500"
-                              }`} 
-                            />
-                          </Badge>
-                        )}
-                      </Link>
-                    </Button>
-                  ))}
+                  {section.items.map((item) => renderNavItem(item))}
                 </div>
               </div>
             ))}
