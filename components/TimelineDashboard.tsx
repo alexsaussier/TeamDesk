@@ -59,7 +59,7 @@ export default function TimelineDashboard() {
   }, [session, status])
 
   
-  const handleAddProject = async (newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>): Promise<Project> => {
+  const handleAddProject = async (newProject: Partial<Project>): Promise<Project> => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
