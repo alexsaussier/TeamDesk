@@ -144,7 +144,7 @@ export default function ProjectDashboard() {
     }
   }
 
-  const handleAddProject = async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>) => {
+  const handleAddProject = async (project: Partial<Project>): Promise<Project> => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -157,7 +157,6 @@ export default function ProjectDashboard() {
       if (!response.ok) {
         const data = await response.json()
         
-        // Create a custom error with proper typing instead of 'any'
         const error = new Error(data.error || 'Failed to create project') as Error & {
           status?: number;
         };
@@ -165,12 +164,9 @@ export default function ProjectDashboard() {
         throw error;
       }
       
-      const createdProject = await response.json()
-      // Update your local state with the new project
-      
+      const createdProject: Project = await response.json()
       return createdProject
     } catch (error) {
-      // Pass the error up to the modal
       throw error
     }
   }
