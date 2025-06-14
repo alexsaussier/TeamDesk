@@ -28,10 +28,6 @@ export default function PricingPage() {
     }
   }
 
-  const getDisplayPrice = (plan: 'premium') => {
-    return isYearly ? pricing.yearly[plan] : pricing.monthly[plan]
-  }
-
   const getYearlyTotal = (plan: 'premium') => {
     return pricing.yearly[plan] * 12
   }
@@ -92,7 +88,7 @@ export default function PricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
-            Choose the plan that's right for your team. Start with our free tier and upgrade when you're ready.
+            Choose the plan that&apos;s right for your team. Start with our free tier and upgrade when you&apos;re ready.
           </p>
           
           {/* Billing Toggle */}
