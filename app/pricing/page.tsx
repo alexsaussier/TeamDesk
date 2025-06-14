@@ -216,7 +216,8 @@ export default function PricingPage() {
                     'Processing...'
                   ) : (
                     <>
-                      Upgrade to Premium <ArrowRight className="h-4 w-4 ml-2" />
+                      
+                      Get Premium <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
                 </Button>
