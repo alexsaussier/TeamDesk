@@ -121,8 +121,9 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Free Plan */}
-          <Card className="relative">
+         
+         {/* Free Plan */}
+          <Card className="relative flex flex-col h-full">
             <CardHeader className="text-center pb-8">
               <CardTitle className="text-2xl font-bold text-gray-900">Free</CardTitle>
               <div className="mt-4">
@@ -131,8 +132,8 @@ export default function PricingPage() {
               </div>
               <p className="mt-4 text-gray-600">Perfect for getting started</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
+            <CardContent className="space-y-4 flex-grow flex flex-col">
+              <ul className="space-y-3 flex-grow">
               <li className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-green-500" />
                   <span>Up to 3 projects</span>
@@ -147,8 +148,10 @@ export default function PricingPage() {
                 </li>
               
               </ul>
-              <div className="pt-6">
-                <Button asChild className="w-full" variant="outline">
+              
+              {/* Button stuck at bottom */}
+              <div className="mt-auto pt-4">
+                <Button variant="ghost" className="w-full text-blue-600 border border-blue-600">
                   <Link href="/auth/signup">Get Started Free</Link>
                 </Button>
               </div>
@@ -157,10 +160,7 @@ export default function PricingPage() {
 
           {/* Premium Plan */}
             <Card className="relative border-blue-500 border-2 shadow-lg">
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                
-              </div>
-            <CardHeader className="text-center pb-8">
+              <CardHeader className="text-center pb-8">
                < CardTitle className="text-2xl font-bold text-gray-900">Premium</CardTitle>
                <div className="mt-4">
                  {isYearly ? (
@@ -226,9 +226,6 @@ export default function PricingPage() {
                 </Button>
               </div>
             </CardContent>
-            <div className="flex justify-center py-4">
-              
-            </div>
           </Card>
         </div>
 
