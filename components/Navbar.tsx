@@ -110,6 +110,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const [orgName, setOrgName] = useState<string>("")
+  const [orgPlanType, setOrgPlanType] = useState<string>("")
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -118,7 +119,9 @@ export default function Navbar() {
         const response = await fetch('/api/organization')
         const data = await response.json()
         setOrgName(data.name)
+        setOrgPlanType(data.planType)
         console.log("org name: ", data.name)
+        console.log("org planType: ", data.planType)
       } catch (error) {
         console.error('Failed to fetch organization:', error)
       }
@@ -254,6 +257,23 @@ export default function Navbar() {
               >
                 <Settings className="h-4 w-4 text-gray-600" />
                 <span className="sr-only">Organization Settings</span>
+              </Button>
+            </div>
+          )}
+          
+          {/* Upgrade to Premium Button - Only show for free plan */}
+          {orgPlanType === 'free' && (
+            <div className="mb-6 flex justify-center">
+              <Button 
+                variant="outline"
+                className="bg-transparent border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-600 hover:text-yellow-700 px-4 py-2"
+                onClick={() => {
+                  router.push('/pricing');
+                  handleNavigation();
+                }}
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Upgrade to Premium
               </Button>
             </div>
           )}
