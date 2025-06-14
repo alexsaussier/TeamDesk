@@ -91,8 +91,8 @@ export default function Timeline({ projects, consultants, columns, onDelete, onU
   }
 
   const handleStatusUpdate = async (projectId: string, newStatus: ProjectStatus) => {
-    const response = await fetch(`/api/projects/${projectId}/status`, {
-      method: 'PUT',
+    const response = await fetch(`/api/projects/${projectId}`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },

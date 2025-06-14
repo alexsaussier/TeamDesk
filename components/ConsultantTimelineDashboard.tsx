@@ -98,8 +98,8 @@ export default function ConsultantTimelineDashboard() {
   const handleUpdateProjectStatus = async (projectId: string, newStatus: ProjectStatus) => {
     // Logic to update project status
     console.log(`Update project ${projectId} to status ${newStatus}`)
-    await fetch(`/api/projects/${projectId}/status`, {
-      method: 'PUT',
+    await fetch(`/api/projects/${projectId}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
     });
