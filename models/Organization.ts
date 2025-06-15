@@ -33,6 +33,12 @@ const OrganizationSchema = new mongoose.Schema({
       { id: 'manager', name: 'Manager', order: 2, isActive: true },
       { id: 'partner', name: 'Partner', order: 3, isActive: true }
     ]
+  },
+  onboardingProgress: {
+    settingsConfigured: { type: Boolean, default: false },
+    projectCreated: { type: Boolean, default: false },
+    workforceAdded: { type: Boolean, default: false },
+    tutorialCompleted: { type: Boolean, default: false }
   }
 }, {
   timestamps: true

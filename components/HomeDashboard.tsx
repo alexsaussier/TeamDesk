@@ -12,6 +12,7 @@ import { UtilizationHistoricalChart } from './UtilizationHistoricalChart'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import TutorialBanner from './TutorialBanner'
 
 export default function HomeDashboard() {
   const { data: session, status } = useSession()
@@ -20,6 +21,12 @@ export default function HomeDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [onboardingProgress, setOnboardingProgress] = useState<{
+    settingsConfigured: boolean
+    projectCreated: boolean
+    workforceAdded: boolean
+    tutorialCompleted: boolean
+  } | null>(null)
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -40,20 +47,26 @@ export default function HomeDashboard() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        // Fetch projects and consultants in parallel
-        const [projectsResponse, consultantsResponse] = await Promise.all([
+        // Fetch projects, consultants, and onboarding progress in parallel
+        const [projectsResponse, consultantsResponse, onboardingResponse] = await Promise.all([
           fetch('/api/projects'),
-          fetch('/api/workforce')
+          fetch('/api/workforce'),
+          fetch('/api/user/onboarding')
         ])
 
         if (!projectsResponse.ok) throw new Error('Failed to fetch projects')
         if (!consultantsResponse.ok) throw new Error('Failed to fetch consultants')
+        if (!onboardingResponse.ok) throw new Error('Failed to fetch onboarding progress')
 
-        const projectsData = await projectsResponse.json()
-        const consultantsData = await consultantsResponse.json()
+        const [projectsData, consultantsData, onboardingData] = await Promise.all([
+          projectsResponse.json(),
+          consultantsResponse.json(),
+          onboardingResponse.json()
+        ])
 
         setProjects(projectsData)
         setConsultants(consultantsData)
+        setOnboardingProgress(onboardingData.onboardingProgress)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -81,8 +94,34 @@ export default function HomeDashboard() {
     )
   }
 
+  const handleDismissTutorial = async () => {
+    try {
+      await fetch('/api/user/onboarding', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tutorialCompleted: true }),
+      })
+      setOnboardingProgress(prev => prev ? { ...prev, tutorialCompleted: true } : null)
+    } catch (error) {
+      console.error('Error dismissing tutorial:', error)
+    }
+  }
+
+  const shouldShowTutorial = onboardingProgress && !onboardingProgress.tutorialCompleted && 
+    (!onboardingProgress.settingsConfigured || !onboardingProgress.projectCreated || !onboardingProgress.workforceAdded)
+
   return (
     <div className="space-y-12">
+      {/* Tutorial Banner for New Users */}
+      {shouldShowTutorial && (
+        <TutorialBanner 
+          onboardingProgress={onboardingProgress}
+          onDismiss={handleDismissTutorial}
+        />
+      )}
+
       {/* Payment Success Message */}
       {showSuccessMessage && (
         <Card className="border-green-200 bg-green-50">

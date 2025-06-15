@@ -164,6 +164,12 @@ export interface Organization {
   planType: 'free' | 'premium';
   stripeCustomerId?: string; // Stripe customer ID for subscription management
   consultantLevels: ConsultantLevelDefinition[];
+  onboardingProgress?: {
+    settingsConfigured: boolean;
+    projectCreated: boolean;
+    workforceAdded: boolean;
+    tutorialCompleted: boolean;
+  };
   createdAt: string;
   updatedAt: string;
 }
