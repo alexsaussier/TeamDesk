@@ -110,6 +110,7 @@ export function UtilizationMetrics({ consultants, projects }: UtilizationMetrics
               <div className="flex items-center justify-between">
                 <div className="text-lg font-bold">{period.current.toFixed(1)}%</div>
                 <div className="flex items-center gap-4">
+                  {/* Target indicator disabled
                   <div className="flex items-center gap-2">
                     <div className={`h-2 w-2 rounded-full ${
                       period.current >= period.target ? 'bg-green-500' :
@@ -127,11 +128,14 @@ export function UtilizationMetrics({ consultants, projects }: UtilizationMetrics
                       {Math.abs(period.delta).toFixed(1)}%
                     </div>
                   </div>
+                  */}
                 </div>
               </div>
+              {/* Target text disabled
               <p className="text-xs text-muted-foreground">
                 Target: {period.target}%
               </p>
+              */}
             </CardContent>
           </Card>
         ))}

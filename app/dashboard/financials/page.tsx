@@ -206,11 +206,7 @@ export default function FinancialsDashboard() {
                         ${Intl.NumberFormat('en-US').format(consultant.salary)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className={`font-medium ${
-                          utilization >= 75 ? 'text-green-600' :
-                          utilization >= 65 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
+                        <span className="font-medium text-gray-700">
                           {utilization.toFixed(1)}%
                         </span>
                       </TableCell>

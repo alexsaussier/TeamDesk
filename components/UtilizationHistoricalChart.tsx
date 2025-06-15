@@ -48,7 +48,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
       return {
         date: date.toISOString().split('T')[0],
         utilization: metrics.lastTwelveMonths[dataIndex] || 0,
-        target: metrics.ytd.target
+        target: 0 // Disabled target
       }
     })
   }, [historicalPeriod, metrics])
@@ -130,6 +130,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
                   strokeWidth={2}
                   name="Utilization"
                 />
+                {/* Target line disabled
                 <Line 
                   type="monotone" 
                   dataKey="target" 
@@ -138,6 +139,7 @@ export function UtilizationHistoricalChart({ consultants, projects }: Utilizatio
                   name="Target"
                   strokeWidth={2}
                 />
+                */}
               </LineChart>
             </ChartContainer>
           </ResponsiveContainer>

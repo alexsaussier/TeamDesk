@@ -64,7 +64,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
         month: month.toLocaleString('default', { month: 'short' }),
         officialUtilization: Math.round((officialDays / daysInMonth) * 100),
         expectedUtilization: Math.round((expectedDays / daysInMonth) * 100),
-        target: 75,
+        target: 0, // Disabled target
         isCurrentMonth: i === 0
       })
     }
@@ -136,6 +136,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
+                {/* Target line disabled
                 <Line 
                   type="monotone" 
                   dataKey="target" 
@@ -143,6 +144,7 @@ export default function ConsultantUtilizationChart({ consultant, projects }: Con
                   strokeDasharray="3 3"
                   dot={false}
                 />
+                */}
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>

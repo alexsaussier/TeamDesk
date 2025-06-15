@@ -39,11 +39,7 @@ export function UtilizationRanking({ consultants, projects }: UtilizationRanking
                     className="flex items-center justify-between text-sm border-b border-gray-100 pb-1"
                   >
                     <span>{consultant.name}</span>
-                    <span className={`font-medium ${
-                      consultant.utilization >= 75 ? 'text-green-600' :
-                      consultant.utilization >= 65 ? 'text-yellow-600' :
-                      'text-red-600'
-                    }`}>
+                    <span className="font-medium text-gray-700">
                       {consultant.utilization.toFixed(1)}%
                     </span>
                   </div>

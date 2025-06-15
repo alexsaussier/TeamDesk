@@ -79,14 +79,12 @@ const generateUtilizationData = (
 ): UtilizationData[] => {
   const today = new Date()
   const data: UtilizationData[] = []
-  const target = 75
-
   // Start with today
   data.push({
     date: today.toISOString().split('T')[0],
     officialUtilization: calculateUtilization(consultants, projects, today, false),
     expectedUtilization: calculateUtilization(consultants, projects, today, true),
-    target: target
+    target: 0 // Disabled target
   })
   
 
@@ -100,7 +98,7 @@ const generateUtilizationData = (
       date: firstOfMonth.toISOString().split('T')[0],
       officialUtilization: officialUtilization,
       expectedUtilization: expectedUtilization,
-      target: target
+      target: 0 // Disabled target
     })
     
   }
@@ -220,6 +218,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
                     name="Expected Utilization" 
                     strokeWidth={2}
                   />
+                  {/* Target line disabled
                   <Line 
                     type="monotone" 
                     dataKey="target" 
@@ -228,6 +227,7 @@ export default function UtilizationPlot({ consultants, projects }: UtilizationPl
                     name="Target"
                     strokeWidth={2}
                   />
+                  */}
                 </LineChart>
               </ChartContainer>
             </ResponsiveContainer>
