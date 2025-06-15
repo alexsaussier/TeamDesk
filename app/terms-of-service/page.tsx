@@ -17,7 +17,7 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed">
-                By accessing or using TeamDesk's project management platform and related services (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service. TeamDesk provides utilization tracking, project pipeline management, team optimization, and AI-powered consulting tools for businesses and consulting teams.
+                By accessing or using TeamDesk&apos;s project management platform and related services (the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of these terms, you may not access the Service. TeamDesk provides utilization tracking, project pipeline management, team optimization, and AI-powered consulting tools for businesses and consulting teams.
               </p>
             </section>
 
@@ -87,7 +87,7 @@ export default function TermsOfServicePage() {
                 <li>Subscription fees are billed in advance on a recurring basis</li>
                 <li>All fees are non-refundable unless otherwise stated</li>
                 <li>You authorize us to charge your payment method for all applicable fees</li>
-                <li>Prices may change with 30 days' notice to existing subscribers</li>
+                <li>Prices may change with 30 days&apos; notice to existing subscribers</li>
                 <li>Failed payments may result in service suspension or termination</li>
               </ul>
             </section>
@@ -96,7 +96,7 @@ export default function TermsOfServicePage() {
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Data and Privacy</h2>
               <h3 className="text-xl font-medium text-gray-800 mb-3">6.1 Your Data</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                You retain ownership of all data, content, and information you upload or input into the Service ("Customer Data"). We will process Customer Data in accordance with our Privacy Policy.
+                You retain ownership of all data, content, and information you upload or input into the Service (&quot;Customer Data&quot;). We will process Customer Data in accordance with our Privacy Policy.
               </p>
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">6.2 Data Security</h3>
@@ -153,7 +153,7 @@ export default function TermsOfServicePage() {
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Disclaimers and Limitations of Liability</h2>
               <h3 className="text-xl font-medium text-gray-800 mb-3">10.1 Service Disclaimer</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+                THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
               </p>
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">10.2 Limitation of Liability</h3>
@@ -183,7 +183,7 @@ export default function TermsOfServicePage() {
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">12.3 Modifications</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We may modify these Terms at any time. Material changes will be communicated with 30 days' notice. Continued use of the Service constitutes acceptance of modified Terms.
+                We may modify these Terms at any time. Material changes will be communicated with 30 days&apos; notice. Continued use of the Service constitutes acceptance of modified Terms.
               </p>
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">12.4 Severability</h3>

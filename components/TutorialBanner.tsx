@@ -186,7 +186,7 @@ export default function TutorialBanner({ onboardingProgress, onDismiss }: Tutori
               <div>
                 <h3 className="font-medium text-green-800">🎉 Setup Complete!</h3>
                 <p className="text-sm text-green-700 mt-1">
-                  Great job! You're all set up and ready to manage your team effectively.
+                  Great job! You&apos;re all set up and ready to manage your team effectively.
                 </p>
               </div>
             </div>
