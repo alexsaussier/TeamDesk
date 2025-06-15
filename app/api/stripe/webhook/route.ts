@@ -61,13 +61,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Update the organization's plan type to premium and store customer ID
-        const organizationUpdate: any = { planType: 'premium' }
+        const organizationUpdate: Partial<{ planType: string; stripeCustomerId: string }> = { planType: 'premium' }
         
         // Store the Stripe customer ID if not already stored
         if (session.customer) {
           const organization = await Organization.findById(user.organizationId)
           if (organization && !organization.stripeCustomerId) {
-            organizationUpdate.stripeCustomerId = session.customer
+            organizationUpdate.stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer.id
           }
         }
 

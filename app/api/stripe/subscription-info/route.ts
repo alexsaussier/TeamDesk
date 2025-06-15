@@ -10,7 +10,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 })
 
-export async function GET(request: NextRequest) {
+// Type for Stripe subscription with missing properties
+interface StripeSubscriptionWithPeriod extends Stripe.Subscription {
+  current_period_start: number
+  current_period_end: number
+  cancel_at_period_end: boolean
+}
+
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -55,7 +62,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const subscription = subscriptions.data[0]
+    const subscription = subscriptions.data[0] as StripeSubscriptionWithPeriod
 
     // Get the default payment method
     let paymentMethod = null
@@ -73,9 +80,9 @@ export async function GET(request: NextRequest) {
     const subscriptionData = {
       id: subscription.id,
       status: subscription.status,
-      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
-      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
-      cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
+      currentPeriodStart: new Date(subscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
       priceId: subscription.items.data[0]?.price?.id,
       interval: subscription.items.data[0]?.price?.recurring?.interval,
       amount: subscription.items.data[0]?.price?.unit_amount,

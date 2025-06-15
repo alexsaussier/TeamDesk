@@ -51,7 +51,6 @@ export default function SettingsPage() {
   })
   const [addingAdmin, setAddingAdmin] = useState(false)
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null)
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
   const [managingSubscription, setManagingSubscription] = useState(false)
 
   useEffect(() => {
@@ -704,7 +703,7 @@ export default function SettingsPage() {
 
             {/* Info Text */}
             <div className="text-sm text-gray-500 p-3 bg-blue-50 rounded-lg">
-              <strong>Note:</strong> The "Manage Subscription" button will take you to a secure Stripe portal where you can:
+              <strong>Note:</strong> The &quot;Manage Subscription&quot; button will take you to a secure Stripe portal where you can:
               <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Update your payment method</li>
                 <li>View billing history and download invoices</li>

@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Consultant, Project } from '@/types'
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
-import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState, useMemo } from 'react'
 
