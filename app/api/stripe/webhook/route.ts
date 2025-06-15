@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { headers } from 'next/headers'
 import { Organization } from '@/models/Organization'
 import { User } from '@/models/User'
+import { sendPremiumUpgradeEmail } from '@/lib/email'
 import mongoose from 'mongoose'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -72,6 +73,19 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`Successfully upgraded organization ${organization._id} to premium plan`)
+        
+        // Send premium upgrade email
+        try {
+          await sendPremiumUpgradeEmail(
+            user.email,
+            user.name || user.email,
+            organization.name
+          )
+          console.log('Premium upgrade email sent successfully')
+        } catch (emailError) {
+          console.error('Failed to send premium upgrade email:', emailError)
+          // Don't fail the webhook if email fails
+        }
         break
 
       case 'customer.subscription.deleted':

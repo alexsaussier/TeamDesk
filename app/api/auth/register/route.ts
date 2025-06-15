@@ -4,6 +4,7 @@ import { User } from '@/models/User'
 import { Organization } from '@/models/Organization'
 import { Project } from '@/models/Project'
 import { Consultant } from '@/models/Consultant'
+import { sendWelcomeEmail } from '@/lib/email'
 //import mongoose from 'mongoose'
 
 const TEMPLATE_ORG_ID = '677fe93eb416d059e076a298'
@@ -125,6 +126,19 @@ export async function POST(request: Request) {
 
       // Wait for all updates to complete
       await Promise.all(updatePromises)
+    }
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(
+        email,
+        name,
+        organizationName
+      )
+      console.log('Welcome email sent successfully to:', email)
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError)
+      // Don't fail registration if email fails
     }
 
     return NextResponse.json(
