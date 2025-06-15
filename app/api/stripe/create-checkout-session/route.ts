@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { connectDB } from '@/lib/mongodb'
+import { User } from '@/models/User'
+import { Organization } from '@/models/Organization'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -19,6 +22,19 @@ export async function POST(request: NextRequest) {
 
     if (userId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    await connectDB()
+
+    // Get user and organization information
+    const user = await User.findById(userId)
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const organization = await Organization.findById(user.organizationId)
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
     }
 
     // Pricing configuration
@@ -53,6 +69,8 @@ export async function POST(request: NextRequest) {
       cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=true`,
       metadata: {
         userId: userId,
+        organizationId: organization._id.toString(),
+        organizationName: organization.name,
         priceType: priceType,
       },
       customer_email: session.user.email || undefined,

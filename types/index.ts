@@ -162,6 +162,7 @@ export interface Organization {
   description: string;
   perks: string;
   planType: 'free' | 'premium';
+  stripeCustomerId?: string; // Stripe customer ID for subscription management
   consultantLevels: ConsultantLevelDefinition[];
   createdAt: string;
   updatedAt: string;
@@ -176,6 +177,30 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   lastLogin: string;
+}
+
+export interface SubscriptionInfo {
+  hasActiveSubscription: boolean;
+  subscription?: {
+    id: string;
+    status: string;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+    interval: string;
+    amount: number;
+    currency: string;
+  };
+  paymentMethod?: {
+    id: string;
+    type: string;
+    card?: {
+      brand: string;
+      last4: string;
+      expMonth: number;
+      expYear: number;
+    };
+  };
 }
   
   

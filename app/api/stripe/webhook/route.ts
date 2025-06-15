@@ -60,10 +60,20 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        // Update the organization's plan type to premium
+        // Update the organization's plan type to premium and store customer ID
+        const organizationUpdate: any = { planType: 'premium' }
+        
+        // Store the Stripe customer ID if not already stored
+        if (session.customer) {
+          const organization = await Organization.findById(user.organizationId)
+          if (organization && !organization.stripeCustomerId) {
+            organizationUpdate.stripeCustomerId = session.customer
+          }
+        }
+
         const organization = await Organization.findByIdAndUpdate(
           user.organizationId,
-          { planType: 'premium' },
+          organizationUpdate,
           { new: true }
         )
 
@@ -92,9 +102,15 @@ export async function POST(request: NextRequest) {
         // Handle subscription cancellation
         const canceledSubscription = event.data.object as Stripe.Subscription
         
-        // You might want to add logic here to downgrade the organization
-        // For now, we'll log it
-        console.log('Subscription canceled:', canceledSubscription.id)
+        // Find the organization by customer ID and downgrade to free plan
+        const customerOrganization = await Organization.findOne({ stripeCustomerId: canceledSubscription.customer })
+        if (customerOrganization) {
+          await Organization.findByIdAndUpdate(
+            customerOrganization._id,
+            { planType: 'free' }
+          )
+          console.log(`Downgraded organization ${customerOrganization._id} to free plan due to subscription cancellation`)
+        }
         break
 
       case 'invoice.payment_failed':

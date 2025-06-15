@@ -25,6 +25,7 @@ const OrganizationSchema = new mongoose.Schema({
     enum: ['free', 'premium'],
     default: 'free'
   },
+  stripeCustomerId: { type: String, sparse: true }, // Stripe customer ID for subscription management
   consultantLevels: {
     type: [ConsultantLevelSchema],
     default: [

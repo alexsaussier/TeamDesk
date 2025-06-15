@@ -13,8 +13,8 @@ import { Loading } from "@/components/ui/loading"
 import OrganizationLevelsSetup from "@/components/OrganizationLevelsSetup"
 import { useOrganizationLevels } from "@/contexts/OrganizationContext"
 
-import { Organization, ConsultantLevelDefinition, User } from "@/types"
-import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown } from "lucide-react"
+import { Organization, ConsultantLevelDefinition, User, SubscriptionInfo } from "@/types"
+import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown, CreditCard, Calendar, ExternalLink } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -50,13 +50,17 @@ export default function SettingsPage() {
     password: ""
   })
   const [addingAdmin, setAddingAdmin] = useState(false)
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
+  const [managingSubscription, setManagingSubscription] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [orgResponse, adminsResponse] = await Promise.all([
+        const [orgResponse, adminsResponse, subscriptionResponse] = await Promise.all([
           fetch('/api/organization'),
-          fetch('/api/organization/admins')
+          fetch('/api/organization/admins'),
+          fetch('/api/stripe/subscription-info')
         ])
 
         if (!orgResponse.ok) {
@@ -66,13 +70,15 @@ export default function SettingsPage() {
           throw new Error('Failed to fetch admins')
         }
 
-        const [orgData, adminsData] = await Promise.all([
+        const [orgData, adminsData, subscriptionData] = await Promise.all([
           orgResponse.json(),
-          adminsResponse.json()
+          adminsResponse.json(),
+          subscriptionResponse.ok ? subscriptionResponse.json() : null
         ])
 
         setOrganization(orgData)
         setAdmins(adminsData.admins)
+        setSubscriptionInfo(subscriptionData)
         setFormData({
           name: orgData.name || "",
           description: orgData.description || "",
@@ -336,6 +342,42 @@ export default function SettingsPage() {
     }
   }
 
+  const handleManageSubscription = async () => {
+    setManagingSubscription(true)
+    
+    try {
+      const response = await fetch('/api/stripe/customer-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to open subscription management",
+          variant: "destructive"
+        })
+        return
+      }
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url
+    } catch (error) {
+      console.error('Error opening customer portal:', error)
+      toast({
+        title: "Error",
+        description: "Failed to open subscription management",
+        variant: "destructive"
+      })
+    } finally {
+      setManagingSubscription(false)
+    }
+  }
+
   if (loading) {
     return <Loading fullPage />
   }
@@ -554,6 +596,122 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscription Management
+          </CardTitle>
+          <CardDescription>
+            Manage your TeamDesk subscription, billing, and payment methods
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Current Plan Display */}
+            <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50">
+              <div>
+                <div className="font-medium text-lg">
+                  {organization?.planType === 'premium' ? 'Premium Plan' : 'Free Plan'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {organization?.planType === 'premium' 
+                    ? 'Access to all premium features'
+                    : 'Basic features with limitations'
+                  }
+                </div>
+              </div>
+              <div className="text-right">
+                                 {organization?.planType === 'premium' && subscriptionInfo?.hasActiveSubscription && subscriptionInfo.subscription && (
+                   <div className="text-sm text-gray-600">
+                     <div className="flex items-center gap-1">
+                       <Calendar className="h-4 w-4" />
+                       Next billing: {new Date(subscriptionInfo.subscription.currentPeriodEnd).toLocaleDateString()}
+                     </div>
+                     <div className="font-medium">
+                       ${(subscriptionInfo.subscription.amount / 100).toFixed(2)} per{' '}
+                       {subscriptionInfo.subscription.interval}
+                     </div>
+                   </div>
+                 )}
+              </div>
+            </div>
+
+            {/* Payment Method Display */}
+            {organization?.planType === 'premium' && subscriptionInfo?.paymentMethod && (
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Payment Method</div>
+                    <div className="text-sm text-gray-600 flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      {subscriptionInfo.paymentMethod.card?.brand?.toUpperCase()} ending in {subscriptionInfo.paymentMethod.card?.last4}
+                      <span className="text-gray-400">
+                        • Expires {subscriptionInfo.paymentMethod.card?.expMonth}/{subscriptionInfo.paymentMethod.card?.expYear}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+                         {/* Subscription Status */}
+             {organization?.planType === 'premium' && subscriptionInfo?.hasActiveSubscription && subscriptionInfo.subscription && (
+               <div className="p-4 border rounded-lg">
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <div className="font-medium">Subscription Status</div>
+                     <div className="text-sm text-gray-600">
+                       Status: <span className="capitalize text-green-600">{subscriptionInfo.subscription.status}</span>
+                       {subscriptionInfo.subscription.cancelAtPeriodEnd && (
+                         <span className="ml-2 text-orange-600">• Cancels at period end</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {organization?.planType === 'free' ? (
+                <Button 
+                  onClick={() => window.location.href = '/pricing'}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Upgrade to Premium
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleManageSubscription}
+                  disabled={managingSubscription}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {managingSubscription ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-4 w-4" />
+                  )}
+                  Manage Subscription
+                </Button>
+              )}
+            </div>
+
+            {/* Info Text */}
+            <div className="text-sm text-gray-500 p-3 bg-blue-50 rounded-lg">
+              <strong>Note:</strong> The "Manage Subscription" button will take you to a secure Stripe portal where you can:
+              <ul className="mt-2 ml-4 list-disc space-y-1">
+                <li>Update your payment method</li>
+                <li>View billing history and download invoices</li>
+                <li>Cancel your subscription</li>
+                <li>Update billing address</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
