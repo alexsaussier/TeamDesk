@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 })
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     const session = await getServerSession(authOptions)
     

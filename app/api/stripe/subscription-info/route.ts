@@ -17,7 +17,7 @@ interface StripeSubscriptionWithPeriod extends Stripe.Subscription {
   cancel_at_period_end: boolean
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
