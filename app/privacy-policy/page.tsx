@@ -70,7 +70,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Service Providers:</strong> With trusted third-party providers who assist in operating our platform (cloud hosting, payment processing, analytics)</li>
                 <li><strong>Legal Requirements:</strong> When required by law, court order, or to protect our rights and safety</li>
                 <li><strong>Business Transfers:</strong> In connection with mergers, acquisitions, or asset sales</li>
-                <li><strong>Within Your Organization:</strong> With other users in your organization as necessary for the platform's functionality</li>
+                <li><strong>Within Your Organization:</strong> With other users in your organization as necessary for the platform&apos;s functionality</li>
               </ul>
             </section>
 
