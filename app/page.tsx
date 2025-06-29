@@ -9,26 +9,72 @@ import { Check } from 'lucide-react'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel'
 import PublicNavbar from '@/components/PublicNavbar'
 
+// Floating Background Component
+function FloatingBackground() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      {/* Floating geometric shapes */}
+      
+      {/* Large background circles */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-cyan-300/5 rounded-full blur-xl animate-float-slow"></div>
+      <div className="absolute top-32 right-20 w-24 h-24 bg-gradient-to-br from-purple-400/10 to-pink-300/5 rounded-full blur-lg animate-float-medium" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-br from-indigo-400/8 to-blue-300/4 rounded-full blur-2xl animate-float-slow" style={{ animationDelay: '4s' }}></div>
+      
+      {/* Medium geometric shapes */}
+      <div className="absolute top-1/4 left-1/3 w-16 h-16 bg-gradient-to-br from-cyan-400/15 to-blue-300/8 rounded-lg rotate-45 animate-float-medium blur-sm"></div>
+      <div className="absolute top-1/2 right-1/4 w-12 h-12 bg-gradient-to-br from-violet-400/12 to-purple-300/6 rounded-full animate-drift-horizontal blur-sm" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute bottom-1/3 right-1/3 w-20 h-20 bg-gradient-to-br from-emerald-400/10 to-teal-300/5 animate-rotate-slow blur-md" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)', animationDelay: '3s' }}></div>
+      
+      {/* Small accent shapes */}
+      <div className="absolute top-1/3 right-1/5 w-8 h-8 bg-gradient-to-br from-rose-400/20 to-pink-300/10 rounded-full animate-float-fast blur-sm"></div>
+      <div className="absolute top-3/4 left-1/5 w-6 h-6 bg-gradient-to-br from-amber-400/15 to-yellow-300/8 animate-pulse-geometric blur-sm" style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}></div>
+      <div className="absolute top-1/2 left-1/6 w-10 h-10 bg-gradient-to-br from-sky-400/12 to-cyan-300/6 rounded-full animate-morph blur-sm" style={{ animationDelay: '2.5s' }}></div>
+      
+      {/* Floating rectangles */}
+      <div className="absolute top-16 right-1/3 w-14 h-8 bg-gradient-to-r from-blue-400/8 to-indigo-300/4 rounded-md animate-drift-horizontal blur-sm" style={{ animationDelay: '1.5s' }}></div>
+      <div className="absolute bottom-1/4 left-1/2 w-12 h-16 bg-gradient-to-b from-purple-400/10 to-violet-300/5 rounded-lg animate-float-medium blur-sm" style={{ animationDelay: '3.5s' }}></div>
+      
+      {/* Additional floating elements */}
+      <div className="absolute top-2/3 right-1/6 w-18 h-18 bg-gradient-to-tr from-teal-400/12 to-emerald-300/6 animate-float-slow blur-md" style={{ clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)', animationDelay: '5s' }}></div>
+      <div className="absolute bottom-16 right-1/5 w-8 h-20 bg-gradient-to-b from-indigo-400/10 to-blue-300/5 rounded-full animate-float-fast blur-sm" style={{ animationDelay: '2s' }}></div>
+      
+      {/* Morphing blob */}
+      <div className="absolute top-1/4 right-1/2 w-28 h-28 bg-gradient-to-br from-cyan-400/8 to-blue-400/4 animate-morph blur-lg" style={{ animationDelay: '1s' }}></div>
+      
+      {/* Large background gradient overlays */}
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-bl from-blue-400/5 via-transparent to-transparent blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-indigo-400/5 via-transparent to-transparent blur-3xl"></div>
+      
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: `
+          linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+        `,
+        backgroundSize: '50px 50px'
+      }}></div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   return (
-    <div
-      className="min-h-screen bg-gradient-to-b from-blue-100 to-white"
-      style={{
-        backgroundImage: 'url(/images/landing_1b.png), url(/images/landing_3.png)',
-        backgroundPosition: 'top center, bottom center',
-        backgroundRepeat: 'no-repeat, no-repeat',
-        backgroundSize: '100% auto, 100% auto',
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative">
+      <FloatingBackground />
       <PublicNavbar />
 
-      <main className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">        
-        <div className="text-center bg-white py-5 rounded-lg border border-blue-500">
-          <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent sm:text-5xl md:text-6xl">
-            Optimize your project planning
+      <main className="relative z-10 max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">        
+        <div className="text-center backdrop-blur-sm py-8">
+          <span className="text-4xl font-medium bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent sm:text-5xl md:text-6xl">
+            Manage your Project Teams
           </span>
+          <div className="text-4xl font-medium sm:text-5xl md:text-6xl mt-6 sm:mt-8">
+            <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-xl shadow-lg backdrop-blur-sm border border-blue-400/30">
+              More Efficiently
+            </span>
+          </div>
           <p className="pt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-          Teamdesk is the all-in-one tool for managing the projects of your consulting team or agency.
+            The first agency planning tool that you'll love. Staff projects better, faster, smarter.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <Button 
@@ -78,7 +124,7 @@ export default function LandingPage() {
           </h2>
 
           {/* Utilization Metrics Feature */}
-          <div className="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-sky-100">
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-sky-100/50">
             <div className="grid md:grid-cols-[2fr_3fr] gap-12 items-center">
 
               <div className="space-y-4">
@@ -143,7 +189,7 @@ export default function LandingPage() {
           </div>
 
           {/* Project Pipeline Feature */}
-          <div className="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-sky-100">
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-sky-100/50">
             <div className="grid md:grid-cols-[3fr_2fr] gap-12 items-center md:flex-row-reverse">
               <div className="space-y-4 md:order-2">
                 <h3 className="text-2xl font-semibold text-gray-900">
@@ -207,7 +253,7 @@ export default function LandingPage() {
           </div>
 
           {/* Optimal Resourcing Feature */}
-          <div className="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-sky-100">
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-sky-100/50">
             <div className="grid md:grid-cols-[2fr_3fr] gap-12 items-center">
               <div className="space-y-4">
                 <h3 className="text-2xl font-semibold text-gray-900">
@@ -245,7 +291,7 @@ export default function LandingPage() {
           </div>
 
           {/* Team Visualization Feature */}
-          <div className="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-sky-100">
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-sky-100/50">
             <div className="grid md:grid-cols-[3fr_2fr] gap-12 items-center md:flex-row-reverse">
               <div className="space-y-4 md:order-2">
                 <h3 className="text-2xl font-semibold text-gray-900">
@@ -301,9 +347,9 @@ export default function LandingPage() {
         </section>
 
        
-        <section className="py-12 md:py-23 lg:py-24  ">
+        <section className="py-12 md:py-23 lg:py-24">
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center bg-gradient-to-r from-blue-600/90 to-indigo-700/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
               <h2 className="text-white text-3xl font-bold tracking-tighter sm:text-5xl">
                 Ready to streamline your team management?
               </h2>
@@ -314,7 +360,7 @@ export default function LandingPage() {
                 <Button 
                   asChild 
                   size="lg"
-                  className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white border border-white"
+                  className="bg-white text-blue-600 hover:bg-gray-100 border border-white font-semibold"
                 >
                   <Link href="/auth/signup" className="flex items-center gap-2">
                     Try For Free <ArrowRight className="h-4 w-4" />
@@ -327,7 +373,7 @@ export default function LandingPage() {
         
       </main>
 
-      <footer className="bg-gray-50 py-8">
+      <footer className="relative z-10 bg-white/80 backdrop-blur-sm py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center space-y-4">
             <div className="flex space-x-6">
@@ -356,7 +402,7 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <Card>
+    <Card className="bg-white/80 backdrop-blur-sm border-white/50 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           {icon}

@@ -9,7 +9,7 @@ export default function PublicNavbar() {
   
   return (
     <header className="py-6 px-4 sm:px-6 lg:px-8">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-6 bg-white/90 backdrop-blur-sm transition-all duration-200">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-6 bg-white/20 backdrop-blur-sm transition-all duration-200">
         <div className="text-2xl font-bold text-blue-800">
           <Link href="/">TeamDesk</Link>
         </div>
