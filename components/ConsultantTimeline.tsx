@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 // Helper to get months (same as Timeline.tsx)
 const getMonthsBetweenDates = (startDate: Date, endDate: Date): string[] => {
@@ -78,6 +80,10 @@ interface ConsultantTimelineProps {
 
 export default function ConsultantTimeline({ consultants, projects, onProjectClick }: ConsultantTimelineProps) {
   const months = getTimelineMonths()
+  const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   // Sort consultants by name for consistent order
   const sortedConsultants = [...consultants].sort((a, b) => a.name.localeCompare(b.name))
@@ -110,7 +116,7 @@ export default function ConsultantTimeline({ consultants, projects, onProjectCli
                         {consultant.name}
                         <br />
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs capitalize">{consultant.level}</Badge>
+                          <Badge variant="outline" className="text-xs capitalize">{getLevelName(consultant.level)}</Badge>
                           
                         </div>
                       </div>

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 interface ProjectOverviewProps {
   project: Project
@@ -13,6 +14,9 @@ interface ProjectOverviewProps {
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
   const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
   
   // Calculate project duration in days
   const startDate = new Date(project.startDate)
@@ -173,7 +177,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                     <p className="font-medium">{consultant.name}</p>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-muted-foreground capitalize">
-                        {consultant.level}
+                        {getLevelName(consultant.level)}
                       </p>
                       <p className="text-xs font-medium">
                         {consultant.percentage}% • ${consultant.hourlyRate || 0}/hr

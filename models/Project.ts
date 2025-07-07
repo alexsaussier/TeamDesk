@@ -13,9 +13,8 @@ const ProjectSchema = new mongoose.Schema({
   startDate: String,
   endDate: String,
   teamSize: {
-    type: Map,
-    of: Number,
-    default: () => new Map() // This will store levelId -> count pairs
+    type: mongoose.Schema.Types.Mixed,
+    default: {} // This will store levelId -> count pairs as a plain object
   },
   assignedConsultants: [{
     consultantId: { 

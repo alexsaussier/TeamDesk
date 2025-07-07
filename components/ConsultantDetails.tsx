@@ -14,6 +14,8 @@ import ConsultantProjectHistory from '@/components/ConsultantProjectHistory'
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
@@ -113,6 +115,10 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
   const [isUpdating, setIsUpdating] = useState(false)
   const [consultant, setConsultant] = useState(initialConsultant)
   const [showSalary, setShowSalary] = useState(false)
+  const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   const handleUpdateRate = async () => {
     try {
@@ -173,7 +179,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
               </Avatar>
               <div className="space-y-2">
                 <h1 className="text-xl sm:text-2xl font-bold">{consultant?.name}</h1>
-                <div className="text-white/80 capitalize">Level: {consultant?.level}</div>
+                <div className="text-white/80 capitalize">Level: {getLevelName(consultant?.level || '')}</div>
                 <div className="flex flex-wrap gap-2">
                   Skills: {consultant?.skills.map(skill => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>

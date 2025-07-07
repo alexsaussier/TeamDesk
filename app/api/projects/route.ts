@@ -94,6 +94,7 @@ export async function GET() {
       id: project._id.toString(),
       organizationId: project.organizationId.toString(),
       updatedBy: project.updatedBy.toString(),
+      teamSize: project.teamSize || {}, // Ensure teamSize is properly included
       assignedConsultants: project.assignedConsultants.map((assignment: { 
         consultantId: { _id: string; name: string; skills: string[]; picture: string; level: string }; 
         percentage: number

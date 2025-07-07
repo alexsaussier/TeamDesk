@@ -11,12 +11,18 @@ import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead } from "@
 import { calculateUtilizationMetrics } from '@/utils/utilizationMetrics'
 import { SalaryMetricCard } from "@/components/SalaryMetricCard"
 import { Loading } from "@/components/ui/loading"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 export default function FinancialsDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>("all")
+  const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   // Get unique consultant levels
   const consultantLevels = useMemo(() => {
@@ -117,7 +123,7 @@ export default function FinancialsDashboard() {
               <SelectItem value="all">All Levels</SelectItem>
               {consultantLevels.map(level => (
                 <SelectItem key={level} value={level} className="capitalize">
-                  {level}
+                  {getLevelName(level)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -131,7 +137,7 @@ export default function FinancialsDashboard() {
               icon={ArrowUpIcon}
               iconColor="text-blue-800"
               consultantName={filteredMetrics.highestSalary.consultant.name}
-              consultantLevel={filteredMetrics.highestSalary.consultant.level}
+              consultantLevel={getLevelName(filteredMetrics.highestSalary.consultant.level)}
             />
 
             <SalaryMetricCard
@@ -158,7 +164,7 @@ export default function FinancialsDashboard() {
               icon={ArrowDownIcon}
               iconColor="text-blue-800"
               consultantName={filteredMetrics.lowestSalary.consultant.name}
-              consultantLevel={filteredMetrics.lowestSalary.consultant.level}
+              consultantLevel={getLevelName(filteredMetrics.lowestSalary.consultant.level)}
             />
           </div>
         </CardContent>
@@ -176,7 +182,7 @@ export default function FinancialsDashboard() {
                 <SelectItem value="all">All Levels</SelectItem>
                 {consultantLevels.map(level => (
                   <SelectItem key={level} value={level} className="capitalize">
-                    {level}
+                    {getLevelName(level)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -201,7 +207,7 @@ export default function FinancialsDashboard() {
                   return (
                     <TableRow key={consultant._id}>
                       <TableCell className="font-medium">{consultant.name}</TableCell>
-                      <TableCell className="capitalize">{consultant.level}</TableCell>
+                      <TableCell className="capitalize">{getLevelName(consultant.level)}</TableCell>
                       <TableCell className="text-right">
                         ${Intl.NumberFormat('en-US').format(consultant.salary)}
                       </TableCell>

@@ -12,6 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 interface ConsultantListProps {
   consultants: Consultant[]
@@ -24,6 +26,10 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
   const [projectDetails, setProjectDetails] = useState<Record<string, Project>>({})
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
+  const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   // Fetch project details for all assignments
   useEffect(() => {
@@ -166,7 +172,7 @@ export default function ConsultantList({ consultants, onConsultantDeleted }: Con
                   <div className="flex flex-col">
                     <span>{consultant.name}</span>
                     <span className="text-sm font-normal text-white capitalize">
-                      {consultant.level}
+                      {getLevelName(consultant.level)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

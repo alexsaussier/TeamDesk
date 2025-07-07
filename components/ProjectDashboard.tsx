@@ -165,6 +165,8 @@ export default function ProjectDashboard() {
       }
       
       const createdProject: Project = await response.json()
+      // Update the projects list with the new project
+      setProjects(prevProjects => [...prevProjects, createdProject])
       return createdProject
     } catch (error) {
       throw error

@@ -94,7 +94,6 @@ export default function TimelineDashboard() {
         id: data.id || data._id, // Convert _id to id if needed
       }
       setProjects([...projects, addedProject])
-      closeModal()
       return addedProject  // Return the added project
     } catch (error) {
       console.error('Error adding project:', error)

@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table"
+import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 interface ProjectCostsProps {
   project: Project
@@ -33,6 +35,10 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
   const [consultantsWithCosts, setConsultantsWithCosts] = useState<ConsultantWithCost[]>([])
   const [totalCost, setTotalCost] = useState(0)
   const [showSalaries, setShowSalaries] = useState(false)
+  const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   // Calculate project duration in days
   const startDate = new Date(project.startDate)
@@ -215,7 +221,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
                         </div>
                         <span className="font-medium">{consultant.name}</span>
                         <span className="text-xs ml-2 text-muted-foreground capitalize">
-                          ({consultant.level})
+                          ({getLevelName(consultant.level)})
                         </span>
                       </div>
                       <div className="flex items-center">
@@ -247,7 +253,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
                   {consultantsWithCosts.map(consultant => (
                     <TableRow key={consultant._id || consultant.id}>
                       <TableCell className="font-medium">{consultant.name}</TableCell>
-                      <TableCell className="capitalize">{consultant.level}</TableCell>
+                      <TableCell className="capitalize">{getLevelName(consultant.level)}</TableCell>
                       <TableCell>{consultant.assignmentPercentage}%</TableCell>
                       {showSalaries && (
                         <TableCell>${consultant.salary.toLocaleString()}</TableCell>

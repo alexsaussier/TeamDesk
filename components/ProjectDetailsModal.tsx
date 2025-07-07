@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ConsultantLevel } from '@/types'
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
+import { createLevelNameResolver } from '@/lib/levelUtils'
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
@@ -60,6 +61,9 @@ export function ProjectDetailsModal({
   const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
   const [isUpdatingHourlyRate, setIsUpdatingHourlyRate] = useState<Record<string, boolean>>({})
   const { levels } = useOrganizationLevels()
+
+  // Get level name resolver function
+  const getLevelName = createLevelNameResolver(levels)
 
   useEffect(() => {
     setLocalProject(project)
@@ -235,28 +239,7 @@ export function ProjectDetailsModal({
     }
   }
 
-  const organizeTeamSlots = (teamSize: TeamSize, assignedConsultants: AssignedConsultant[]) => {
-    const slots: Record<string, Array<AssignedConsultant | null>> = {}
-    levels.forEach(level => {
-      slots[level.id] = Array(Math.ceil(teamSize[level.id] || 0)).fill(null)
-    })
 
-    // Fill slots with assigned consultants
-    assignedConsultants.forEach(consultant => {
-      const level = consultant.level;
-      if (slots[level]) {
-        const emptySlotIndex = slots[level].findIndex(slot => slot === null);
-        if (emptySlotIndex !== -1) {
-          slots[level][emptySlotIndex] = consultant;
-        } else {
-          // If no empty slot in their level, add to array
-          slots[level].push(consultant);
-        }
-      }
-    });
-
-    return slots;
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -429,237 +412,230 @@ export function ProjectDetailsModal({
               </div>
             </div>
             
-            {Object.entries(organizeTeamSlots(localProject.teamSize, assignedConsultants))
-              .filter(([levelId, slots]) => levels.find(l => l.id === levelId) && slots.length > 0)
-              .map(([levelId, slots]) => {
-                const level = levels.find(l => l.id === levelId)
-                return (
-                  <div key={levelId} className="mb-6">
-                    <h4 className="text-sm font-medium mb-3">
-                      {level?.name} ({assignedConsultants.filter(c => c.level === levelId).length}/{slots.length} assigned)
-                    </h4>
-                    <div className="grid gap-2">
-                      {slots.map((consultant, index) => (
-                        <div 
-                          key={`${levelId}-${index}`}
-                          className="flex items-center gap-3 bg-secondary/10 rounded-lg p-3 hover:bg-secondary/20 transition-colors"
-                        >
-                          {consultant ? (
-                            <>
-                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                                {consultant.picture ? (
-                                  <img 
-                                    src={consultant.picture} 
-                                    alt={consultant.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <span>{consultant.name.charAt(0)}</span>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-medium">{consultant.name}</p>
-                                <p className="text-xs text-muted-foreground capitalize">
-                                  {consultant.level}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {isEditingPercentage?.[consultant._id || consultant.id] ? (
-                                  <>
-                                    <div className="w-24">
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={tempPercentage?.[consultant._id || consultant.id] ?? consultant.percentage}
-                                        onChange={(e) => setTempPercentage(prev => ({
-                                          ...prev,
-                                          [consultant._id || consultant.id]: parseInt(e.target.value) || 0
-                                        }))}
-                                        className="h-8"
-                                        placeholder="Percentage"
-                                      />
-                                    </div>
-                                    
-                                    <div className="w-24">
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={tempHourlyRate?.[consultant._id || consultant.id] ?? consultant.hourlyRate ?? 0}
-                                        onChange={(e) => setTempHourlyRate(prev => ({
-                                          ...prev,
-                                          [consultant._id || consultant.id]: parseFloat(e.target.value) || 0
-                                        }))}
-                                        className="h-8"
-                                        placeholder="Rate/hour"
-                                      />
-                                    </div>
-                                    
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-green-600 hover:text-green-700"
-                                      onClick={() => {
-                                        const id = consultant._id || consultant.id;
-                                        // Update both values at once
-                                        Promise.all([
-                                          handleUpdateAssignment(id, tempPercentage?.[id] ?? consultant.percentage),
-                                          handleUpdateHourlyRate(id, tempHourlyRate?.[id] ?? consultant.hourlyRate ?? 0)
-                                        ]);
-                                        setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
-                                        setTempPercentage(prev => ({ ...prev, [id]: null }));
-                                        setTempHourlyRate(prev => ({ ...prev, [id]: null }));
-                                      }}
-                                    >
-                                      <Check className="h-4 w-4" />
-                                    </Button>
-                                    
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-red-600 hover:text-red-700"
-                                      onClick={() => {
-                                        const id = consultant._id || consultant.id;
-                                        setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
-                                        setTempPercentage(prev => ({ ...prev, [id]: null }));
-                                        setTempHourlyRate(prev => ({ ...prev, [id]: null }));
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <div className="w-24 flex flex-col">
-                                      <span className="text-xs text-muted-foreground mb-1">Assignment</span>
-                                      <div className="flex items-center">
-                                        <span className="text-sm">{consultant.percentage}%</span>
-                                        {isUpdatingPercentage?.[consultant._id || consultant.id] && (
-                                          <Spinner className="h-4 w-4 ml-1" />
-                                        )}
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="w-24 flex flex-col">
-                                      <span className="text-xs text-muted-foreground mb-1">Rate</span>
-                                      <div className="flex items-center">
-                                        <span className="text-sm">${consultant.hourlyRate ?? 0}/hr</span>
-                                        {isUpdatingHourlyRate?.[consultant._id || consultant.id] && (
-                                          <Spinner className="h-4 w-4 ml-1" />
-                                        )}
-                                      </div>
-                                    </div>
-                                    
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => {
-                                        const id = consultant._id || consultant.id;
-                                        setIsEditingPercentage(prev => ({ ...prev, [id]: true }));
-                                        // Pre-populate the temp states with current values
-                                        setTempPercentage(prev => ({ 
-                                          ...prev, 
-                                          [id]: consultant.percentage 
-                                        }));
-                                        setTempHourlyRate(prev => ({ 
-                                          ...prev, 
-                                          [id]: consultant.hourlyRate ?? 0 
-                                        }));
-                                      }}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                  </>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleUnassign(consultant._id || consultant.id)
-                                  }}
-                                >
-                                  <MinusCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex-1 flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Empty {level?.name} slot</span>
-                              <Select onValueChange={handleAssign} disabled={isAssigning}>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Assign consultant" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {consultants
-                                    .filter(c => !assignedConsultants.some(ac => 
-                                      ac._id === c._id || ac.id === c.id
-                                    ))
-                                    .map(consultant => {
-                                      const { hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
-                                      
-                                      return (
-                                        <div key={consultant._id || consultant.id} className="flex items-center px-2 py-1.5">
-                                          <SelectItem 
-                                            value={consultant._id || consultant.id}
-                                            className="flex-1 flex items-center justify-between"
-                                          >
-                                            <div className="flex items-center gap-2">
-                                              {consultant.name}
-                                              <span className="text-xs text-muted-foreground capitalize">
-                                                ({consultant.level})
-                                              </span>
-                                              {hasConflicts && (
-                                                <TooltipProvider>
-                                                  <Tooltip>
-                                                    <TooltipTrigger>
-                                                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                      <p>Warning: This consultant has overlapping project assignments</p>
-                                                    </TooltipContent>
-                                                  </Tooltip>
-                                                </TooltipProvider>
-                                              )}
-                                            </div>
-                                          </SelectItem>
-                                          <TooltipProvider>
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="h-8 w-8 ml-2 text-muted-foreground hover:text-primary"
-                                                  onClick={(e) => {
-                                                    e.preventDefault()
-                                                    e.stopPropagation()
-                                                    window.open(`/dashboard/workforce/${consultant._id || consultant.id}`, '_blank')
-                                                  }}
-                                                >
-                                                  <Users className="h-4 w-4" />
-                                                </Button>
-                                              </TooltipTrigger>
-                                              <TooltipContent>
-                                                <p>View profile in new tab</p>
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          </TooltipProvider>
-                                        </div>
-                                      );
-                                    })}
-                                </SelectContent>
-                              </Select>
+            {/* Assigned Consultants Section */}
+            <div className="mb-6">
+              <h4 className="text-sm font-medium mb-3">
+                Assigned Consultants ({assignedConsultants.length})
+              </h4>
+              <div className="grid gap-2">
+                {assignedConsultants.map((consultant) => (
+                  <div 
+                    key={consultant._id || consultant.id}
+                    className="flex items-center gap-3 bg-secondary/10 rounded-lg p-3 hover:bg-secondary/20 transition-colors"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                      {consultant.picture ? (
+                        <img 
+                          src={consultant.picture} 
+                          alt={consultant.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span>{consultant.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{consultant.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {getLevelName(consultant.level)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isEditingPercentage?.[consultant._id || consultant.id] ? (
+                        <>
+                          <div className="w-24">
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={tempPercentage?.[consultant._id || consultant.id] ?? consultant.percentage}
+                              onChange={(e) => setTempPercentage(prev => ({
+                                ...prev,
+                                [consultant._id || consultant.id]: parseInt(e.target.value) || 0
+                              }))}
+                              className="h-8"
+                              placeholder="Percentage"
+                            />
+                          </div>
+                          
+                          <div className="w-24">
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={tempHourlyRate?.[consultant._id || consultant.id] ?? consultant.hourlyRate ?? 0}
+                              onChange={(e) => setTempHourlyRate(prev => ({
+                                ...prev,
+                                [consultant._id || consultant.id]: parseFloat(e.target.value) || 0
+                              }))}
+                              className="h-8"
+                              placeholder="Rate/hour"
+                            />
+                          </div>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-green-600 hover:text-green-700"
+                            onClick={() => {
+                              const id = consultant._id || consultant.id;
+                              // Update both values at once
+                              Promise.all([
+                                handleUpdateAssignment(id, tempPercentage?.[id] ?? consultant.percentage),
+                                handleUpdateHourlyRate(id, tempHourlyRate?.[id] ?? consultant.hourlyRate ?? 0)
+                              ]);
+                              setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
+                              setTempPercentage(prev => ({ ...prev, [id]: null }));
+                              setTempHourlyRate(prev => ({ ...prev, [id]: null }));
+                            }}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-600 hover:text-red-700"
+                            onClick={() => {
+                              const id = consultant._id || consultant.id;
+                              setIsEditingPercentage(prev => ({ ...prev, [id]: false }));
+                              setTempPercentage(prev => ({ ...prev, [id]: null }));
+                              setTempHourlyRate(prev => ({ ...prev, [id]: null }));
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-24 flex flex-col">
+                            <span className="text-xs text-muted-foreground mb-1">Assignment</span>
+                            <div className="flex items-center">
+                              <span className="text-sm">{consultant.percentage}%</span>
+                              {isUpdatingPercentage?.[consultant._id || consultant.id] && (
+                                <Spinner className="h-4 w-4 ml-1" />
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                          
+                          <div className="w-24 flex flex-col">
+                            <span className="text-xs text-muted-foreground mb-1">Rate</span>
+                            <div className="flex items-center">
+                              <span className="text-sm">${consultant.hourlyRate ?? 0}/hr</span>
+                              {isUpdatingHourlyRate?.[consultant._id || consultant.id] && (
+                                <Spinner className="h-4 w-4 ml-1" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              const id = consultant._id || consultant.id;
+                              setIsEditingPercentage(prev => ({ ...prev, [id]: true }));
+                              // Pre-populate the temp states with current values
+                              setTempPercentage(prev => ({ 
+                                ...prev, 
+                                [id]: consultant.percentage 
+                              }));
+                              setTempHourlyRate(prev => ({ 
+                                ...prev, 
+                                [id]: consultant.hourlyRate ?? 0 
+                              }));
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleUnassign(consultant._id || consultant.id)
+                        }}
+                      >
+                        <MinusCircle className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )
-              })}
+                ))}
+              </div>
+            </div>
+
+            {/* Add New Consultant Section */}
+            <div className="bg-secondary/10 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Add New Consultant</span>
+                <Select onValueChange={handleAssign} disabled={isAssigning}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Assign consultant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {consultants
+                      .filter(c => !assignedConsultants.some(ac => 
+                        ac._id === c._id || ac.id === c.id
+                      ))
+                      .map(consultant => {
+                        const { hasConflicts } = checkConsultantAvailability(consultant, localProject, allProjects);
+                        
+                        return (
+                          <div key={consultant._id || consultant.id} className="flex items-center px-2 py-1.5">
+                            <SelectItem 
+                              value={consultant._id || consultant.id}
+                              className="flex-1 flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                {consultant.name}
+                                <span className="text-xs text-muted-foreground capitalize">
+                                  ({getLevelName(consultant.level)})
+                                </span>
+                                {hasConflicts && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Warning: This consultant has overlapping project assignments</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                            </SelectItem>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 ml-2 text-muted-foreground hover:text-primary"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      window.open(`/dashboard/workforce/${consultant._id || consultant.id}`, '_blank')
+                                    }}
+                                  >
+                                    <Users className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>View profile in new tab</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        );
+                      })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           {/* Delete Button */}
