@@ -1,4 +1,4 @@
-import { Project, Consultant, ProjectStatus, TeamSize } from '@/types'
+import { Project, Consultant, ProjectStatus } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -29,11 +29,7 @@ interface ProjectDetailsModalProps {
   onUpdateChanceToClose: (projectId: string, chanceToClose: number) => Promise<void>
 }
 
-type AssignedConsultant = Pick<Consultant, '_id' | 'id' | 'name' | 'skills' | 'picture'> & {
-  level: ConsultantLevel;
-  percentage: number;
-  hourlyRate?: number;
-}
+
 
 export function ProjectDetailsModal({
   project,
