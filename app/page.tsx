@@ -74,7 +74,7 @@ export default function LandingPage() {
             </span>
           </div>
           <p className="pt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            The first agency planning tool that you'll love. Staff projects better, faster, smarter.
+            The first agency planning tool that you&apos;ll love. Staff projects better, faster, smarter.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <Button 
