@@ -11,7 +11,6 @@ import DeleteProjectModal from './DeleteProjectModal'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ConsultantLevel } from '@/types'
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
 
