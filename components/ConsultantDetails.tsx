@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
+import ConsultantEditModal from '@/components/ConsultantEditModal'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
@@ -110,48 +111,16 @@ const calculateUtilization = (consultant: Consultant | null, projects: Project[]
 
 export default function ConsultantDetails({ consultant: initialConsultant, projects }: ConsultantDetailsProps) {
   const router = useRouter()
-  const [isEditingRate, setIsEditingRate] = useState(false)
-  const [salary, setsalary] = useState(initialConsultant.salary)
-  const [isUpdating, setIsUpdating] = useState(false)
   const [consultant, setConsultant] = useState(initialConsultant)
   const [showSalary, setShowSalary] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const { levels } = useOrganizationLevels()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
 
-  const handleUpdateRate = async () => {
-    try {
-      setIsUpdating(true)
-      const response = await fetch(`/api/workforce/${consultant._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ salary }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update salary')
-      }
-
-      // Get the updated consultant data
-      const updatedConsultant = await response.json()
-      
-      // Update local state with new salary
-      setConsultant(prev => ({
-        ...prev,
-        salary: updatedConsultant.salary
-      }))
-      
-      setIsEditingRate(false)
-    } catch (error) {
-      console.error('Error updating salary:', error)
-      // Optionally reset to original salary on error
-      setsalary(consultant.salary)
-    } finally {
-      setIsUpdating(false)
-    }
+  const handleConsultantUpdate = (updatedConsultant: Consultant) => {
+    setConsultant(updatedConsultant)
   }
 
   return (
@@ -178,7 +147,17 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                 <AvatarImage src={consultant?.picture} alt={consultant?.name} />
               </Avatar>
               <div className="space-y-2">
-                <h1 className="text-xl sm:text-2xl font-bold">{consultant?.name}</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl sm:text-2xl font-bold">{consultant?.name}</h1>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white hover:bg-white hover:text-blue-500"
+                    onClick={() => setIsEditModalOpen(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
                 <div className="text-white/80 capitalize">Level: {getLevelName(consultant?.level || '')}</div>
                 <div className="flex flex-wrap gap-2">
                   Skills: {consultant?.skills.map(skill => (
@@ -191,65 +170,27 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
             <div className="space-y-2 w-full sm:w-auto">
               <Label className="text-white">Salary</Label>
               <div className="flex items-center gap-2">
-                {isEditingRate ? (
-                  <>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={salary}
-                      onChange={(e) => setsalary(Number(e.target.value))}
-                      className="w-32 bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                    />
-                    <Button 
-                      onClick={handleUpdateRate} 
-                      disabled={isUpdating}
-                      className="bg-white text-blue-500 hover:bg-white/90"
-                    >
-                      Save
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setIsEditingRate(false)
-                        setsalary(consultant.salary)
-                      }}
-                      className="bg-white text-red-500 hover:bg-white/90"
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      {showSalary ? (
-                        <span className="text-base sm:text-lg">
-                          $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
-                        </span>
-                      ) : (
-                        <span className="text-base sm:text-lg">$ •••••••</span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-white hover:bg-white"
-                        onClick={() => setShowSalary(!showSalary)}
-                      >
-                        {showSalary ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-white hover:bg-white"
-                        onClick={() => setIsEditingRate(true)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  {showSalary ? (
+                    <span className="text-base sm:text-lg">
+                      $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
+                    </span>
+                  ) : (
+                    <span className="text-base sm:text-lg">$ •••••••</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white hover:bg-white hover:text-blue-500"
+                    onClick={() => setShowSalary(!showSalary)}
+                  >
+                    {showSalary ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -329,6 +270,14 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Modal */}
+      <ConsultantEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        consultant={consultant}
+        onUpdate={handleConsultantUpdate}
+      />
     </div>
   )
 }

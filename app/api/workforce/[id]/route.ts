@@ -45,6 +45,7 @@ export async function GET(request: Request) {
   }
 }
 
+// Delete a consultant by ID
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -104,22 +105,47 @@ export async function PATCH(request: NextRequest) {
     console.log('ConsultantId:', consultantId)
     
     const body = await request.json()
-    const { salary } = body
-    console.log('Received salary update:', salary)
+    const { salary, level, picture } = body
+    console.log('Received consultant update:', { salary, level, picture })
 
-    // Validate salary
-    if (typeof salary !== 'number' || salary < 0) {
-      console.log('Invalid salary value:', salary)
-      return NextResponse.json(
-        { error: 'Invalid salary' },
-        { status: 400 }
-      )
+    // Prepare update object
+    const updateData: any = {
+      updatedAt: new Date()
+    }
+
+    // Validate and add salary if provided
+    if (salary !== undefined) {
+      if (typeof salary !== 'number' || salary < 0) {
+        console.log('Invalid salary value:', salary)
+        return NextResponse.json(
+          { error: 'Invalid salary' },
+          { status: 400 }
+        )
+      }
+      updateData.salary = salary
+    }
+
+    // Validate and add level if provided
+    if (level !== undefined) {
+      if (typeof level !== 'string' || level.trim() === '') {
+        console.log('Invalid level value:', level)
+        return NextResponse.json(
+          { error: 'Invalid level' },
+          { status: 400 }
+        )
+      }
+      updateData.level = level
+    }
+
+    // Add picture if provided
+    if (picture !== undefined) {
+      updateData.picture = picture
     }
 
     console.log('Attempting to update consultant with:', {
       consultantId,
       organizationId: session.user.organizationId,
-      newSalary: salary
+      updateData
     })
 
     // Update consultant
@@ -129,10 +155,7 @@ export async function PATCH(request: NextRequest) {
         organizationId: new mongoose.Types.ObjectId(session.user.organizationId)
       },
       { 
-        $set: { 
-          salary: salary,
-          updatedAt: new Date()
-        } 
+        $set: updateData
       },
       { 
         new: true,

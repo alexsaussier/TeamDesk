@@ -5,6 +5,8 @@ import { Organization } from '@/models/Organization'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+//In this file, get all consultants or create a new consultant
+
 // Get all consultants for the current organization
 export async function GET() {
   try {
