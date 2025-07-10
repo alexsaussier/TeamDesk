@@ -43,7 +43,7 @@ const navSections: NavSection[] = [
         icon: Kanban
       },
       {
-        href: "/dashboard/proposalsxxx",
+        href: "/dashboard/proposals",
         label: "Proposals",
         icon: FileText,
         badge: {
@@ -89,7 +89,7 @@ const navSections: NavSection[] = [
       }
     ]
   },
-  {
+  /*{
     icon: Briefcase,
     label: "Recruitment",
     items: [
@@ -103,7 +103,7 @@ const navSections: NavSection[] = [
       },
       
     ]
-  }
+  }*/
 ]
 
 export default function Navbar() {
@@ -134,7 +134,7 @@ export default function Navbar() {
   }
 
   const isComingSoon = (href: string) => {
-    return href === "/dashboard/proposalsxxx" || href === "/dashboard/recruitmentxxx"
+    return href === "/dashboard/recruitmentxxx"
   }
 
   const renderNavItem = (item: NavItem) => {

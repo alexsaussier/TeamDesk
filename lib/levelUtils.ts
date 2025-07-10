@@ -6,7 +6,12 @@ import { ConsultantLevelDefinition } from '@/types'
  * @param levels - Array of organization level definitions
  * @returns Human-readable level name (e.g., "Senior Consultant")
  */
-export function getLevelName(levelId: string, levels: ConsultantLevelDefinition[]): string {
+export function getLevelName(levelId: string | undefined | null, levels: ConsultantLevelDefinition[]): string {
+  // Handle undefined, null, or non-string values
+  if (!levelId || typeof levelId !== 'string') {
+    return 'Unknown Level'
+  }
+  
   const level = levels.find(l => l.id === levelId)
   return level ? level.name : levelId.replace(/_/g, ' ')
 }
@@ -17,5 +22,5 @@ export function getLevelName(levelId: string, levels: ConsultantLevelDefinition[
  * @returns Function that takes levelId and returns level name
  */
 export function createLevelNameResolver(levels: ConsultantLevelDefinition[]) {
-  return (levelId: string) => getLevelName(levelId, levels)
+  return (levelId: string | undefined | null) => getLevelName(levelId, levels)
 } 

@@ -11,6 +11,7 @@ import { Upload } from 'lucide-react'
 import { BatchUploadModal } from './BatchUploadModal'
 import { Loading } from "@/components/ui/loading"
 import { useToast } from "@/hooks/use-toast"
+import EmptyWorkforceState from './EmptyWorkforceState'
 
 export default function WorkforceDashboard() {
   const { toast } = useToast()
@@ -120,6 +121,12 @@ export default function WorkforceDashboard() {
 
       {isLoading ? (
         <Loading text="Loading consultants..." />
+      ) : consultants.length === 0 ? (
+        <EmptyWorkforceState 
+          variant="list"
+          onAddConsultant={() => setIsModalOpen(true)}
+          onBatchUpload={() => setIsBatchUploadOpen(true)}
+        />
       ) : (
         <WorkforceList 
           consultants={filteredConsultants}

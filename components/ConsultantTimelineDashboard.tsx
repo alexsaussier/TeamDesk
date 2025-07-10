@@ -11,6 +11,7 @@ import { GradientButton } from "@/components/GradientButton"
 import { Upload } from 'lucide-react'
 import AddConsultantModal from './AddConsultantModal'
 import { BatchUploadModal } from './BatchUploadModal'
+import EmptyWorkforceState from './EmptyWorkforceState'
 
 export default function ConsultantTimelineDashboard() {
   const { data: session, status } = useSession()
@@ -144,7 +145,15 @@ export default function ConsultantTimelineDashboard() {
           </div>
         )}
         
-        {!isLoading && (
+        {!isLoading && consultants.length === 0 && (
+          <EmptyWorkforceState 
+            variant="timeline"
+            onAddConsultant={() => setIsAddConsultantModalOpen(true)}
+            onBatchUpload={() => setIsBatchUploadOpen(true)}
+          />
+        )}
+        
+        {!isLoading && consultants.length > 0 && (
           <ConsultantTimeline 
             consultants={consultants} 
             projects={projects}

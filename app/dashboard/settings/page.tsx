@@ -437,9 +437,7 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center">
               <Label htmlFor="description">
                 Organization Description
-                <span className="text-sm text-gray-500 ml-2">
-                  (Used in job descriptions)
-                </span>
+                
               </Label>
               <Button 
                 variant="ghost" 
@@ -482,9 +480,6 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center">
               <Label htmlFor="perks">
                 Benefits and Perks
-                <span className="text-sm text-gray-500 ml-2">
-                  (Used in job descriptions)
-                </span>
               </Label>
               <Button 
                 variant="ghost" 
