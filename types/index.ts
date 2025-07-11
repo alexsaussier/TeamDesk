@@ -162,6 +162,7 @@ export interface Organization {
   description: string;
   perks: string;
   planType: 'free' | 'premium';
+  currency: 'USD' | 'EUR' | 'GBP';
   stripeCustomerId?: string; // Stripe customer ID for subscription management
   consultantLevels: ConsultantLevelDefinition[];
   onboardingProgress?: {

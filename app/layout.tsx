@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Lato } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from '@/components/AuthProvider'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { Toaster } from "@/components/ui/toaster"
 
 const lato = Lato({ 
@@ -23,7 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={lato.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <CurrencyProvider>
+            {children}
+          </CurrencyProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

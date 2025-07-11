@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
+import { useCurrency } from '@/contexts/CurrencyContext'
 
 interface ProjectDetailsModalProps {
   project: (Project ) | null
@@ -56,6 +57,7 @@ export function ProjectDetailsModal({
   const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
   const [isUpdatingHourlyRate, setIsUpdatingHourlyRate] = useState<Record<string, boolean>>({})
   const { levels } = useOrganizationLevels()
+  const { formatCurrency, getCurrencySymbol } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
@@ -516,7 +518,7 @@ export function ProjectDetailsModal({
                           <div className="w-24 flex flex-col">
                             <span className="text-xs text-muted-foreground mb-1">Rate</span>
                             <div className="flex items-center">
-                              <span className="text-sm">${consultant.hourlyRate ?? 0}/hr</span>
+                              <span className="text-sm">{getCurrencySymbol()}{consultant.hourlyRate ?? 0}/hr</span>
                               {isUpdatingHourlyRate?.[consultant._id || consultant.id] && (
                                 <Spinner className="h-4 w-4 ml-1" />
                               )}

@@ -14,7 +14,7 @@ import OrganizationLevelsSetup from "@/components/OrganizationLevelsSetup"
 import { useOrganizationLevels } from "@/contexts/OrganizationContext"
 
 import { Organization, ConsultantLevelDefinition, User, SubscriptionInfo } from "@/types"
-import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown, CreditCard, Calendar, ExternalLink } from "lucide-react"
+import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown, CreditCard, Calendar, ExternalLink, DollarSign } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -42,7 +43,8 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    perks: ""
+    perks: "",
+    currency: "USD" as 'USD' | 'EUR' | 'GBP'
   })
   const [newAdminData, setNewAdminData] = useState({
     name: "",
@@ -81,7 +83,8 @@ export default function SettingsPage() {
         setFormData({
           name: orgData.name || "",
           description: orgData.description || "",
-          perks: orgData.perks || ""
+          perks: orgData.perks || "",
+          currency: orgData.currency || "USD"
         })
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -516,6 +519,26 @@ export default function SettingsPage() {
                 {formData.perks || <span className="text-gray-400">No benefits or perks listed</span>}
               </div>
             )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="currency">Currency</Label>
+            <Select 
+              value={formData.currency} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value as 'USD' | 'EUR' | 'GBP' }))}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">🇺🇸 USD - US Dollar</SelectItem>
+                <SelectItem value="EUR">🇪🇺 EUR - Euro</SelectItem>
+                <SelectItem value="GBP">🇬🇧 GBP - British Pound</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              This will affect how financial amounts are displayed throughout the app.
+            </p>
           </div>
         </CardContent>
         <CardFooter>

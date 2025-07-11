@@ -8,17 +8,19 @@ export async function POST(request: Request) {
 
     // Create transporter
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.EMAIL_SERVER_HOST,
+      port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
+      secure: process.env.EMAIL_SERVER_SECURE === 'true',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_SERVER_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD,
       },
     })
 
     // Email content
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: 'asaussier99@gmail.com',
+      from: `"TeamDesk" <${process.env.EMAIL_FROM}>`,
+      to: process.env.EMAIL_FROM, // Send demo requests to the same email
       subject: 'New Demo Request from TeamDesk',
       html: `
         <h2>New Demo Request</h2>
