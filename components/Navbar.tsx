@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import LogoutButton from "@/components/LogoutButton"
-import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2, Briefcase, Settings, PieChart } from "lucide-react"
+import { Home, LayoutDashboard, Kanban, Users, Calendar, Sofa, Menu, X, DollarSign, TrendingUp, FileText, Wand2, Settings, PieChart } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"

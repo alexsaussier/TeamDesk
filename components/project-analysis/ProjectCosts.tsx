@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
+import { useCurrency } from '@/contexts/CurrencyContext'
 
 interface ProjectCostsProps {
   project: Project
@@ -36,6 +37,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
   const [totalCost, setTotalCost] = useState(0)
   const [showSalaries, setShowSalaries] = useState(false)
   const { levels } = useOrganizationLevels()
+  const { formatCurrency } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
@@ -151,7 +153,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Project Cost</p>
-                <p className="text-2xl font-bold">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalCost, { decimalPlaces: 2 })}</p>
               </div>
             </div>
           </CardContent>
@@ -226,7 +228,7 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
                       </div>
                       <div className="flex items-center">
                         <span className="text-sm font-medium">
-                          ${consultant.totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          {formatCurrency(consultant.totalCost, { decimalPlaces: 2 })}
                         </span>
                         <span className="text-xs ml-2 text-muted-foreground">
                           ({consultant.costPercentage.toFixed(1)}%)
@@ -256,15 +258,15 @@ export function ProjectCosts({ project }: ProjectCostsProps) {
                       <TableCell className="capitalize">{getLevelName(consultant.level)}</TableCell>
                       <TableCell>{consultant.assignmentPercentage}%</TableCell>
                       {showSalaries && (
-                        <TableCell>${consultant.salary.toLocaleString()}</TableCell>
+                        <TableCell>{formatCurrency(consultant.salary)}</TableCell>
                       )}
-                      <TableCell>${consultant.costPerDay.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
-                      <TableCell>${consultant.totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                                              <TableCell>{formatCurrency(consultant.costPerDay, { decimalPlaces: 2 })}</TableCell>
+                        <TableCell>{formatCurrency(consultant.totalCost, { decimalPlaces: 2 })}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="bg-muted/50">
                     <TableCell colSpan={showSalaries ? 5 : 4} className="font-bold text-right">Total Project Cost</TableCell>
-                    <TableCell className="font-bold">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="font-bold">{formatCurrency(totalCost, { decimalPlaces: 2 })}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

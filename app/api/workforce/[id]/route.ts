@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import mongoose from 'mongoose'
 import { Project } from '@/models/Project'
+import { Consultant as ConsultantType } from '@/types'
 
 // Get a single consultant by ID
 export async function GET(request: Request) {
@@ -109,7 +110,7 @@ export async function PATCH(request: NextRequest) {
     console.log('Received consultant update:', { salary, level, picture })
 
     // Prepare update object
-    const updateData: any = {
+    const updateData: Partial<Pick<ConsultantType, 'salary' | 'level' | 'picture'>> & { updatedAt: Date } = {
       updatedAt: new Date()
     }
 

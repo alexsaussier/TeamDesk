@@ -1,5 +1,8 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
+import { useCurrency } from "@/contexts/CurrencyContext"
 
 interface SalaryMetricCardProps {
   title: string
@@ -22,6 +25,8 @@ export function SalaryMetricCard({
   workerCount,
   selectedLevel
 }: SalaryMetricCardProps) {
+  const { formatCurrency } = useCurrency()
+  
   return (
     <Card className="bg-white text-blue-800 shadow-md border-2 border-blue-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -31,7 +36,7 @@ export function SalaryMetricCard({
       <CardContent>
         <div className="space-y-1">
           <p className="text-2xl font-bold">
-            ${Intl.NumberFormat('en-US').format(Math.round(amount))}
+            {formatCurrency(Math.round(amount))}
           </p>
           {consultantName ? (
             <>

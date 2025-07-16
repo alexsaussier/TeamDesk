@@ -12,11 +12,11 @@ import ConsultantUtilizationChart from '@/components/ConsultantUtilizationChart'
 import ConsultantProjectTimeline from '@/components/ConsultantProjectTimeline'
 import ConsultantProjectHistory from '@/components/ConsultantProjectHistory'
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
 import ConsultantEditModal from '@/components/ConsultantEditModal'
+import { useCurrency } from '@/contexts/CurrencyContext'
 
 interface ConsultantDetailsProps {
   consultant: Consultant
@@ -115,6 +115,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
   const [showSalary, setShowSalary] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const { levels } = useOrganizationLevels()
+  const { formatCurrency } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
@@ -173,7 +174,7 @@ export default function ConsultantDetails({ consultant: initialConsultant, proje
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   {showSalary ? (
                     <span className="text-base sm:text-lg">
-                      $ {Intl.NumberFormat('en-US').format(consultant.salary)} /year
+                      {formatCurrency(consultant.salary)} /year
                     </span>
                   ) : (
                     <span className="text-base sm:text-lg">$ •••••••</span>

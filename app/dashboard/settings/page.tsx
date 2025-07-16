@@ -14,7 +14,7 @@ import OrganizationLevelsSetup from "@/components/OrganizationLevelsSetup"
 import { useOrganizationLevels } from "@/contexts/OrganizationContext"
 
 import { Organization, ConsultantLevelDefinition, User, SubscriptionInfo } from "@/types"
-import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown, CreditCard, Calendar, ExternalLink, DollarSign } from "lucide-react"
+import { Loader2, Pencil, Save, X, Settings, UserPlus, Trash2, Crown, CreditCard, Calendar, ExternalLink } from "lucide-react"
 import {
   Dialog,
   DialogContent,

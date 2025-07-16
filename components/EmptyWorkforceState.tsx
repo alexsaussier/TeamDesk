@@ -13,7 +13,6 @@ export default function EmptyWorkforceState({
   onAddConsultant, 
   onBatchUpload 
 }: EmptyWorkforceStateProps) {
-  const isTimeline = variant === 'timeline'
   
   const content = {
     timeline: {

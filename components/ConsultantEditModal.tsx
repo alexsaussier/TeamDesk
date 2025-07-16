@@ -37,7 +37,7 @@ export default function ConsultantEditModal({
       setError(null)
 
       // Only send fields that have changed
-      const updateData: any = {}
+      const updateData: Partial<Pick<Consultant, 'salary' | 'level' | 'picture'>> = {}
       if (salary !== consultant.salary) updateData.salary = salary
       if (level !== consultant.level) updateData.level = level
       if (picture !== consultant.picture) updateData.picture = picture

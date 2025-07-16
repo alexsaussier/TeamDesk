@@ -14,6 +14,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { useEffect, useState } from "react"
 import { differenceInWeeks, parseISO } from "date-fns"
+import { useCurrency } from "@/contexts/CurrencyContext"
 
 interface ProjectRevenueProps {
   project: Project
@@ -37,6 +38,7 @@ export function ProjectRevenue({ project }: ProjectRevenueProps) {
   const [totalRevenue, setTotalRevenue] = useState(0)
   const [projectWeeks, setProjectWeeks] = useState(0)
   const [weeklyRevenue, setWeeklyRevenue] = useState(0)
+  const { formatCurrency, getCurrencySymbol } = useCurrency()
 
   useEffect(() => {
     // Calculate project duration in weeks
@@ -106,7 +108,7 @@ export function ProjectRevenue({ project }: ProjectRevenueProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Project Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalRevenue, { decimalPlaces: 2 })}</p>
               </div>
             </div>
           </CardContent>
@@ -120,7 +122,7 @@ export function ProjectRevenue({ project }: ProjectRevenueProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Weekly Revenue</p>
-                <p className="text-2xl font-bold">${weeklyRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold">{formatCurrency(weeklyRevenue, { decimalPlaces: 2 })}</p>
               </div>
             </div>
           </CardContent>
@@ -173,9 +175,9 @@ export function ProjectRevenue({ project }: ProjectRevenueProps) {
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="text-sm font-medium">
-                          ${revenue.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </span>
+                                          <span className="text-sm font-medium">
+                    {formatCurrency(revenue.totalRevenue, { decimalPlaces: 2 })}
+                  </span>
                         <span className="text-xs ml-2 text-muted-foreground">
                           ({revenue.revenuePercentage.toFixed(1)}%)
                         </span>
@@ -208,18 +210,18 @@ export function ProjectRevenue({ project }: ProjectRevenueProps) {
                     <TableRow key={revenue.id}>
                       <TableCell className="font-medium">{revenue.name}</TableCell>
                       <TableCell className="capitalize">{revenue.level}</TableCell>
-                      <TableCell>${revenue.hourlyRate}</TableCell>
+                      <TableCell>{getCurrencySymbol()}{revenue.hourlyRate}</TableCell>
                       <TableCell>{revenue.percentage}%</TableCell>
                       <TableCell>{revenue.hoursPerWeek.toFixed(1)}</TableCell>
                       <TableCell>{revenue.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}</TableCell>
                       <TableCell className="font-medium">
-                        ${revenue.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        {formatCurrency(revenue.totalRevenue, { decimalPlaces: 2 })}
                       </TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="bg-muted/50">
                     <TableCell colSpan={6} className="font-bold text-right">Total Project Revenue</TableCell>
-                    <TableCell className="font-bold">${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="font-bold">{formatCurrency(totalRevenue, { decimalPlaces: 2 })}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

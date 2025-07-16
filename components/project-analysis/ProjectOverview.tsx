@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
+import { useCurrency } from '@/contexts/CurrencyContext'
 
 interface ProjectOverviewProps {
   project: Project
@@ -14,6 +15,7 @@ interface ProjectOverviewProps {
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
   const { levels } = useOrganizationLevels()
+  const { getCurrencySymbol } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
@@ -180,7 +182,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                         {getLevelName(consultant.level)}
                       </p>
                       <p className="text-xs font-medium">
-                        {consultant.percentage}% • ${consultant.hourlyRate || 0}/hr
+                        {consultant.percentage}% • {getCurrencySymbol()}{consultant.hourlyRate || 0}/hr
                       </p>
                     </div>
                   </div>

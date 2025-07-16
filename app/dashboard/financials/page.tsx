@@ -13,6 +13,7 @@ import { SalaryMetricCard } from "@/components/SalaryMetricCard"
 import { Loading } from "@/components/ui/loading"
 import { useOrganizationLevels } from '@/contexts/OrganizationContext'
 import { createLevelNameResolver } from '@/lib/levelUtils'
+import { useCurrency } from '@/contexts/CurrencyContext'
 
 export default function FinancialsDashboard() {
   const [consultants, setConsultants] = useState<Consultant[]>([])
@@ -20,6 +21,7 @@ export default function FinancialsDashboard() {
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>("all")
   const { levels } = useOrganizationLevels()
+  const { formatCurrency } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
@@ -77,10 +79,10 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${Intl.NumberFormat('en-US').format(Math.round(metrics.totalWorkforceCost.annual))}
+              {formatCurrency(Math.round(metrics.totalWorkforceCost.annual))}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              Monthly: ${Intl.NumberFormat('en-US').format(Math.round(metrics.totalWorkforceCost.monthly))}
+              Monthly: {formatCurrency(Math.round(metrics.totalWorkforceCost.monthly))}
             </div>
           </CardContent>
         </Card>
@@ -92,7 +94,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${Intl.NumberFormat('en-US').format(Math.round(metrics.monthlyBurnRate))}
+              {formatCurrency(Math.round(metrics.monthlyBurnRate))}
             </div>
           </CardContent>
         </Card>
@@ -104,7 +106,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${Intl.NumberFormat('en-US').format(Math.round(metrics.averageSalary))}
+              {formatCurrency(Math.round(metrics.averageSalary))}
             </div>
           </CardContent>
         </Card> 
@@ -209,7 +211,7 @@ export default function FinancialsDashboard() {
                       <TableCell className="font-medium">{consultant.name}</TableCell>
                       <TableCell className="capitalize">{getLevelName(consultant.level)}</TableCell>
                       <TableCell className="text-right">
-                        ${Intl.NumberFormat('en-US').format(consultant.salary)}
+                        {formatCurrency(consultant.salary)}
                       </TableCell>
                       <TableCell className="text-right">
                         <span className="font-medium text-gray-700">

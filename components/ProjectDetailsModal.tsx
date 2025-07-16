@@ -57,7 +57,7 @@ export function ProjectDetailsModal({
   const [isUpdatingPercentage, setIsUpdatingPercentage] = useState<Record<string, boolean>>({})
   const [isUpdatingHourlyRate, setIsUpdatingHourlyRate] = useState<Record<string, boolean>>({})
   const { levels } = useOrganizationLevels()
-  const { formatCurrency, getCurrencySymbol } = useCurrency()
+  const { getCurrencySymbol } = useCurrency()
 
   // Get level name resolver function
   const getLevelName = createLevelNameResolver(levels)
