@@ -41,7 +41,7 @@ export default function SignInPage() {
       } else if (result?.ok) {
         router.push('/dashboard')
       }
-    } catch (_) {
+    } catch (_error) {
       setError('An error occurred. Please try again.')
     }
   }
