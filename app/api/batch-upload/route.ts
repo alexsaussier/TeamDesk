@@ -22,9 +22,6 @@ interface UploadRecord {
   requiredSkills?: string;
   startDate?: string;
   endDate?: string;
-  'teamSize.junior'?: string;
-  'teamSize.manager'?: string;
-  'teamSize.partner'?: string;
   status?: string;
   chanceToClose?: string;
   salary?: string;
@@ -33,7 +30,7 @@ interface UploadRecord {
 
 const requiredHeaders = {
   consultants: ['name', 'level', 'skills', 'salary'],
-  projects: ['name', 'client', 'requiredSkills', 'startDate', 'endDate', 'teamSize.junior', 'teamSize.manager', 'teamSize.partner', 'status', 'chanceToClose']
+  projects: ['name', 'client', 'requiredSkills', 'startDate', 'endDate', 'status', 'chanceToClose']
 }
 
 export async function POST(request: NextRequest) {
@@ -175,11 +172,7 @@ export async function POST(request: NextRequest) {
         requiredSkills: record.requiredSkills?.split(',').map(s => s.trim()),
         startDate: record.startDate,
         endDate: record.endDate,
-        teamSize: {
-          junior: parseFloat(record['teamSize.junior'] || '0'),
-          manager: parseFloat(record['teamSize.manager'] || '0'),
-          partner: parseFloat(record['teamSize.partner'] || '0')
-        },
+        // teamSize will use the default empty object from the schema
         status: record.status,
         chanceToClose: parseInt(record.chanceToClose || '100'),
         assignedConsultants: [],

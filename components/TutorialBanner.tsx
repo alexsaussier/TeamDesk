@@ -43,20 +43,20 @@ export default function TutorialBanner({ onboardingProgress, onDismiss }: Tutori
       icon: Settings
     },
     {
-      id: 'projectCreated',
-      title: 'Create your first project',
-      description: 'Add a project to start managing your team assignments',
-      completed: onboardingProgress.projectCreated,
-      href: '/dashboard/projects',
-      icon: FolderPlus
-    },
-    {
       id: 'workforceAdded',
       title: 'Add your workforce',
       description: 'Add consultants to your team to track utilization',
       completed: onboardingProgress.workforceAdded,
       href: '/dashboard/workforce',
       icon: UserPlus
+    },
+    {
+      id: 'projectCreated',
+      title: 'Create your first project',
+      description: 'Add a project to start managing your team assignments',
+      completed: onboardingProgress.projectCreated,
+      href: '/dashboard/projects',
+      icon: FolderPlus
     }
   ]
 

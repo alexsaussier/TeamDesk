@@ -25,8 +25,8 @@ interface ValidationError {
 }
 
 const csvFormats = {
-  consultants: "name,level,skills,salary\nJohn Doe,manager,\"javascript,react,nodejs\",75",
-  projects: "name,client,requiredSkills,startDate,endDate,teamSize.junior,teamSize.manager,teamSize.partner,status,chanceToClose\nProject Alpha,Client Co,\"react,nodejs\",2024-04-01,2024-08-31,2,1,0.5,Discussions,80"
+  consultants: "name,level,skills,salary\nJohn Doe,manager,\"javascript,react,nodejs\",75000",
+  projects: "name,client,requiredSkills,startDate,endDate,status,chanceToClose\nProject Alpha,Client Co,\"react,nodejs\",2024-04-01,2024-08-31,Discussions,80"
 }
 
 export function BatchUploadModal({ isOpen, onClose, onSuccess }: BatchUploadModalProps) {
@@ -149,17 +149,7 @@ export function BatchUploadModal({ isOpen, onClose, onSuccess }: BatchUploadModa
               </Alert>
             )}
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => {
-                // Download template logic here
-              }}>
-                <Download className="mr-2 h-4 w-4" />
-                Download Template
-              </Button>
-              <Button onClick={handleUpload} disabled={!file || isUploading}>
-                {isUploading ? 'Uploading...' : 'Upload'}
-              </Button>
-            </div>
+            
           </div>
         </div>
       </DialogContent>

@@ -56,9 +56,11 @@ export default function StatsGrid({ consultants, projects }: StatsGridProps) {
         <CardContent className="flex-grow flex flex-col justify-end pt-2">
           <div className="text-3xl font-bold tracking-tight flex items-baseline gap-2">
             {benchConsultants.length}
-            <span className="text-lg font-normal text-muted-foreground">
-            | {Math.round((benchConsultants.length / totalConsultants) * 100)}% of team
-            </span>
+            {totalConsultants > 0 && (
+              <span className="text-lg font-normal text-muted-foreground">
+              | {Math.round((benchConsultants.length / totalConsultants) * 100)}% of team
+              </span>
+            )}
           </div>
           <p className="text-xs text-right text-muted-foreground mt-1">View bench</p>
 </CardContent>
