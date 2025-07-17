@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Download, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -33,13 +33,11 @@ export function BatchUploadModal({ isOpen, onClose, onSuccess }: BatchUploadModa
   const [file, setFile] = useState<File | null>(null)
   const [type, setType] = useState<'consultants' | 'projects'>('consultants')
   const [error, setError] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
 
   const handleUpload = async () => {
     if (!file) return
 
-    setIsUploading(true)
     setError(null)
     setValidationErrors([])
 
@@ -74,7 +72,7 @@ export function BatchUploadModal({ isOpen, onClose, onSuccess }: BatchUploadModa
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
-      setIsUploading(false)
+      // Upload complete
     }
   }
 
@@ -149,7 +147,14 @@ export function BatchUploadModal({ isOpen, onClose, onSuccess }: BatchUploadModa
               </Alert>
             )}
 
-            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpload} disabled={!file}>
+                Upload
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

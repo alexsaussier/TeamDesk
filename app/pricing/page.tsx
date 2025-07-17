@@ -16,7 +16,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function PricingPage() {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
-  const [isYearly, setIsYearly] = useState(false)
+  const [isYearly, setIsYearly] = useState(true)
 
   // Pricing configuration
   const pricing = {

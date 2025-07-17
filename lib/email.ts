@@ -66,9 +66,9 @@ export const emailTemplates = {
                 </div>
               </div>
               
-              <a href="https://teamdesk.app/dashboard" class="button">Go to Dashboard</a>
+              <a href="https://teamdesk.app/dashboard" class="button" style="color: white;">Go to Dashboard</a>
               
-              <p>Need help getting started? Check out our <a href="https://teamdesk.app/docs">documentation</a> or reply to this email with any questions.</p>
+              <p>Need help getting started? Email us at <a href="mailto:alexandre@teamdesk.app">alexandre@teamdesk.app</a>
               
               <p>Have a look around, and when you are ready to unlock unlimited projects and staff, <a href="https://teamdesk.app/pricing">get our premium plan</a> for unlimited projects, advanced AI tools, and priority support.</p>
               
