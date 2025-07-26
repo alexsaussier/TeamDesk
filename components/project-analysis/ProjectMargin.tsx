@@ -15,7 +15,6 @@ import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { PieChart, AlertTriangle } from "lucide-react"
 import { differenceInWeeks, parseISO } from "date-fns"
-import { useCurrency } from "@/contexts/CurrencyContext"
 
 interface ProjectMarginProps {
   project: Project
@@ -45,7 +44,6 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
   const [totalMargin, setTotalMargin] = useState(0)
   const [projectWeeks, setProjectWeeks] = useState(0)
   const [workingDays, setWorkingDays] = useState(0)
-  const { formatCurrency, getCurrencySymbol } = useCurrency()
 
   useEffect(() => {
     const calculateMargins = async () => {
@@ -228,26 +226,26 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
                 <p className="text-xl font-bold">
-                  {formatCurrency(totalRevenue, { decimalPlaces: 2 })}
+                  ${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Cost</p>
                 <p className="text-xl font-bold">
-                  {formatCurrency(totalCost, { decimalPlaces: 2 })}
+                  ${totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground text-green-600">Profit</p>
-                              <p className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(totalProfit, { decimalPlaces: 2 })}
-              </p>
+                <p className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ${totalProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Profit Per Week</p>
-                              <p className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(totalProfit / projectWeeks, { decimalPlaces: 2 })}
-              </p>
+                <p className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ${(totalProfit / projectWeeks).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -299,7 +297,7 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {formatCurrency(consultant.profit, { decimalPlaces: 0 })} profit
+                          ${consultant.profit.toLocaleString(undefined, { maximumFractionDigits: 0 })} profit
                         </p>
                       </div>
                     </div>
@@ -311,11 +309,11 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
                     <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
                       <div>
                         <span className="text-muted-foreground">Revenue: </span>
-                        <span className="font-medium">{formatCurrency(consultant.revenue, { decimalPlaces: 0 })}</span>
+                        <span className="font-medium">${consultant.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Cost: </span>
-                        <span className="font-medium">{formatCurrency(consultant.cost, { decimalPlaces: 0 })}</span>
+                        <span className="font-medium">${consultant.cost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     </div>
                   </div>
@@ -350,12 +348,12 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
                           </span>
                         </div>
                       </TableCell>
-                                              <TableCell>{getCurrencySymbol()}{consultant.hourlyRate}</TableCell>
-                                              <TableCell>{formatCurrency(consultant.dailySalary * (consultant.percentage / 100), { decimalPlaces: 2 })}</TableCell>
-                                              <TableCell>{formatCurrency(consultant.revenue, { decimalPlaces: 2 })}</TableCell>
-                        <TableCell>{formatCurrency(consultant.cost, { decimalPlaces: 2 })}</TableCell>
-                                              <TableCell className={consultant.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(consultant.profit, { decimalPlaces: 2 })}
+                      <TableCell>${consultant.hourlyRate}</TableCell>
+                      <TableCell>${(consultant.dailySalary * (consultant.percentage / 100)).toFixed(2)}</TableCell>
+                      <TableCell>${consultant.revenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell>${consultant.cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell className={consultant.profit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        ${consultant.profit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell>
                         <span className={getMarginStatus(consultant.margin).color}>
@@ -368,10 +366,10 @@ export function ProjectMargin({ project }: ProjectMarginProps) {
                     <TableCell>TOTALS</TableCell>
                     <TableCell>-</TableCell>
                     <TableCell>-</TableCell>
-                    <TableCell>{formatCurrency(totalRevenue, { decimalPlaces: 2 })}</TableCell>
-                    <TableCell>{formatCurrency(totalCost, { decimalPlaces: 2 })}</TableCell>
+                    <TableCell>${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>${totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className={totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {formatCurrency(totalProfit, { decimalPlaces: 2 })}
+                      ${totalProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell className={getMarginStatus(totalMargin).color}>
                       {totalMargin.toFixed(1)}%
