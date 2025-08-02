@@ -123,7 +123,6 @@ export default function WorkforceDashboard() {
         <Loading text="Loading consultants..." />
       ) : consultants.length === 0 ? (
         <EmptyWorkforceState 
-          variant="list"
           onAddConsultant={() => setIsModalOpen(true)}
           onBatchUpload={() => setIsBatchUploadOpen(true)}
         />

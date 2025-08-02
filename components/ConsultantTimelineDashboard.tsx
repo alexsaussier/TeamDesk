@@ -147,7 +147,6 @@ export default function ConsultantTimelineDashboard() {
         
         {!isLoading && consultants.length === 0 && (
           <EmptyWorkforceState 
-            variant="timeline"
             onAddConsultant={() => setIsAddConsultantModalOpen(true)}
             onBatchUpload={() => setIsBatchUploadOpen(true)}
           />
