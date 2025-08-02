@@ -9,17 +9,20 @@ import { ProjectOverview } from "@/components/project-analysis/ProjectOverview"
 import { ProjectCosts } from "@/components/project-analysis/ProjectCosts"
 import { ProjectRevenue } from "@/components/project-analysis/ProjectRevenue"
 import { ProjectMargin } from "@/components/project-analysis/ProjectMargin"
-import { Calendar, User, Briefcase } from "lucide-react"
+import { Calendar, User, Briefcase, BarChart3 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Loading } from "@/components/ui/loading"
+import { GradientButton } from "@/components/GradientButton"
+import { AddProjectModal } from "@/components/AddProjectModal"
 
 export default function ProjectAnalysisPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -46,6 +49,33 @@ export default function ProjectAnalysisPage() {
 
   const handleProjectSelect = (project: Project) => {
     setSelectedProject(project)
+  }
+
+  const handleAddProject = async (project: Partial<Project>): Promise<Project> => {
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(project),
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        const error = new Error(data.error || 'Failed to create project') as Error & {
+          status?: number;
+        };
+        error.status = response.status;
+        throw error;
+      }
+      
+      const createdProject: Project = await response.json()
+      setProjects(prevProjects => [...prevProjects, createdProject])
+      return createdProject
+    } catch (error) {
+      throw error
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -175,6 +205,29 @@ export default function ProjectAnalysisPage() {
               <div className="text-destructive p-4 border border-destructive rounded-md">
                 {error}
               </div>
+            ) : projects.length === 0 ? (
+              <Card className="border-2 border-dashed border-gray-300 bg-gray-50/50">
+                <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                  <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
+                    <BarChart3 className="w-8 h-8 text-blue-600" />
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No projects to analyze
+                  </h3>
+                  
+                  <p className="text-gray-600 text-center max-w-md mb-8">
+                    Create your first project to start tracking costs, revenue, and profitability insights.
+                  </p>
+                  
+                                    <div className="flex justify-center">
+                    <GradientButton 
+                      onClick={() => setIsAddProjectModalOpen(true)}
+                      label="Add Project"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
               <div className="space-y-8">
                 {sortedGroups.map(status => (
@@ -224,6 +277,14 @@ export default function ProjectAnalysisPage() {
           </>
         )}
       </div>
+
+      <AddProjectModal
+        isOpen={isAddProjectModalOpen}
+        onClose={() => setIsAddProjectModalOpen(false)}
+        onAdd={handleAddProject}
+        consultants={[]}
+        allProjects={projects}
+      />
     </div>
   )
 } 
