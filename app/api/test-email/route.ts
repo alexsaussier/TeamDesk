@@ -20,9 +20,9 @@ export async function GET() {
     // Send a test email
     await transporter.sendMail({
       from: `"Test User" <${process.env.EMAIL_FROM}>`,
-      to: "asaussier99@gmail.com", // Change this to your email
-      subject: "Test Email",
-      text: "This is a test email to verify your email configuration.",
+      to: "alexandre@teamdesk.app",
+      subject: "Test Email - Office 365 Configuration",
+      text: "This is a test email to verify your Office 365 email configuration is working correctly.",
     });
 
     return NextResponse.json({ 
