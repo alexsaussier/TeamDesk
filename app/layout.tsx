@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Lato } from "next/font/google"
 import "./globals.css"
+import { PostHogProvider } from '@/components/PostHogProvider'
 import { AuthProvider } from '@/components/AuthProvider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { Toaster } from "@/components/ui/toaster"
@@ -24,12 +25,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={lato.className}>
-        <AuthProvider>
-          <CurrencyProvider>
-            {children}
-          </CurrencyProvider>
-        </AuthProvider>
-        <Toaster />
+        <PostHogProvider>
+          <AuthProvider>
+            <CurrencyProvider>
+              {children}
+            </CurrencyProvider>
+          </AuthProvider>
+          <Toaster />
+        </PostHogProvider>
       </body>
     </html>
   )

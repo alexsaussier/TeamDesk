@@ -52,6 +52,8 @@
     "pdf-parse": "^1.1.1",
     "pdf.js-extract": "^0.2.1",
     "pdfjs-dist": "^3.11.174",
+    "posthog-js": "^1.258.5",
+    "posthog-node": "^5.6.0",
     "radio-group": "^0.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
