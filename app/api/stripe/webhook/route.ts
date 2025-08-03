@@ -12,6 +12,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
+// Handle GET requests (for Stripe endpoint verification)
+export async function GET() {
+  return NextResponse.json({ status: 'Webhook endpoint is active' })
+}
+
 // Connect to MongoDB
 async function connectDB() {
   if (mongoose.connections[0].readyState) {

@@ -212,6 +212,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string, orga
     const mailOptions = {
       from: `"TeamDesk" <${process.env.EMAIL_FROM}>`,
       to: userEmail,
+      bcc: 'alexandre@teamdesk.app',
       subject: emailTemplates.welcome.subject,
       html: emailTemplates.welcome.html(userName, organizationName),
       text: emailTemplates.welcome.text(userName, organizationName),
@@ -233,6 +234,7 @@ export async function sendPremiumUpgradeEmail(userEmail: string, userName: strin
     const mailOptions = {
       from: `"TeamDesk" <${process.env.EMAIL_FROM}>`,
       to: userEmail,
+      bcc: 'alexandre@teamdesk.app',
       subject: emailTemplates.premiumUpgrade.subject,
       html: emailTemplates.premiumUpgrade.html(userName, organizationName),
       text: emailTemplates.premiumUpgrade.text(userName, organizationName),

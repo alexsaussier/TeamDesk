@@ -133,7 +133,7 @@ export default function PrivacyPolicyPage() {
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-700">
                   <strong>TeamDesk</strong><br />
-                  Email: alex@teamdesk.app<br />
+                  Email: alexandre@teamdesk.app<br />
                   Subject: Privacy Policy Inquiry
                 </p>
               </div>
